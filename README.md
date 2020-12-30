@@ -1,30 +1,45 @@
 # tmux-project
 
 **tmux-project** creates, maintains, archives and removes profiles
-used by 
+used by the
+[resume](https://github.com/jvzantvoort/homebin/blob/master/bin/resume_tmux)
+command. This command allows the user to list and use different tmux
+based profiles. Together with bash (or other shell based) profiles
+you can easily maintain multiple sessions.
 
-Create a tmux project.
+# Synopsis
 
-In "https://github.com/jvzantvoort/homebin" the "resume" tool uses
-two files to access different projects:
+## Create
 
-${HOME}/.bash/tmux.d/<project>.env | environment file
-${HOME}/.bash/tmux.d/<project>.rc  | tmux configuration
+```tmux-project create -n <name> -t <type>```
 
-It also uses another location namely the project directory.
+## List
 
-tmux-project create -n <name> -t <type> 
+```tmux-project list [-t <type>]```
 
-tmux-project list [-t <type>]
+## Destroy
 
-tmux-project destroy -n <name>
+```tmux-project destroy -n <name>```
 
-tmux-project archive -n <name> [-a <archive dir>]
+## Archive
 
-# Use
+```tmux-project archive -n <name> [-a <archive dir>]```
 
-## Bash
 
+# Functionality
+
+## Targets
+
+| Target                                   | Description                 |
+|:-----------------------------------------|:----------------------------|
+| ```${HOME}/.bash/tmux.d/<project>.env``` | environment file            |
+| ```${HOME}/.bash/tmux.d/<project>.rc```  | tmux configuration          |
+| ```PROJECTS```                           | location projects are setup |
+
+## Use in bash
+
+The following lines allow profiles to source created environment
+files:
 
 ```
 export SESSIONNAME=`tmux display-message -p '#S'`
