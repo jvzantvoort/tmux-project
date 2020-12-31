@@ -35,6 +35,7 @@ func main() {
 
 	projecttype := "default"
 	projectname := ""
+	verbose := false
 
 
 	flags := flag.NewFlagSet("new", flag.ExitOnError)
