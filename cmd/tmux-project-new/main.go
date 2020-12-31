@@ -49,7 +49,7 @@ func main() {
 		log.Fatalf("no name provided")
 	}
 
-	configuration := tp.GetConfiguration(projecttype, projectname)
+	configuration := tp.GetProjectTypeConfig(projecttype, projectname)
 	tp.DescribeProjectType(configuration)
 
 	tmplvars := tp.NewProjTmplVars(projectname, configuration)

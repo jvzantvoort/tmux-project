@@ -39,7 +39,7 @@ func GetHomeDir() string {
 	return HomeDir
 }
 
-func NewProjTmplVars(projectname string, conf config.Configuration) *ProjTmplVars {
+func NewProjTmplVars(projectname string, conf config.ProjectTypeConfig) *ProjTmplVars {
 
 	v := &ProjTmplVars{}
 	v.HomeDir = GetHomeDir()
@@ -73,7 +73,7 @@ func (t ProjTmplVars) Parse(templatestring string) string {
 	return buf.String()
 }
 
-func DescribeProjectType(config config.Configuration) {
+func DescribeProjectType(config config.ProjectTypeConfig) {
 	log.Debugf("Describe: %s", config.ProjectType)
 	log.Debugf("  Workdir: %s", config.Workdir)
 	log.Debugf("  Pattern: %s", config.Pattern)
@@ -116,12 +116,12 @@ func ExpandHome(pathstr string) (string, error) {
 
 }
 
-func GetConfiguration(configname, projectname string) config.Configuration {
+func GetProjectTypeConfig(configname, projectname string) config.ProjectTypeConfig {
 	homedir := GetHomeDir()
 	projtypeconfigdir := path.Join(homedir, ".tmux-project", configname)
 	tmuxdir := path.Join(homedir, ".bash", "tmux.d")
 
-	var configuration config.Configuration
+	var configuration config.ProjectTypeConfig
 	viper.SetConfigName("config")
 	viper.AddConfigPath(projtypeconfigdir)
 	viper.AddConfigPath(MasterConfigDir)

@@ -6,7 +6,7 @@ type ProjectTypeFiles struct {
 	Mode        string
 }
 
-type Configuration struct {
+type ProjectTypeConfig struct {
 	ProjectType  string
 	Workdir      string
 	Pattern      string
