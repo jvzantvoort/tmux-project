@@ -11,7 +11,7 @@ you can easily maintain multiple sessions.
 
 ## Create
 
-```tmux-project create -n <name> -t <type>```
+```tmux-project-create -n <name> -t <type>```
 
 ## List
 

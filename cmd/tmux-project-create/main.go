@@ -36,14 +36,20 @@ func main() {
 	projecttype := "default"
 	projectname := ""
 
-	log.Infoln("Start")
 
 	flags := flag.NewFlagSet("new", flag.ExitOnError)
 	flags.StringVar(&projecttype, "projecttype", projecttype, "Type of project")
 	flags.StringVar(&projecttype, "t", projecttype, "Type of project")
 	flags.StringVar(&projectname, "projectname", projectname, "Name of project")
 	flags.StringVar(&projectname, "n", projectname, "Name of project")
+	flags.BoolVar(&verbose, "v", false, "Verbose logging")
 	flags.Parse(os.Args[1:])
+
+	if verbose {
+		log.SetLevel(log.DebugLevel)
+	}
+
+	log.Debugln("Start")
 
 	if len(projectname) == 0 {
 		log.Fatalf("no name provided")
@@ -73,5 +79,5 @@ func main() {
 		}
 	}
 
-	log.Infoln("End")
+	log.Debugln("End")
 }
