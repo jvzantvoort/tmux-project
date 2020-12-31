@@ -1,6 +1,7 @@
 NAME := tmux-project
 VERSION := $(shell git describe --tags --abbrev=0)
 REVISION := $(shell git rev-parse --short HEAD)
+COMMANDS := tmux-project-new
 LDFLAGS := -X 'main.version=$(VERSION)' \
            -X 'main.revision=$(REVISION)'
 GOIMPORTS ?= goimports
@@ -25,7 +26,7 @@ test:  ## Run the tests.
 
 .PHONY: build
 build: main.go  ## Build a binary.
-	ls -1d cmd/* | while read -r target; do $(GO) build -ldflags "$(LDFLAGS)" ./$${target}; done
+	$(foreach cmd,$(COMMANDS), $(GO) build -ldflags "$(LDFLAGS)" ./cmd/$(cmd);)
 
 .PHONY: cross
 cross: main.go  ## Build binaries for cross platform.
@@ -33,10 +34,10 @@ cross: main.go  ## Build binaries for cross platform.
 	@# darwin
 	@for arch in "amd64" "386"; do \
 		GOOS=darwin GOARCH=$${arch} make build; \
-		zip pkg/tmux-project_$(VERSION)_darwin_$${arch}.zip tmux-project; \
+		zip pkg/tmux-project_$(VERSION)_darwin_$${arch}.zip $(COMMANDS); \
 	done;
 	@# linux
 	@for arch in "amd64" "386" "arm64" "arm"; do \
 		GOOS=linux GOARCH=$${arch} make build; \
-		zip pkg/tmux-project_$(VERSION)_linux_$${arch}.zip tmux-project; \
+		zip pkg/tmux-project_$(VERSION)_linux_$${arch}.zip $(COMMANDS); \
 	done;
