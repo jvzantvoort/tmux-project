@@ -1,7 +1,5 @@
 package config
 
-import ()
-
 type ProjectTypeFiles struct {
 	Name        string
 	Destination string

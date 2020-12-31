@@ -3,14 +3,15 @@ package tmuxproject
 import (
 	"bytes"
 	"fmt"
-	"github.com/jvzantvoort/tmux-project/config"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"io/ioutil"
 	"os/user"
 	"path"
 	"path/filepath"
 	"text/template"
+
+	"github.com/jvzantvoort/tmux-project/config"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -58,7 +59,7 @@ func LoadFile(target string, tmplvars ProjTmplVars) (string, error) {
 	return retv, nil
 }
 
-// buildConfig contruct the text from the template definition and arguments.
+// buildConfig construct the text from the template definition and arguments.
 func (t ProjTmplVars) Parse(templatestring string) string {
 	tmpl, err := template.New("prompt").Parse(templatestring)
 	if err != nil {
