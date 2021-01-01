@@ -13,6 +13,13 @@ GO ?= GO111MODULE=on go
 fmt: ## Formatting source codes.
 	@$(GOIMPORTS) -w *.go config cmd
 
+.PHONY: refresh
+refresh:
+	go-bindata -pkg tmuxproject messages; \
+	pushd config; \
+	go-bindata -pkg config templates; \
+	popd
+
 
 .PHONY: lint
 lint: ## Run golint and go vet.
