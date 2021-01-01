@@ -9,21 +9,16 @@ you can easily maintain multiple sessions.
 
 # Synopsis
 
-## Create
+## Commands
 
-```tmux-project-create -n <name> -t <type>```
 
-## List
+* ``tmux-project archive``
+* ``tmux-project create``
+* ``tmux-project edit``
+* ``tmux-project init``
+* ``tmux-project list``
 
-```tmux-project-list [-t <type>]```
-
-## Archive
-
-```tmux-project-archive -n <name> [-a <archive dir>]```
-
-## Destroy
-
-```tmux-project-destroy -n <name>```
+All commands are described in help.
 
 # Functionality
 
