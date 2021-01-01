@@ -2,16 +2,12 @@ package config
 
 import (
 	"fmt"
-	"github.com/gobuffalo/packr"
 	"os"
 	"path"
 
-	"github.com/spf13/viper"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
-
-// Box packr box
-var Box = packr.NewBox("./templates")
 
 // ProjectTypeFile defines a structure of a file
 type ProjectTypeFile struct {
@@ -48,7 +44,7 @@ func (ptc *ProjectTypeConfig) readConfig(projtypeconfigdir string) {
 	}
 }
 
-// Describe describe 
+// Describe describe
 func (ptc ProjectTypeConfig) Describe() {
 	log.Debugf("Describe: %s", ptc.ProjectType)
 	log.Debugf("  Workdir: %s", ptc.Workdir)
@@ -79,9 +75,9 @@ func (ptc ProjectTypeConfig) Describe() {
 }
 
 func (ptc ProjectTypeConfig) Write(boxname, target string) error {
-	content := Box.String(boxname)
+	content, _ := Asset("templates/" + boxname)
 	file, err := os.Create(target)
-	_, err = file.WriteString(content)
+	_, err = file.Write(content)
 	if err != nil {
 		return err
 	}
@@ -100,7 +96,6 @@ func (ptc ProjectTypeConfig) Exists(targetpath string) bool {
 	return true
 }
 
-
 func (ptc *ProjectTypeConfig) Init(projtypeconfigdir, projecttype string) error {
 
 	projtypeconfigdir = path.Join(projtypeconfigdir, projecttype)
@@ -109,7 +104,7 @@ func (ptc *ProjectTypeConfig) Init(projtypeconfigdir, projecttype string) error 
 		return fmt.Errorf("Directory already exists: %s", projtypeconfigdir)
 	}
 
-	if err := os.MkdirAll(projtypeconfigdir,os.FileMode(int(0755))); err != nil {
+	if err := os.MkdirAll(projtypeconfigdir, os.FileMode(int(0755))); err != nil {
 		return fmt.Errorf("Directory cannot be created: %s", projtypeconfigdir)
 	}
 
