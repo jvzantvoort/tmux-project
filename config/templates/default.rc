@@ -1,0 +1,5 @@
+#  DESCRIPTION:  {{.ProjectDescription}}
+#      WORKDIR:  {{.ProjectDir}}
+
+source-file {{.HomeDir}}/.bash/tmux.d/common.rc
+run-shell "bash {{.HomeDir}}/.bash/tmux.d/tmux_opt_source tmux-themepack/powerline/default/cyan.tmuxtheme"

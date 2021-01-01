@@ -1,0 +1,13 @@
+---
+projecttype: PROJECTTYPE
+workdir: ~/Workspace
+pattern: ^.*$
+setupactions:
+  - echo {{.ProjectName}}
+files:
+  - name: default.env
+    destination: "{{.ProjectName}}.env"
+    mode: 644
+  - name: default.rc
+    destination: "{{.ProjectName}}.rc"
+    mode: 644
