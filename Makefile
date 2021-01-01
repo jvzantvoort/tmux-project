@@ -1,7 +1,7 @@
 NAME := tmux-project
 VERSION := $(shell git describe --tags --abbrev=0)
 REVISION := $(shell git rev-parse --short HEAD)
-COMMANDS := tmux-project-create tmux-project-list
+COMMANDS := tmux-project-create tmux-project-list tmux-project-archive
 LDFLAGS := -X 'main.version=$(VERSION)' \
            -X 'main.revision=$(REVISION)'
 GOIMPORTS ?= goimports

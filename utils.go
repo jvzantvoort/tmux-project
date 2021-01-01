@@ -1,7 +1,10 @@
 package tmuxproject
 
 import (
+	"bufio"
+	"fmt"
 	"io/ioutil"
+	"os"
 	"os/user"
 	"path"
 	"path/filepath"
@@ -14,7 +17,7 @@ import (
 var (
 	HomeDir          = ""
 	TmuxDir          = ""
-	ProjTypeCofigDir = ""
+	ProjTypeConfigDir = ""
 )
 
 // GetHomeDir simple wrapper function to keep from calling the same functions
@@ -31,6 +34,13 @@ func GetHomeDir() string {
 	return HomeDir
 }
 
+func Ask(question string) string {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Printf("%s: ", question)
+	text, _ := reader.ReadString('\n')
+	return text
+}
+
 func GetTmuxDir() string {
 	if len(TmuxDir) == 0 {
 		homedir := GetHomeDir()
@@ -39,12 +49,12 @@ func GetTmuxDir() string {
 	return TmuxDir
 }
 
-func GetProjTypeCofigDir() string {
-	if len(ProjTypeCofigDir) == 0 {
+func GetProjTypeConfigDir() string {
+	if len(ProjTypeConfigDir) == 0 {
 		homedir := GetHomeDir()
-		ProjTypeCofigDir = path.Join(homedir, ".tmux-project")
+		ProjTypeConfigDir = path.Join(homedir, ".tmux-project")
 	}
-	return ProjTypeCofigDir
+	return ProjTypeConfigDir
 }
 
 func ListTmuxConfigs() []string {

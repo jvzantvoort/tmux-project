@@ -15,16 +15,15 @@ you can easily maintain multiple sessions.
 
 ## List
 
-```tmux-project list [-t <type>]```
-
-## Destroy
-
-```tmux-project destroy -n <name>```
+```tmux-project-list [-t <type>]```
 
 ## Archive
 
-```tmux-project archive -n <name> [-a <archive dir>]```
+```tmux-project-archive -n <name> [-a <archive dir>]```
 
+## Destroy
+
+```tmux-project-destroy -n <name>```
 
 # Functionality
 

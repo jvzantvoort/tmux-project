@@ -2,11 +2,7 @@ package main
 
 import (
 	"flag"
-	"fmt"
-
-	// 	"fmt"
 	"os"
-	// 	"strconv"
 
 	tp "github.com/jvzantvoort/tmux-project"
 	log "github.com/sirupsen/logrus"
@@ -14,9 +10,9 @@ import (
 
 func init() {
 	log.SetFormatter(&log.TextFormatter{
-		FullTimestamp:   true,
+		FullTimestamp:          true,
 		DisableLevelTruncation: true,
-		TimestampFormat: "2006-01-02 15:04:05",
+		TimestampFormat:        "2006-01-02 15:04:05",
 	})
 
 	// Output to stdout instead of the default stderr
@@ -24,7 +20,7 @@ func init() {
 	log.SetOutput(os.Stdout)
 
 	// Only log the warning severity or above.
-	log.SetLevel(log.InfoLevel)
+	log.SetLevel(log.DebugLevel)
 }
 
 func main() {
@@ -36,16 +32,15 @@ func main() {
 		}
 	}()
 
-	projecttype := "default"
 	projectname := ""
+	archivename := ""
 	verbose := false
 
-
-	flags := flag.NewFlagSet("list", flag.ExitOnError)
-	flags.StringVar(&projecttype, "projecttype", projecttype, "Type of project")
-	flags.StringVar(&projecttype, "t", projecttype, "Type of project")
+	flags := flag.NewFlagSet("archive", flag.ExitOnError)
 	flags.StringVar(&projectname, "projectname", projectname, "Name of project")
 	flags.StringVar(&projectname, "n", projectname, "Name of project")
+	flags.StringVar(&archivename, "archivename", archivename, "Archive file")
+	flags.StringVar(&archivename, "a", archivename, "Archive file")
 	flags.BoolVar(&verbose, "v", false, "Verbose logging")
 	flags.Parse(os.Args[1:])
 
@@ -55,9 +50,18 @@ func main() {
 
 	log.Debugln("Start")
 
-	for _, target := range tp.ListTmuxConfigs() {
-		fmt.Println(target)
+	if len(projectname) == 0 {
+		log.Fatalf("no name provided")
+	}
 
+	if archivename == "" {
+		archivename, _ = tp.GetWorkdir(projectname)
+		archivename = archivename + ".tar.gz"
+	}
+
+	err := tp.ArchiveProject(projectname, archivename)
+	if err != nil {
+		log.Fatalf("Encountered error: %q", err)
 	}
 
 	log.Debugln("End")

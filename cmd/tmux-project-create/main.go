@@ -13,6 +13,7 @@ import (
 func init() {
 	log.SetFormatter(&log.TextFormatter{
 		FullTimestamp:   true,
+		DisableLevelTruncation: true,
 		TimestampFormat: "2006-01-02 15:04:05",
 	})
 
@@ -22,6 +23,34 @@ func init() {
 
 	// Only log the warning severity or above.
 	log.SetLevel(log.DebugLevel)
+}
+
+func CreateProject(projecttype, projectname string) error {
+	configuration := tp.GetProjectTypeConfig(projecttype, projectname)
+	tp.DescribeProjectType(configuration)
+
+	tmplvars := tp.NewProjTmplVars(projectname, configuration)
+	tmplvars.ProjectDescription = tp.Ask("Description")
+	for _, target := range configuration.Files {
+		srccontent, _ := tp.LoadFile(target.Name, *tmplvars)
+		file, err := os.Create(target.Destination)
+		_, err = file.WriteString(srccontent)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		num, err := strconv.Atoi(target.Mode)
+		if err != nil {
+			return err
+		}
+
+		mode, _ := strconv.ParseUint(fmt.Sprintf("%04d", num), 8, 32)
+		if err := os.Chmod(target.Destination, os.FileMode(mode)); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func main() {
@@ -56,28 +85,10 @@ func main() {
 		log.Fatalf("no name provided")
 	}
 
-	configuration := tp.GetProjectTypeConfig(projecttype, projectname)
-	tp.DescribeProjectType(configuration)
 
-	tmplvars := tp.NewProjTmplVars(projectname, configuration)
-	for _, target := range configuration.Files {
-		srccontent, _ := tp.LoadFile(target.Name, *tmplvars)
-		file, err := os.Create(target.Destination)
-		_, err = file.WriteString(srccontent)
-		if err != nil {
-			panic(err)
-		}
-		defer file.Close()
-
-		num, err := strconv.Atoi(target.Mode)
-		if err != nil {
-			panic(err)
-		}
-
-		mode, _ := strconv.ParseUint(fmt.Sprintf("%04d", num), 8, 32)
-		if err := os.Chmod(target.Destination, os.FileMode(mode)); err != nil {
-			log.Fatal(err)
-		}
+	err := CreateProject(projecttype, projectname)
+	if err != nil {
+		log.Fatalf("Encountered error: %q", err)
 	}
 
 	log.Debugln("End")

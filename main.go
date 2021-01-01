@@ -82,9 +82,11 @@ func DescribeProjectType(config config.ProjectTypeConfig) {
 	log.Debugf("Describe: %s, end", config.ProjectType)
 }
 
-func GetProjectTypeConfig(configname, projectname string) config.ProjectTypeConfig {
-	projtypeconfigdir := GetProjTypeCofigDir()
+func GetProjectTypeConfig(projecttype, projectname string) config.ProjectTypeConfig {
+	projtypeconfigdir := path.Join(GetProjTypeConfigDir(), projecttype)
 	tmuxdir := GetTmuxDir()
+	log.Debugf("project type config dir: %s", projtypeconfigdir)
+	log.Debugf("tmux dir: %s", tmuxdir)
 
 	var configuration config.ProjectTypeConfig
 	viper.SetConfigName("config")
