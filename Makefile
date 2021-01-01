@@ -14,11 +14,15 @@ fmt: ## Formatting source codes.
 	@$(GOIMPORTS) -w *.go config cmd
 
 .PHONY: refresh
-refresh:
-	go-bindata -pkg tmuxproject messages; \
+refresh: tags
+	@go-bindata -pkg tmuxproject messages; \
 	pushd config; \
 	go-bindata -pkg config templates; \
 	popd
+
+.PHONY: tags
+tags:
+	@find "$${PWD}" -type f -name '*.go' -not -path '*/vendor/*'| sed "s,$${PWD}/,," | xargs gotags >tags
 
 
 .PHONY: lint
