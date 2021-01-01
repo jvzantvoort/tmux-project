@@ -1,0 +1,66 @@
+package main
+
+import (
+	"context"
+	"flag"
+
+	"github.com/google/subcommands"
+	tp "github.com/jvzantvoort/tmux-project"
+	log "github.com/sirupsen/logrus"
+)
+
+type ArchiveSubCmd struct {
+	projecttype string
+	projectname string
+	archivename string
+	verbose     bool
+}
+
+func (*ArchiveSubCmd) Name() string {
+	return "archive"
+}
+
+func (*ArchiveSubCmd) Synopsis() string {
+	return "Archive a project"
+}
+
+func (*ArchiveSubCmd) Usage() string {
+	return `print [-capitalize] <some text>:
+	    Print args to stdout.
+	    `
+}
+
+func (c *ArchiveSubCmd) SetFlags(f *flag.FlagSet) {
+	f.StringVar(&c.archivename, "archivename", "", "Archive file")
+	f.StringVar(&c.archivename, "a", "", "Archive file")
+	f.StringVar(&c.projectname, "projectname", "", "Name of project")
+	f.StringVar(&c.projectname, "n", "", "Name of project")
+	f.BoolVar(&c.verbose, "v", false, "Verbose logging")
+}
+
+func (c *ArchiveSubCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
+
+	if c.verbose {
+		log.SetLevel(log.DebugLevel)
+	}
+
+	log.Debugln("Start")
+	//
+	if len(c.projectname) == 0 {
+		log.Fatalf("no name provided")
+	}
+
+	if c.archivename == "" {
+		c.archivename, _ = tp.GetWorkdir(c.projectname)
+		c.archivename = c.archivename + ".tar.gz"
+	}
+
+	err := tp.ArchiveProject(c.projectname, c.archivename)
+	if err != nil {
+		log.Fatalf("Encountered error: %q", err)
+	}
+
+	log.Debugln("End")
+
+	return subcommands.ExitSuccess
+}
