@@ -15,10 +15,50 @@ import (
 )
 
 var (
-	HomeDir          = ""
-	TmuxDir          = ""
+	HomeDir           = ""
+	TmuxDir           = ""
 	ProjTypeConfigDir = ""
 )
+
+type ListTable struct {
+	Name        string
+	Description string
+	Workdir     string
+}
+
+// targetExists return true if target exists
+func targetExists(targetpath string) bool {
+	_, err := os.Stat(targetpath)
+	if err != nil {
+		return false
+	}
+	if os.IsNotExist(err) {
+		return false
+	}
+	return true
+}
+
+// Which return path
+func Which(command string) string {
+	Path := strings.Split(os.Getenv("PATH"), ":")
+	var retv string
+	for _, dirname := range Path {
+		fullpath := path.Join(dirname, command)
+		if targetExists(fullpath) {
+			retv = fullpath
+			break
+		}
+	}
+	return retv
+}
+
+// ExitOnError check error and exit if not nil
+func ExitOnError(err error) {
+	if err != nil {
+		log.Errorf("error %v\n", err)
+		os.Exit(1)
+	}
+}
 
 // GetHomeDir simple wrapper function to keep from calling the same functions
 // over and over again.
@@ -57,8 +97,8 @@ func GetProjTypeConfigDir() string {
 	return ProjTypeConfigDir
 }
 
-func ListTmuxConfigs() []string {
-	var retv []string
+func ListTmuxConfigs() []ListTable {
+	var retv []ListTable
 	tmuxdir := GetTmuxDir()
 
 	targets, err := ioutil.ReadDir(tmuxdir)
@@ -75,7 +115,7 @@ func ListTmuxConfigs() []string {
 		}
 
 		// "common" is shared by all others
-		if target_name == "common" {
+		if target_name == "common.rc" {
 			continue
 		}
 		description := ""
@@ -92,7 +132,17 @@ func ListTmuxConfigs() []string {
 		}
 		log.Debugf("description: %s", description)
 		log.Debugf("workdir: %s", workdir)
-		retv = append(retv, target_name)
+		t := ListTable{}
+		t.Name = target_name
+		t.Description = description
+
+		workdir, err = ExpandHome(workdir)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		t.Workdir = workdir
+		retv = append(retv, t)
 	}
 	return retv
 }

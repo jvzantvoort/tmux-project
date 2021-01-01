@@ -22,6 +22,8 @@ func ArchiveProject(projectname, archivename string) error {
 
 	_ = MakeTarArchive(&buf, targets)
 
+	archivename, _ = ExpandHome(archivename)
+
 	fileToWrite, err := os.OpenFile(archivename, os.O_CREATE|os.O_RDWR, os.FileMode(0600))
 	if err != nil {
 		panic(err)
@@ -34,6 +36,13 @@ func ArchiveProject(projectname, archivename string) error {
 	return nil
 }
 
+func TargetExists(target string) bool {
+	if _, err := os.Stat(target); os.IsNotExist(err) {
+		return false
+	}
+	return true
+}
+
 func MakeTarArchive(buf io.Writer, targets []string) error {
 
 	// tar > gzip > buf
@@ -41,6 +50,10 @@ func MakeTarArchive(buf io.Writer, targets []string) error {
 	tw := tar.NewWriter(zr)
 
 	for _, target := range targets {
+		if !TargetExists(target) {
+			log.Errorf("does not exist: %s", target)
+			continue
+		}
 		log.Debugf("target: %s", target)
 		// is file a folder?
 		fi, err := os.Stat(target)
@@ -54,6 +67,7 @@ func MakeTarArchive(buf io.Writer, targets []string) error {
 			if err != nil {
 				return err
 			}
+			header.Name = filepath.ToSlash(target)
 			// write header
 			if err := tw.WriteHeader(header); err != nil {
 				return err
