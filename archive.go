@@ -2,12 +2,13 @@ package tmuxproject
 
 import (
 	"archive/tar"
+	"bytes"
 	"compress/gzip"
 	"fmt"
-	"bytes"
 	"io"
 	"os"
 	"path/filepath"
+
 	log "github.com/sirupsen/logrus"
 )
 
