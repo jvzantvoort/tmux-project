@@ -1,0 +1,3 @@
+Initialize a new project type
+
+init [-v] -t | -projecttype <projecttype>

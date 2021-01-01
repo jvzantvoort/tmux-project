@@ -25,9 +25,12 @@ func (*ArchiveSubCmd) Synopsis() string {
 }
 
 func (*ArchiveSubCmd) Usage() string {
-	return `print [-capitalize] <some text>:
-	    Print args to stdout.
-	    `
+	msgstr, err := tp.Asset("messages/usage_archive")
+	if err != nil {
+		log.Error(err)
+		msgstr = []byte("undefined")
+	}
+	return string(msgstr)
 }
 
 func (c *ArchiveSubCmd) SetFlags(f *flag.FlagSet) {

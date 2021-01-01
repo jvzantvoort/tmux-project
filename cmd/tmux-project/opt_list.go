@@ -25,8 +25,12 @@ func (*ListSubCmd) Synopsis() string {
 }
 
 func (*ListSubCmd) Usage() string {
-	return `list [-f] [-v] [-n <projectname>]
-	    `
+	msgstr, err := tp.Asset("messages/usage_list")
+	if err != nil {
+		log.Error(err)
+		msgstr = []byte("undefined")
+	}
+	return string(msgstr)
 }
 
 func (c *ListSubCmd) SetFlags(f *flag.FlagSet) {

@@ -23,9 +23,12 @@ func (*InitProjSubCmd) Synopsis() string {
 }
 
 func (*InitProjSubCmd) Usage() string {
-	return `print [-capitalize] <some text>:
-	    Print args to stdout.
-	    `
+	msgstr, err := tp.Asset("messages/usage_projectinit")
+	if err != nil {
+		log.Error(err)
+		msgstr = []byte("undefined")
+	}
+	return string(msgstr)
 }
 
 func (c *InitProjSubCmd) SetFlags(f *flag.FlagSet) {

@@ -1,0 +1,3 @@
+Edit a projects environment and tmux configfile
+
+edit -n <projectname> [-v]

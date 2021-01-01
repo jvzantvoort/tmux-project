@@ -24,9 +24,12 @@ func (*CreateSubCmd) Synopsis() string {
 }
 
 func (*CreateSubCmd) Usage() string {
-	return `print [-capitalize] <some text>:
-	    Print args to stdout.
-	    `
+	msgstr, err := tp.Asset("messages/usage_create")
+	if err != nil {
+		log.Error(err)
+		msgstr = []byte("undefined")
+	}
+	return string(msgstr)
 }
 
 func (c *CreateSubCmd) SetFlags(f *flag.FlagSet) {

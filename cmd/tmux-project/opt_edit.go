@@ -24,7 +24,12 @@ func (*EditSubCmd) Synopsis() string {
 }
 
 func (*EditSubCmd) Usage() string {
-	return `edit -n <projectname> [-v]`
+	msgstr, err := tp.Asset("messages/usage_edit")
+	if err != nil {
+		log.Error(err)
+		msgstr = []byte("undefined")
+	}
+	return string(msgstr)
 }
 
 func (c *EditSubCmd) SetFlags(f *flag.FlagSet) {
