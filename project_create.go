@@ -13,6 +13,8 @@ func CreateProject(projecttype, projectname string) error {
 
 	tmplvars := NewProjTmplVars(projectname, configuration)
 	tmplvars.ProjectDescription = Ask("Description")
+
+	// Write the configuration files
 	for _, target := range configuration.Files {
 		srccontent, _ := LoadFile(target.Name, *tmplvars)
 		file, err := os.Create(target.Destination)

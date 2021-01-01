@@ -1,48 +1,15 @@
 package tmuxproject
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"path"
 	"path/filepath"
-	"text/template"
 
 	"github.com/jvzantvoort/tmux-project/config"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
-
-type ProjTmplVars struct {
-	HomeDir            string
-	ProjectDescription string
-	ProjectDir         string
-	ProjectName        string
-}
-
-func NewProjTmplVars(projectname string, conf config.ProjectTypeConfig) *ProjTmplVars {
-
-	v := &ProjTmplVars{}
-	v.HomeDir = GetHomeDir()
-	v.ProjectDir = conf.Workdir
-	v.ProjectName = projectname
-
-	return v
-}
-
-// buildConfig construct the text from the template definition and arguments.
-func (t ProjTmplVars) Parse(templatestring string) string {
-	tmpl, err := template.New("prompt").Parse(templatestring)
-	if err != nil {
-		panic(err)
-	}
-	buf := new(bytes.Buffer)
-	err = tmpl.Execute(buf, t)
-	if err != nil {
-		panic(err)
-	}
-	return buf.String()
-}
 
 func LoadFile(target string, tmplvars ProjTmplVars) (string, error) {
 	var retv string
@@ -106,7 +73,7 @@ func GetProjectTypeConfig(projecttype, projectname string) config.ProjectTypeCon
 
 	configuration.Workdir, _ = ExpandHome(configuration.Workdir)
 	projtmplvars := NewProjTmplVars(projectname, configuration)
-	configuration.Workdir =  projtmplvars.Parse(configuration.Workdir)
+	configuration.Workdir = projtmplvars.Parse(configuration.Workdir)
 
 	for indx, cfgfile := range configuration.Files {
 		// Translate source names
