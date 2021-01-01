@@ -33,6 +33,7 @@ func main() {
 	subcommands.Register(&EditSubCmd{}, "")
 	subcommands.Register(&ListSubCmd{}, "")
 	subcommands.Register(&ArchiveSubCmd{}, "")
+	subcommands.Register(&InitProjSubCmd{}, "")
 
 	flag.Parse()
 	ctx := context.Background()
