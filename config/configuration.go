@@ -2,8 +2,10 @@ package config
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -96,21 +98,57 @@ func (ptc ProjectTypeConfig) Exists(targetpath string) bool {
 	return true
 }
 
+func (ptc ProjectTypeConfig) UpdateConfigFile(target string) error {
+
+	read, err := ioutil.ReadFile(target)
+	if err != nil {
+		return err
+	}
+
+	content := string(read)
+	ncontent := strings.Replace(content, "PROJECTTYPE", ptc.ProjectType, -1)
+	if content == ncontent {
+		return nil
+	} else {
+		content = ncontent
+	}
+
+	err = ioutil.WriteFile(target, []byte(content), 0)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (ptc *ProjectTypeConfig) Init(projtypeconfigdir, projecttype string) error {
 
+	log.Debugf("Init Start: %s", projecttype)
 	projtypeconfigdir = path.Join(projtypeconfigdir, projecttype)
 
-	if ptc.Exists(projtypeconfigdir) {
-		return fmt.Errorf("Directory already exists: %s", projtypeconfigdir)
+	ptc.ProjectType = projecttype
+	ptc.ProjectTypeDir = projtypeconfigdir
+
+	if ptc.Exists(ptc.ProjectTypeDir) {
+		return fmt.Errorf("Directory already exists: %s", ptc.ProjectTypeDir)
 	}
 
-	if err := os.MkdirAll(projtypeconfigdir, os.FileMode(int(0755))); err != nil {
-		return fmt.Errorf("Directory cannot be created: %s", projtypeconfigdir)
+	if err := os.MkdirAll(ptc.ProjectTypeDir, os.FileMode(int(0755))); err != nil {
+		return fmt.Errorf("Directory cannot be created: %s", ptc.ProjectTypeDir)
 	}
 
+	// write basic files
 	targets := []string{"config.yml", "default.rc", "default.env"}
 	for _, target := range targets {
-		ptc.Write(target, path.Join(projtypeconfigdir, target))
+		fpath := path.Join(ptc.ProjectTypeDir, target)
+		err := ptc.Write(target, fpath)
+		if err != nil {
+			return fmt.Errorf("Error: %s", err)
+		}
+		err = ptc.UpdateConfigFile(fpath)
+		if err != nil {
+			return fmt.Errorf("Error: %s", err)
+		}
 	}
+
 	return nil
 }

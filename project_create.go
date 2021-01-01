@@ -6,6 +6,7 @@ import (
 	"strconv"
 )
 
+// CreateProject create a new project
 func CreateProject(projecttype, projectname string) error {
 	configuration := GetProjectTypeConfig(projecttype, projectname)
 	DescribeProjectType(configuration)

@@ -11,6 +11,7 @@ import (
 
 type InitProjSubCmd struct {
 	projecttype string
+	force       bool
 	verbose     bool
 }
 
@@ -34,6 +35,7 @@ func (*InitProjSubCmd) Usage() string {
 func (c *InitProjSubCmd) SetFlags(f *flag.FlagSet) {
 	f.StringVar(&c.projecttype, "projecttype", "default", "Type of project")
 	f.StringVar(&c.projecttype, "t", "default", "Type of project")
+	f.BoolVar(&c.force, "f", false, "Force (re)creation")
 	f.BoolVar(&c.verbose, "v", false, "Verbose logging")
 }
 
@@ -47,7 +49,12 @@ func (c *InitProjSubCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interf
 	//
 	if len(c.projecttype) == 0 {
 		log.Fatalf("no type provided")
+	} else if c.projecttype == "default" {
+		if !c.force {
+			log.Fatalf("Cannot overwrite default")
+		}
 	}
+	log.Debugf("type: %s", c.projecttype)
 	tp.CreateProjectType(c.projecttype)
 	log.Debugln("End")
 

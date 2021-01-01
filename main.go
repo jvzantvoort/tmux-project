@@ -106,6 +106,7 @@ func GetProjectTypeConfig(projecttype, projectname string) config.ProjectTypeCon
 
 	configuration.Workdir, _ = ExpandHome(configuration.Workdir)
 	projtmplvars := NewProjTmplVars(projectname, configuration)
+	configuration.Workdir =  projtmplvars.Parse(configuration.Workdir)
 
 	for indx, cfgfile := range configuration.Files {
 		// Translate source names

@@ -1,6 +1,6 @@
 ---
 projecttype: PROJECTTYPE
-workdir: ~/Workspace
+workdir: ~/Workspace/{{.ProjectName}}
 pattern: ^.*$
 setupactions:
   - echo {{.ProjectName}}
