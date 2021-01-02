@@ -272,9 +272,9 @@ type bintree struct {
 
 var _bintree = &bintree{nil, map[string]*bintree{
 	"templates": {nil, map[string]*bintree{
-		"config.yml": {templatesConfigYml, map[string]*bintree{}},
+		"config.yml":  {templatesConfigYml, map[string]*bintree{}},
 		"default.env": {templatesDefaultEnv, map[string]*bintree{}},
-		"default.rc": {templatesDefaultRc, map[string]*bintree{}},
+		"default.rc":  {templatesDefaultRc, map[string]*bintree{}},
 	}},
 }}
 

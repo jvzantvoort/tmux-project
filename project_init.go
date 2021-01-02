@@ -15,7 +15,7 @@ import (
 
 func CreateProjectType(projecttype string) error {
 	var config config.ProjectTypeConfig
-	config.Init(GetProjTypeConfigDir(), projecttype)
+	config.Init(mainconfig.ProjTypeConfigDir, projecttype)
 
 	// viper.SetConfigType("yaml")
 	// viper.SetConfigName("config")

@@ -360,13 +360,13 @@ type bintree struct {
 
 var _bintree = &bintree{nil, map[string]*bintree{
 	"messages": {nil, map[string]*bintree{
-		"bash": {messagesBash, map[string]*bintree{}},
-		"usage_archive": {messagesUsage_archive, map[string]*bintree{}},
-		"usage_create": {messagesUsage_create, map[string]*bintree{}},
-		"usage_edit": {messagesUsage_edit, map[string]*bintree{}},
-		"usage_list": {messagesUsage_list, map[string]*bintree{}},
+		"bash":              {messagesBash, map[string]*bintree{}},
+		"usage_archive":     {messagesUsage_archive, map[string]*bintree{}},
+		"usage_create":      {messagesUsage_create, map[string]*bintree{}},
+		"usage_edit":        {messagesUsage_edit, map[string]*bintree{}},
+		"usage_list":        {messagesUsage_list, map[string]*bintree{}},
 		"usage_projectinit": {messagesUsage_projectinit, map[string]*bintree{}},
-		"usage_shell": {messagesUsage_shell, map[string]*bintree{}},
+		"usage_shell":       {messagesUsage_shell, map[string]*bintree{}},
 	}},
 }}
 

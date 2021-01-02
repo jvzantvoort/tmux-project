@@ -5,19 +5,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/user"
 	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
-)
-
-var (
-	HomeDir           = ""
-	TmuxDir           = ""
-	ProjTypeConfigDir = ""
 )
 
 type ListTable struct {
@@ -60,20 +53,6 @@ func ExitOnError(err error) {
 	}
 }
 
-// GetHomeDir simple wrapper function to keep from calling the same functions
-// over and over again.
-func GetHomeDir() string {
-	if len(HomeDir) > 0 {
-		return HomeDir
-	}
-	usr, err := user.Current()
-	if err != nil {
-		panic(err)
-	}
-	HomeDir = usr.HomeDir
-	return HomeDir
-}
-
 func Ask(question string) string {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Printf("%s: ", question)
@@ -81,27 +60,10 @@ func Ask(question string) string {
 	return text
 }
 
-func GetTmuxDir() string {
-	if len(TmuxDir) == 0 {
-		homedir := GetHomeDir()
-		TmuxDir = path.Join(homedir, ".bash", "tmux.d")
-	}
-	return TmuxDir
-}
-
-func GetProjTypeConfigDir() string {
-	if len(ProjTypeConfigDir) == 0 {
-		homedir := GetHomeDir()
-		ProjTypeConfigDir = path.Join(homedir, ".tmux-project")
-	}
-	return ProjTypeConfigDir
-}
-
 func ListTmuxConfigs() []ListTable {
 	var retv []ListTable
-	tmuxdir := GetTmuxDir()
 
-	targets, err := ioutil.ReadDir(tmuxdir)
+	targets, err := ioutil.ReadDir(mainconfig.TmuxDir)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -157,8 +119,7 @@ func ExpandHome(pathstr string) (string, error) {
 		return pathstr, nil
 	}
 
-	homedir := GetHomeDir()
-	return filepath.Join(homedir, pathstr[1:]), nil
+	return filepath.Join(mainconfig.HomeDir, pathstr[1:]), nil
 
 }
 

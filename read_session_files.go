@@ -8,13 +8,11 @@ import (
 )
 
 func GetTmuxConfigFile(sessionname string) string {
-	tmuxdir := GetTmuxDir()
-	return path.Join(tmuxdir, sessionname+".rc")
+	return path.Join(mainconfig.TmuxDir, sessionname+".rc")
 }
 
 func GetTmuxEnvFile(sessionname string) string {
-	tmuxdir := GetTmuxDir()
-	return path.Join(tmuxdir, sessionname+".env")
+	return path.Join(mainconfig.TmuxDir, sessionname+".env")
 }
 
 func GetDescription(sessionname string) (string, error) {

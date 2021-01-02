@@ -10,11 +10,14 @@ import (
 	"github.com/spf13/viper"
 )
 
+var (
+	mainconfig = config.NewMainConfig()
+)
+
 func NewProjectTypeConfig(projecttype, projectname string) config.ProjectTypeConfig {
-	projtypeconfigdir := path.Join(GetProjTypeConfigDir(), projecttype)
-	tmuxdir := GetTmuxDir()
+	projtypeconfigdir := path.Join(mainconfig.ProjTypeConfigDir, projecttype)
 	log.Debugf("project type config dir: %s", projtypeconfigdir)
-	log.Debugf("tmux dir: %s", tmuxdir)
+	log.Debugf("tmux dir: %s", mainconfig.TmuxDir)
 
 	var configuration config.ProjectTypeConfig
 	viper.SetConfigName("config")
@@ -46,7 +49,7 @@ func NewProjectTypeConfig(projecttype, projectname string) config.ProjectTypeCon
 		// Translate destination names
 		dest := cfgfile.Destination
 		dest = projtmplvars.Parse(dest)
-		configuration.Files[indx].Destination, err = filepath.Abs(path.Join(tmuxdir, dest))
+		configuration.Files[indx].Destination, err = filepath.Abs(path.Join(mainconfig.TmuxDir, dest))
 		if err != nil {
 			log.Fatal(err)
 		}
