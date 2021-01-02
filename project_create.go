@@ -4,9 +4,36 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"sync"
 
 	log "github.com/sirupsen/logrus"
 )
+
+var (
+	wg sync.WaitGroup
+)
+
+func cleanup() {
+	if r := recover(); r != nil {
+		log.Errorf("Paniced %s", r)
+	}
+}
+
+func RunSetupAction(workdir, action string) {
+	defer wg.Done() // lower counter
+	defer cleanup() // handle panics
+
+	stdout_list, stderr_list, eerror := Exec(workdir, action)
+	for _, stdout_line := range stdout_list {
+		log.Infof("<stdout> %s", stdout_line)
+	}
+	for _, stderr_line := range stderr_list {
+		log.Errorf("<stderr> %s", stderr_line)
+	}
+	if eerror != nil {
+		panic(fmt.Sprintf("Action \"%s\" failed", action))
+	}
+}
 
 // CreateProject create a new project
 func CreateProject(projecttype, projectname string) error {
@@ -44,17 +71,10 @@ func CreateProject(projecttype, projectname string) error {
 	}
 
 	for _, action := range configuration.SetupActions {
-		stdout_list, stderr_list, eerror := Exec(configuration.Workdir, action)
-		for _, stdout_line := range stdout_list {
-			log.Infof("<stdout> %s", stdout_line)
-		}
-		for _, stderr_line := range stderr_list {
-			log.Infof("<stderr> %s", stderr_line)
-		}
-		if eerror != nil {
-			log.Errorf("Failed: %s", eerror)
-		}
+		wg.Add(1)
+		go RunSetupAction(configuration.Workdir, action)
 	}
+	wg.Wait()
 	log.Debug("CreateProject: end")
 	return nil
 }
