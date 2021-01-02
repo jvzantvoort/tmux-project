@@ -24,6 +24,9 @@ refresh: tags
 tags:
 	@find "$${PWD}" -type f -name '*.go' -not -path '*/vendor/*'| sed "s,$${PWD}/,," | xargs gotags >tags
 
+.PHONY: pretty
+pretty:
+	@find "$${PWD}" -type f -name '*.go' -not -path '*/vendor/*' -exec goimports -w "{}" \;
 
 .PHONY: lint
 lint: ## Run golint and go vet.
