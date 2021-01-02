@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -17,6 +18,58 @@ type ListTable struct {
 	Name        string
 	Description string
 	Workdir     string
+}
+
+func Exec(cwd, args string) ([]string, []string, error) {
+	commandlist := []string{}
+	stdout_list := []string{}
+	stderr_list := []string{}
+	cmndargs := strings.Split(args, " ")
+	cmnd := cmndargs[0]
+	cmndargs = cmndargs[1:]
+	commandlist = append(commandlist, cmndargs...)
+	command := exec.Command(cmnd, commandlist...)
+	log.Debugf("command: %s %s", cmnd, strings.Join(commandlist, " "))
+	log.Debugf("         cwd: %s", cwd)
+	command.Dir = cwd
+
+	stdout, err := command.StdoutPipe()
+	if err != nil {
+		log.Errorf("stdout pipe failed, %v", err)
+		log.Fatal(err)
+		panic(err)
+	}
+	stderr, err := command.StderrPipe()
+	if err != nil {
+		log.Errorf("stderr pipe failed, %v", err)
+		log.Fatal(err)
+		panic(err)
+	}
+
+	command.Start()
+
+	stdout_scan := bufio.NewScanner(stdout)
+	stdout_scan.Split(bufio.ScanLines)
+	for stdout_scan.Scan() {
+		msg := stdout_scan.Text()
+		log.Debugln(msg)
+		stdout_list = append(stdout_list, msg)
+	}
+
+	stderr_scan := bufio.NewScanner(stderr)
+	stderr_scan.Split(bufio.ScanLines)
+	for stderr_scan.Scan() {
+		msg := stderr_scan.Text()
+		log.Errorln(msg)
+		stderr_list = append(stderr_list, msg)
+	}
+
+	eerror := command.Wait()
+	if eerror != nil {
+		log.Errorf("command failed, %v", err)
+	}
+
+	return stdout_list, stderr_list, eerror
 }
 
 // targetExists return true if target exists
@@ -57,7 +110,7 @@ func Ask(question string) string {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Printf("%s: ", question)
 	text, _ := reader.ReadString('\n')
-	return text
+	return strings.TrimSuffix(text, "\n")
 }
 
 func ListTmuxConfigs() []ListTable {
