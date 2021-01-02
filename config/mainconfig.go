@@ -3,12 +3,27 @@ package config
 import (
 	"os/user"
 	"path"
+	"path/filepath"
 )
 
 type MainConfig struct {
 	HomeDir           string
 	TmuxDir           string
 	ProjTypeConfigDir string
+}
+
+// ExpandHome expand the tilde in a given path.
+func (m MainConfig) ExpandHome(pathstr string) (string, error) {
+	if len(pathstr) == 0 {
+		return pathstr, nil
+	}
+
+	if pathstr[0] != '~' {
+		return pathstr, nil
+	}
+
+	return filepath.Join(m.HomeDir, pathstr[1:]), nil
+
 }
 
 func NewMainConfig() *MainConfig {
