@@ -152,3 +152,26 @@ func (ptc *ProjectTypeConfig) Init(projtypeconfigdir, projecttype string) error 
 
 	return nil
 }
+
+// NewProjectTypeConfig read the relevant configfile and return
+// ProjectTypeConfig object with relevant data.
+func NewProjectTypeConfig(projecttype string) ProjectTypeConfig {
+
+	// Load main configuration targets
+	mainconfig := NewMainConfig()
+	projtypeconfigdir := path.Join(mainconfig.ProjTypeConfigDir, projecttype)
+
+	log.Debugf("project type config dir: %s", projtypeconfigdir)
+	log.Debugf("tmux dir: %s", mainconfig.TmuxDir)
+
+	v := ProjectTypeConfig{}
+	v.readConfig(projtypeconfigdir)
+
+	var err error
+	v.Workdir, err = mainconfig.ExpandHome(v.Workdir)
+	if err != nil {
+		log.Errorf("%q", err)
+	}
+
+	return v
+}
