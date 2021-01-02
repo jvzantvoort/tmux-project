@@ -26,7 +26,8 @@ tags:
 
 .PHONY: pretty
 pretty:
-	@find "$${PWD}" -type f -name '*.go' -not -path '*/vendor/*' -exec goimports -w "{}" \;
+	@find "$${PWD}" -type f -name '*.go' -not -path '*/vendor/*' -exec goimports -w "{}" \;; \
+	find "$${PWD}" -type f -name '*.go' -not -path '*/vendor/*' -exec gofmt -w "{}" \;
 
 .PHONY: lint
 lint: ## Run golint and go vet.
