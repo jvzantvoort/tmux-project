@@ -8,15 +8,15 @@ import (
 
 // CreateProject create a new project
 func CreateProject(projecttype, projectname string) error {
-	configuration := GetProjectTypeConfig(projecttype, projectname)
-	DescribeProjectType(configuration)
+	configuration := NewProjectTypeConfig(projecttype, projectname)
+	configuration.Describe()
 
 	tmplvars := NewProjTmplVars(projectname, configuration)
 	tmplvars.ProjectDescription = Ask("Description")
 
 	// Write the configuration files
 	for _, target := range configuration.Files {
-		srccontent, _ := LoadFile(target.Name, *tmplvars)
+		srccontent, _ := tmplvars.LoadFile(target.Name)
 		file, err := os.Create(target.Destination)
 		_, err = file.WriteString(srccontent)
 		if err != nil {

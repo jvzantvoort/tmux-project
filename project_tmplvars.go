@@ -2,6 +2,7 @@ package tmuxproject
 
 import (
 	"bytes"
+	"io/ioutil"
 	"text/template"
 
 	"github.com/jvzantvoort/tmux-project/config"
@@ -36,6 +37,16 @@ func (t ProjTmplVars) Parse(templatestring string) string {
 		panic(err)
 	}
 	return buf.String()
+}
+
+func (t ProjTmplVars) LoadFile(target string) (string, error) {
+	var retv string
+	content, err := ioutil.ReadFile(target)
+	if err != nil {
+		return "", err
+	}
+	retv = t.Parse(string(content))
+	return retv, nil
 }
 
 // vim: noexpandtab filetype=go

@@ -2,7 +2,6 @@ package tmuxproject
 
 import (
 	"fmt"
-	"io/ioutil"
 	"path"
 	"path/filepath"
 
@@ -11,45 +10,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func LoadFile(target string, tmplvars ProjTmplVars) (string, error) {
-	var retv string
-	content, err := ioutil.ReadFile(target)
-	if err != nil {
-		return "", err
-	}
-	retv = tmplvars.Parse(string(content))
-	return retv, nil
-}
-
-func DescribeProjectType(config config.ProjectTypeConfig) {
-	log.Debugf("Describe: %s", config.ProjectType)
-	log.Debugf("  Workdir: %s", config.Workdir)
-	log.Debugf("  Pattern: %s", config.Pattern)
-
-	fileno := len(config.Files)
-	actionsno := len(config.SetupActions)
-
-	if fileno > 0 {
-		log.Debugf("  Files:")
-		for _, act := range config.Files {
-			log.Debugf("    - name: %s", act.Name)
-			log.Debugf("      destination: %s", act.Destination)
-			log.Debugf("      mode: %s", act.Mode)
-		}
-	}
-
-	if actionsno > 0 {
-		log.Debugf("  Actions:")
-		for _, act := range config.SetupActions {
-			log.Debugf("    - %s", act)
-		}
-
-	}
-
-	log.Debugf("Describe: %s, end", config.ProjectType)
-}
-
-func GetProjectTypeConfig(projecttype, projectname string) config.ProjectTypeConfig {
+func NewProjectTypeConfig(projecttype, projectname string) config.ProjectTypeConfig {
 	projtypeconfigdir := path.Join(GetProjTypeConfigDir(), projecttype)
 	tmuxdir := GetTmuxDir()
 	log.Debugf("project type config dir: %s", projtypeconfigdir)
@@ -58,7 +19,6 @@ func GetProjectTypeConfig(projecttype, projectname string) config.ProjectTypeCon
 	var configuration config.ProjectTypeConfig
 	viper.SetConfigName("config")
 	viper.AddConfigPath(projtypeconfigdir)
-	viper.AddConfigPath(MasterConfigDir)
 
 	err := viper.ReadInConfig() // Find and read the config file
 
