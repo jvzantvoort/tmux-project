@@ -4,15 +4,19 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // CreateProject create a new project
 func CreateProject(projecttype, projectname string) error {
-	configuration := NewProjectTypeConfig(projecttype, projectname)
+	log.Debug("CreateProject: start")
+	configuration := NewProjectConfig(projecttype, projectname)
 	configuration.Describe()
 
 	tmplvars := NewProjTmplVars(projectname, configuration)
 	tmplvars.ProjectDescription = Ask("Description")
+	log.Debugf("CreateProject: description \"%s\"", tmplvars.ProjectDescription)
 
 	// Write the configuration files
 	for _, target := range configuration.Files {
@@ -34,5 +38,23 @@ func CreateProject(projecttype, projectname string) error {
 			return err
 		}
 	}
+
+	if err := os.MkdirAll(configuration.Workdir, os.FileMode(int(0755))); err != nil {
+		return fmt.Errorf("Directory cannot be created: %s", configuration.Workdir)
+	}
+
+	for _, action := range configuration.SetupActions {
+		stdout_list, stderr_list, eerror := Exec(configuration.Workdir, action)
+		for _, stdout_line := range stdout_list {
+			log.Infof("<stdout> %s", stdout_line)
+		}
+		for _, stderr_line := range stderr_list {
+			log.Infof("<stderr> %s", stderr_line)
+		}
+		if eerror != nil {
+			log.Errorf("Failed: %s", eerror)
+		}
+	}
+	log.Debug("CreateProject: end")
 	return nil
 }

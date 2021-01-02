@@ -50,7 +50,7 @@ func (c *ShellProfileCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...inter
 	if err != nil {
 		msgstr = []byte("# undefined")
 		if c.verbose {
-			fmt.Print(err)
+			log.Errorf("Error: %s", err)
 
 		}
 	}
