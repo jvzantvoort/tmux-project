@@ -11,8 +11,8 @@ import (
 )
 
 type ShellProfileCmd struct {
-	shellname   string
-	verbose     bool
+	shellname string
+	verbose   bool
 }
 
 func (*ShellProfileCmd) Name() string {
@@ -49,10 +49,10 @@ func (c *ShellProfileCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...inter
 	msgstr, err := tp.Asset("messages/" + c.shellname)
 	if err != nil {
 		msgstr = []byte("# undefined")
-	if c.verbose {
-		fmt.Print(err)
+		if c.verbose {
+			fmt.Print(err)
 
-	}
+		}
 	}
 	fmt.Print(string(msgstr))
 
