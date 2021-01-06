@@ -35,6 +35,7 @@ func main() {
 	subcommands.Register(&ArchiveSubCmd{}, "")
 	subcommands.Register(&InitProjSubCmd{}, "")
 	subcommands.Register(&ShellProfileCmd{}, "")
+	subcommands.Register(&ListFilesSubCmd{}, "")
 
 	flag.Parse()
 	ctx := context.Background()

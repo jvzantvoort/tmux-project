@@ -5,6 +5,7 @@
 // messages/usage_create (92B)
 // messages/usage_edit (76B)
 // messages/usage_list (96B)
+// messages/usage_listfiles (125B)
 // messages/usage_projectinit (73B)
 // messages/usage_shell (192B)
 
@@ -175,6 +176,26 @@ func messagesUsage_list() (*asset, error) {
 	return a, nil
 }
 
+var _messagesUsage_listfiles = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x3c\x8c\x41\x0a\x02\x31\x0c\x45\xf7\x3d\xc5\x67\x36\xae\xea\x09\xc4\x53\xb8\x1b\x66\x51\x6a\xc6\x89\xb4\x89\x24\x19\x41\xf0\xf0\x52\x50\x77\x9f\xff\x1e\xef\xb2\x11\xa6\xc6\x1e\x2b\x37\xf2\x09\x55\x7b\x2f\x72\xc5\xb8\x1c\xb1\x11\x1e\xa6\x77\xaa\xe1\xa8\xbb\x99\x91\x44\x7b\x81\x05\xe5\x07\x0e\x9e\xaa\xca\xca\xb7\xdd\x4a\xb0\xca\x31\xa5\x7f\x0f\x73\xfe\x5a\x52\x3a\xbd\xb3\xe0\x34\xc6\x79\xc1\x9c\x9f\x4b\xfa\x04\x00\x00\xff\xff\xfc\x94\x84\xaa\x7d\x00\x00\x00")
+
+func messagesUsage_listfilesBytes() ([]byte, error) {
+	return bindataRead(
+		_messagesUsage_listfiles,
+		"messages/usage_listfiles",
+	)
+}
+
+func messagesUsage_listfiles() (*asset, error) {
+	bytes, err := messagesUsage_listfilesBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "messages/usage_listfiles", size: 125, mode: os.FileMode(0664), modTime: time.Unix(1609936047, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xcc, 0x78, 0x7e, 0x66, 0xb3, 0xa2, 0x74, 0xdd, 0x93, 0xe1, 0x9b, 0xc7, 0xae, 0x72, 0xa1, 0x70, 0x32, 0xd8, 0x86, 0xed, 0xd0, 0x5f, 0x3b, 0x55, 0x79, 0x5b, 0x50, 0x96, 0xe7, 0xa8, 0x5f, 0x76}}
+	return a, nil
+}
+
 var _messagesUsage_projectinit = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\xf2\xcc\xcb\x2c\xc9\x4c\xcc\xc9\xac\x4a\x55\x48\x54\xc8\x4b\x2d\x57\x28\x28\xca\xcf\x4a\x4d\x2e\x51\x28\xa9\x2c\x48\xe5\xe2\xca\xcc\xcb\x2c\x51\x88\xd6\x2d\x8b\x55\xd0\x2d\x51\xa8\x51\xd0\x85\xca\x82\x24\x15\x6c\x90\x38\x76\x5c\x80\x00\x00\x00\xff\xff\xda\x9f\xd3\xa8\x49\x00\x00\x00")
 
 func messagesUsage_projectinitBytes() ([]byte, error) {
@@ -311,6 +332,7 @@ var _bindata = map[string]func() (*asset, error){
 	"messages/usage_create":      messagesUsage_create,
 	"messages/usage_edit":        messagesUsage_edit,
 	"messages/usage_list":        messagesUsage_list,
+	"messages/usage_listfiles":   messagesUsage_listfiles,
 	"messages/usage_projectinit": messagesUsage_projectinit,
 	"messages/usage_shell":       messagesUsage_shell,
 }
@@ -365,6 +387,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 		"usage_create":      {messagesUsage_create, map[string]*bintree{}},
 		"usage_edit":        {messagesUsage_edit, map[string]*bintree{}},
 		"usage_list":        {messagesUsage_list, map[string]*bintree{}},
+		"usage_listfiles":   {messagesUsage_listfiles, map[string]*bintree{}},
 		"usage_projectinit": {messagesUsage_projectinit, map[string]*bintree{}},
 		"usage_shell":       {messagesUsage_shell, map[string]*bintree{}},
 	}},

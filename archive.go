@@ -81,6 +81,7 @@ func MakeTarArchive(buf io.Writer, targets []string) error {
 			if _, err := io.Copy(tw, data); err != nil {
 				return err
 			}
+			data.Close()
 		} else if mode.IsDir() { // folder
 
 			// walk through every file in the folder
@@ -108,6 +109,7 @@ func MakeTarArchive(buf io.Writer, targets []string) error {
 					if _, err := io.Copy(tw, data); err != nil {
 						return err
 					}
+					data.Close()
 				}
 				return nil
 			})
