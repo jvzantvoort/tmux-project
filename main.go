@@ -3,6 +3,7 @@ package tmuxproject
 import (
 	"path"
 	"path/filepath"
+	"regexp"
 
 	"github.com/jvzantvoort/tmux-project/config"
 	log "github.com/sirupsen/logrus"
@@ -22,6 +23,13 @@ func NewProjectConfig(projecttype, projectname string) config.ProjectTypeConfig 
 	projtmplvars := NewProjTmplVars(projectname, ptc)
 
 	ptc.Workdir = projtmplvars.Parse(ptc.Workdir)
+	pattern := regexp.MustCompile(ptc.Pattern)
+	if pattern.MatchString(projectname) {
+		log.Debugf("project name matches pattern")
+	} else {
+		log.Warningf("project name %s does not matches pattern %s", projectname, ptc.Pattern)
+	}
+
 	var err error
 	for indx, cfgfile := range ptc.Files {
 		// Translate source names
