@@ -1,4 +1,4 @@
-package config
+package projecttype
 
 import (
 	"fmt"
@@ -9,6 +9,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+
+	"github.com/jvzantvoort/tmux-project/config"
 )
 
 // ProjectTypeFile defines a structure of a file
@@ -158,7 +160,7 @@ func (ptc *ProjectTypeConfig) Init(projtypeconfigdir, projecttype string) error 
 func NewProjectTypeConfig(projecttype string) ProjectTypeConfig {
 
 	// Load main configuration targets
-	mainconfig := NewMainConfig()
+	mainconfig := config.NewMainConfig()
 	projtypeconfigdir := path.Join(mainconfig.ProjTypeConfigDir, projecttype)
 
 	log.Debugf("project type config dir: %s", projtypeconfigdir)

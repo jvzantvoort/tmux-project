@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/subcommands"
 	tp "github.com/jvzantvoort/tmux-project"
+	"github.com/jvzantvoort/tmux-project/sessions"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -49,7 +50,10 @@ func (c *EditSubCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{
 	if len(c.projectname) == 0 {
 		log.Fatalf("no name provided")
 	}
-	tp.Edit("-O", tp.GetTmuxConfigFile(c.projectname), tp.GetTmuxEnvFile(c.projectname))
+
+	session := sessions.NewTmuxSession(c.projectname)
+
+	tp.Edit("-O", session.Configfile, session.Environment)
 
 	log.Debugln("End")
 

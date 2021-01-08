@@ -4,7 +4,7 @@
 // templates/default.env (314B)
 // templates/default.rc (230B)
 
-package config
+package projecttype
 
 import (
 	"bytes"

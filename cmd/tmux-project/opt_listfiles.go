@@ -3,9 +3,12 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 
 	"github.com/google/subcommands"
+
 	tp "github.com/jvzantvoort/tmux-project"
+	"github.com/jvzantvoort/tmux-project/sessions"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -48,10 +51,9 @@ func (c *ListFilesSubCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...inter
 	if len(c.projectname) == 0 {
 		log.Fatalf("no name provided")
 	}
-
-	err := tp.ListProject(c.projectname)
-	if err != nil {
-		log.Fatalf("Encountered error: %q", err)
+	session := sessions.NewTmuxSession(c.projectname)
+	for _, ink := range session.TargetPaths() {
+		fmt.Printf("%s\n", ink)
 	}
 
 	log.Debugln("End")

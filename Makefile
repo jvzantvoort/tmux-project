@@ -16,8 +16,8 @@ fmt: ## Formatting source codes.
 .PHONY: refresh
 refresh: tags
 	@go-bindata -pkg tmuxproject messages; \
-	pushd config; \
-	go-bindata -pkg config templates; \
+	pushd projecttype; \
+	go-bindata -pkg projecttype templates; \
 	popd
 
 .PHONY: tags

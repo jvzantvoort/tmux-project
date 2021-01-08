@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"github.com/jvzantvoort/tmux-project/config"
+	pt "github.com/jvzantvoort/tmux-project/projecttype"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -15,9 +16,9 @@ var (
 
 // NewProjectConfig derives from ProjectTypeConfig and returns an updated
 // object with translated values.
-func NewProjectConfig(projecttype, projectname string) config.ProjectTypeConfig {
+func NewProjectConfig(projecttype, projectname string) pt.ProjectTypeConfig {
 
-	ptc := config.NewProjectTypeConfig(projecttype)
+	ptc := pt.NewProjectTypeConfig(projecttype)
 
 	projtypeconfigdir := path.Join(mainconfig.ProjTypeConfigDir, projecttype)
 	projtmplvars := NewProjTmplVars(projectname, ptc)

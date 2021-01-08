@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/subcommands"
 	tp "github.com/jvzantvoort/tmux-project"
+	"github.com/jvzantvoort/tmux-project/sessions"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -53,12 +54,13 @@ func (c *ArchiveSubCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interfa
 		log.Fatalf("no name provided")
 	}
 
+	session := sessions.NewTmuxSession(c.projectname)
+
 	if c.archivename == "" {
-		c.archivename, _ = tp.GetWorkdir(c.projectname)
-		c.archivename = c.archivename + ".tar.gz"
+		c.archivename = session.Workdir + ".tar.gz"
 	}
 
-	err := tp.ArchiveProject(c.projectname, c.archivename)
+	err := session.Archive(c.archivename)
 	if err != nil {
 		log.Fatalf("Encountered error: %q", err)
 	}

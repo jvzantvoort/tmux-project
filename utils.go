@@ -11,6 +11,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/jvzantvoort/tmux-project/sessions"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -115,7 +117,6 @@ func Ask(question string) string {
 
 func ListTmuxConfigs() []ListTable {
 	var retv []ListTable
-
 	targets, err := ioutil.ReadDir(mainconfig.TmuxDir)
 	if err != nil {
 		log.Fatal(err)
@@ -133,30 +134,15 @@ func ListTmuxConfigs() []ListTable {
 		if target_name == "common.rc" {
 			continue
 		}
-		description := ""
-		workdir := ""
 
 		target_name = strings.TrimSuffix(target_name, ".rc")
-		description, err = GetDescription(target_name)
-		if err != nil {
-			log.Fatal(err)
-		}
-		workdir, err = GetWorkdir(target_name)
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Debugf("description: %s", description)
-		log.Debugf("workdir: %s", workdir)
+
+		session := sessions.NewTmuxSession(target_name)
+
 		t := ListTable{}
-		t.Name = target_name
-		t.Description = description
-
-		workdir, err = ExpandHome(workdir)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		t.Workdir = workdir
+		t.Name = session.Name
+		t.Description = session.Description
+		t.Workdir = session.Workdir
 		retv = append(retv, t)
 	}
 	return retv

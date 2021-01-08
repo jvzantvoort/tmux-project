@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"text/template"
 
-	"github.com/jvzantvoort/tmux-project/config"
+	"github.com/jvzantvoort/tmux-project/projecttype"
 )
 
 type ProjTmplVars struct {
@@ -15,7 +15,7 @@ type ProjTmplVars struct {
 	ProjectName        string
 }
 
-func NewProjTmplVars(projectname string, conf config.ProjectTypeConfig) *ProjTmplVars {
+func NewProjTmplVars(projectname string, conf projecttype.ProjectTypeConfig) *ProjTmplVars {
 
 	v := &ProjTmplVars{}
 	v.HomeDir = mainconfig.HomeDir

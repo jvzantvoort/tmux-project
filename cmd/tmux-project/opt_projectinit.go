@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/subcommands"
 	tp "github.com/jvzantvoort/tmux-project"
+	"github.com/jvzantvoort/tmux-project/projecttype"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -55,7 +56,7 @@ func (c *InitProjSubCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interf
 		}
 	}
 	log.Debugf("type: %s", c.projecttype)
-	tp.CreateProjectType(c.projecttype)
+	projecttype.CreateProjectType(c.projecttype)
 	log.Debugln("End")
 
 	return subcommands.ExitSuccess
