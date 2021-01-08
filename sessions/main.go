@@ -3,7 +3,6 @@ package sessions
 import (
 	"bytes"
 	"io"
-// 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"

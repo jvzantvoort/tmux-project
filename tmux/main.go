@@ -1,4 +1,4 @@
-// Package tmux provides interface 
+// Package tmux provides interface
 //
 //   import (
 //       "fmt"
