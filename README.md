@@ -16,10 +16,10 @@ you can easily maintain multiple sessions.
 
 ## archive
 
-```
 Archive a project
 
-archive [-v] [-a|archivename <archivename>] -n | -projectname <projectname> 
+```
+tmux-project archive [-v] [-a|archivename <archivename>] -n | -projectname <projectname> 
   -a string
         Archive file
   -archivename string
@@ -33,11 +33,11 @@ archive [-v] [-a|archivename <archivename>] -n | -projectname <projectname>
 
 ## create
 
-```
 
 Create a new project.
 
-create [-t|-projecttype <type>] -n <name> | -projectname <name> [-v]
+```
+tmux-project create [-t|-projecttype <type>] -n <name> | -projectname <name> [-v]
   -n string
         Name of project
   -projectname string
@@ -51,10 +51,10 @@ create [-t|-projecttype <type>] -n <name> | -projectname <name> [-v]
 
 ## edit
 
-```
 Edit a projects environment and tmux configfile
 
-edit -n <projectname> [-v]
+```
+tmux-project edit -n <projectname> [-v]
   -n string
         Name of project
   -projectname string
@@ -64,10 +64,10 @@ edit -n <projectname> [-v]
 
 ## init
 
-```
 Initialize a new project type
 
-init [-v] -t | -projecttype <projecttype>
+```
+tmux-project init [-v] -t | -projecttype <projecttype>
   -f    Force (re)creation
   -projecttype string
         Type of project (default "default")
@@ -78,10 +78,10 @@ init [-v] -t | -projecttype <projecttype>
 
 ## list
 
-```
 The "list" command list projects currrently configured
 
-list [-projectname|-n <name>] [-v] [-v]
+```
+tmux-project list [-projectname|-n <name>] [-v] [-v]
   -f    Print full
   -n string
         Name of project
@@ -92,11 +92,11 @@ list [-projectname|-n <name>] [-v] [-v]
 
 ## listfiles
 
-```
 The "listfiles" command lists the projects currrently in a project's
 configuration.
 
-listfiles [-projectname|-n <name>] [-v]
+```
+tmux-project listfiles [-projectname|-n <name>] [-v]
   -n string
         Name of project
   -projectname string
@@ -106,13 +106,13 @@ listfiles [-projectname|-n <name>] [-v]
 
 ## shell
 
-```
 Allows tmux-project to be integrated in a shell. For example for bash add the
 following to the profile (bash is the default).
 
   eval "$(tmux-project shell)"
 
-shell [-s | -shellname <shell>]
+```
+tmux-project shell [-s | -shellname <shell>]
 
   -s string
         Name of the shell profile to provide (default "bash")
@@ -136,7 +136,7 @@ shell [-s | -shellname <shell>]
 The following lines allow profiles to source created environment
 files:
 
-```
+```sh
 export SESSIONNAME=`tmux display-message -p '#S'`
 if [ -f "$HOME/.bash/tmux.d/${SESSIONNAME}.env" ]
 then
