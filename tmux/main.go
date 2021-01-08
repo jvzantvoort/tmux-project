@@ -1,3 +1,12 @@
+// Package tmux provides interface 
+//
+//   import (
+//       "fmt"
+//       "github.com/jvzantvoort/tmux-project/tmux"
+//   )
+//   tmux := tmux.NewTmux()
+//
+//
 package tmux
 
 import (
@@ -17,7 +26,7 @@ type Tmux struct {
 	CommandCwd  string
 }
 
-func Which(command string) string {
+func which(command string) string {
 	Path := strings.Split(os.Getenv("PATH"), ":")
 	var retv string
 	for _, dirname := range Path {
@@ -130,7 +139,7 @@ func (t Tmux) SessionExists(sessionname string) bool {
 func NewTmux() *Tmux {
 
 	t := &Tmux{}
-	t.CommandPath = Which("tmux")
+	t.CommandPath = which("tmux")
 
 	// Get user info
 	usrobj, err := user.Current()

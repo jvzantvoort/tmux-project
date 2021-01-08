@@ -86,8 +86,8 @@ func targetExists(targetpath string) bool {
 	return true
 }
 
-// Which return path
-func Which(command string) string {
+// which return path
+func which(command string) string {
 	Path := strings.Split(os.Getenv("PATH"), ":")
 	var retv string
 	for _, dirname := range Path {
@@ -193,7 +193,7 @@ func GetMatches(regEx string, lines []string) (paramsMap map[string]string) {
 }
 
 func Edit(args ...string) {
-	editor := Which(Editor)
+	editor := which(Editor)
 	cmd := exec.Command(editor, args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout

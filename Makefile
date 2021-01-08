@@ -13,6 +13,10 @@ GO ?= GO111MODULE=on go
 fmt: ## Formatting source codes.
 	@$(GOIMPORTS) -w *.go config cmd
 
+.PHONY: clean
+clean:
+	@rm -f $(COMMANDS) || true
+
 .PHONY: refresh
 refresh: tags
 	@go-bindata -pkg tmuxproject messages; \

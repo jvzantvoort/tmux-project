@@ -164,7 +164,6 @@ func (ptc *ProjectTypeConfig) Init(projtypeconfigdir, projecttype string) error 
 func NewProjectTypeConfig(projecttype string) ProjectTypeConfig {
 
 	// Load main configuration targets
-	mainconfig := config.NewMainConfig()
 	projtypeconfigdir := path.Join(mainconfig.ProjTypeConfigDir, projecttype)
 
 	log.Debugf("project type config dir: %s", projtypeconfigdir)
