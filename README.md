@@ -1,5 +1,4 @@
 [![forthebadge](https://forthebadge.com/images/badges/made-with-crayons.svg)](https://forthebadge.com)
-[![forthebadge](https://forthebadge.com/images/badges/contains-technical-debt.svg)](https://forthebadge.com)
 [![forthebadge](https://forthebadge.com/images/badges/designed-in-etch-a-sketch.svg)](https://forthebadge.com)
 [![forthebadge](https://forthebadge.com/images/badges/you-didnt-ask-for-this.svg)](https://forthebadge.com)
 
@@ -15,16 +14,112 @@ you can easily maintain multiple sessions.
 
 # Synopsis
 
-## Commands
+## archive
 
+```
+Archive a project
 
-* ``tmux-project archive``
-* ``tmux-project create``
-* ``tmux-project edit``
-* ``tmux-project init``
-* ``tmux-project list``
+archive [-v] [-a|archivename <archivename>] -n | -projectname <projectname> 
+  -a string
+        Archive file
+  -archivename string
+        Archive file
+  -n string
+        Name of project
+  -projectname string
+        Name of project
+  -v    Verbose logging
+```
 
-All commands are described in help.
+## create
+
+```
+
+Create a new project.
+
+create [-t|-projecttype <type>] -n <name> | -projectname <name> [-v]
+  -n string
+        Name of project
+  -projectname string
+        Name of project
+  -projecttype string
+        Type of project (default "default")
+  -t string
+        Type of project (default "default")
+  -v    Verbose logging
+```
+
+## edit
+
+```
+Edit a projects environment and tmux configfile
+
+edit -n <projectname> [-v]
+  -n string
+        Name of project
+  -projectname string
+        Name of project
+  -v    Verbose logging
+```
+
+## init
+
+```
+Initialize a new project type
+
+init [-v] -t | -projecttype <projecttype>
+  -f    Force (re)creation
+  -projecttype string
+        Type of project (default "default")
+  -t string
+        Type of project (default "default")
+  -v    Verbose logging
+```
+
+## list
+
+```
+The "list" command list projects currrently configured
+
+list [-projectname|-n <name>] [-v] [-v]
+  -f    Print full
+  -n string
+        Name of project
+  -projectname string
+        Name of project
+  -v    Verbose logging
+```
+
+## listfiles
+
+```
+The "listfiles" command lists the projects currrently in a project's
+configuration.
+
+listfiles [-projectname|-n <name>] [-v]
+  -n string
+        Name of project
+  -projectname string
+        Name of project
+  -v    Verbose logging
+```
+
+## shell
+
+```
+Allows tmux-project to be integrated in a shell. For example for bash add the
+following to the profile (bash is the default).
+
+  eval "$(tmux-project shell)"
+
+shell [-s | -shellname <shell>]
+
+  -s string
+        Name of the shell profile to provide (default "bash")
+  -shellname string
+        Name of the shell profile to provide (default "bash")
+  -v    Verbose logging
+```
 
 # Functionality
 
