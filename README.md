@@ -109,7 +109,9 @@ tmux-project listfiles [-projectname|-n <name>] [-v]
 Allows tmux-project to be integrated in a shell. For example for bash add the
 following to the profile (bash is the default).
 
-  eval "$(tmux-project shell)"
+```sh
+eval "$(tmux-project shell)"
+```
 
 ```
 tmux-project shell [-s | -shellname <shell>]
@@ -130,16 +132,3 @@ tmux-project shell [-s | -shellname <shell>]
 | ```${HOME}/.bash/tmux.d/<project>.env``` | environment file            |
 | ```${HOME}/.bash/tmux.d/<project>.rc```  | tmux configuration          |
 | ```PROJECTS```                           | location projects are setup |
-
-## Use in bash
-
-The following lines allow profiles to source created environment
-files:
-
-```sh
-export SESSIONNAME=`tmux display-message -p '#S'`
-if [ -f "$HOME/.bash/tmux.d/${SESSIONNAME}.env" ]
-then
-  source  "$HOME/.bash/tmux.d/${SESSIONNAME}.env"
-fi
-```
