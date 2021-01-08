@@ -191,3 +191,14 @@ func GetMatches(regEx string, lines []string) (paramsMap map[string]string) {
 	}
 	return
 }
+
+func Edit(args ...string) {
+	editor := Which(Editor)
+	cmd := exec.Command(editor, args...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println(err)
+	}
+}
