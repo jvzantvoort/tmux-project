@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"sync"
 
-	log "github.com/sirupsen/logrus"
 	pt "github.com/jvzantvoort/tmux-project/projecttype"
+	log "github.com/sirupsen/logrus"
 )
 
 var (

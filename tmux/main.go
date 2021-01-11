@@ -18,6 +18,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/jvzantvoort/tmux-project/sessions"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -134,6 +135,51 @@ func (t Tmux) SessionExists(sessionname string) bool {
 		}
 	}
 	return false
+}
+
+func (t Tmux) CreateSession(sess sessions.TmuxSession) {
+	//  SESSION=$1;
+	//  CONFIGFILE="${CONST_CONFDIR}/${SESSION}.rc"
+	//  [[ -f "${CONFIGFILE}" ]] || CONFIGFILE="${CONST_CONFDIR}/default.rc"
+	//  TERM="${CONST_TERM}" tmux -f $CONFIGFILE new -s $SESSION
+	command := []string{}
+	command = append(command, "-f")
+	command = append(command, sess.Configfile)
+	command = append(command, "new")
+	command = append(command, "-s")
+	command = append(command, sess.Name)
+	log.Debugf("%v\n", command)
+	cmd := exec.Command(t.CommandPath, command...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+func (t Tmux) ResumeSession(sess sessions.TmuxSession) {
+	//  SESSION=$1;
+	//  CONFIGFILE="${CONST_CONFDIR}/${SESSION}.rc"
+	//  [[ -f "${CONFIGFILE}" ]] || CONFIGFILE="${CONST_CONFDIR}/default.rc"
+	//  TERM="${CONST_TERM}" tmux -f $CONFIGFILE new -s $SESSION
+	command := []string{}
+	command = append(command, "-f")
+	command = append(command, sess.Configfile)
+	command = append(command, "attach")
+	command = append(command, "-d")
+	command = append(command, "-t")
+	command = append(command, sess.Name)
+
+	log.Debugf("%v\n", command)
+
+	cmd := exec.Command(t.CommandPath, command...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 
 func NewTmux() *Tmux {

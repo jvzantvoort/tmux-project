@@ -3,6 +3,7 @@ package sessions
 import (
 	"bytes"
 	"io"
+	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -100,9 +101,9 @@ func NewTmuxSession(sessionname string) *TmuxSession {
 
 	return tm
 }
-/*
+
 func NewTmuxSessions() *TmuxSessions {
-	tms := &TmuxSessions{}
+	tmux_sessions := &TmuxSessions{}
 
 	targets, err := ioutil.ReadDir(mainconfig.TmuxDir)
 	if err != nil {
@@ -124,13 +125,11 @@ func NewTmuxSessions() *TmuxSessions {
 
 		target_name = strings.TrimSuffix(target_name, ".rc")
 
-		session := NewTmuxSession(target_name)
-
-		tms.Sessions = append(tms.Sessions, session)
+		x := NewTmuxSession(target_name)
+		tmux_sessions.Sessions = append(tmux_sessions.Sessions, *x)
 
 	}
 
-	return tms
+	return tmux_sessions
 
 }
-*/
