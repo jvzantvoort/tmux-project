@@ -92,6 +92,18 @@ func (tm TmuxSession) Archive(archivename string) error {
 
 }
 
+func (tm TmuxSession) IsSane() bool {
+
+	_, err := os.Stat(tm.Workdir)
+	if err != nil {
+		return false
+	}
+	if os.IsNotExist(err) {
+		return false
+	}
+	return true
+}
+
 func NewTmuxSession(sessionname string) *TmuxSession {
 	tm := &TmuxSession{Name: sessionname}
 	tm.Configfile = path.Join(mainconfig.TmuxDir, tm.Name+".rc")
