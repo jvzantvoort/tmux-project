@@ -24,6 +24,9 @@ func PrintFullList() {
 	table.SetHeader([]string{"Name", "Active", "Description", "Workdir"})
 
 	for _, target := range ListTmuxConfigs() {
+		if target.Name == "default" {
+			continue
+		}
 		var cols []string
 		cols = append(cols, target.Name)
 
