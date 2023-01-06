@@ -11,7 +11,7 @@ GO ?= GO111MODULE=on go
 
 .PHONY: fmt
 fmt: ## Formatting source codes.
-	@$(GOIMPORTS) -w *.go config cmd
+	find . -type f -name '*.go' -not -path '*/vendor/*' -exec $(GOIMPORTS) -w "{}" \;
 
 .PHONY: clean
 clean:
