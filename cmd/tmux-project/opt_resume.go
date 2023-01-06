@@ -3,11 +3,14 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
+	"strings"
 
 	"github.com/google/subcommands"
 	tp "github.com/jvzantvoort/tmux-project"
 	"github.com/jvzantvoort/tmux-project/sessions"
 	"github.com/jvzantvoort/tmux-project/tmux"
+	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -39,6 +42,19 @@ func (c *ResumeSubCmd) SetFlags(f *flag.FlagSet) {
 	f.BoolVar(&c.verbose, "v", false, "Verbose logging")
 }
 
+func ListSessions() []string {
+	retv := []string{}
+
+	sess := sessions.NewTmuxSessions()
+	for _, sesi := range sess.Sessions {
+		message := fmt.Sprintf("%-10s %s", sesi.Name, sesi.Description)
+		retv = append(retv, message)
+	}
+
+	return retv
+}
+
+
 func (c *ResumeSubCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 
 	if c.verbose {
@@ -48,7 +64,17 @@ func (c *ResumeSubCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interfac
 	log.Debugln("Start")
 	//
 	if len(c.projectname) == 0 {
-		log.Fatalf("no name provided")
+		prompt := promptui.Select{
+			Label: "Select project",
+			Items: ListSessions(),
+		}
+		_, result, err := prompt.Run()
+
+		if err != nil {
+			log.Fatalf("Prompt failed %v\n", err)
+		}
+		result = strings.Split(result," ")[0]
+		c.projectname = result
 	}
 	_tmux := tmux.NewTmux()
 	found := false

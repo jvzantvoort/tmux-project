@@ -24,6 +24,11 @@ type ProjectTypeFile struct {
 	Mode        string `yaml:"mode"`
 }
 
+type RepoListItem struct {
+	Name      string `yaml:"name"`
+	RepoNames string `yaml:"reponames"`
+}
+
 // ProjectTypeConfig defines a structure of a project type
 type ProjectTypeConfig struct {
 	ProjectType    string `yaml:"projecttype"`
@@ -31,6 +36,7 @@ type ProjectTypeConfig struct {
 	Workdir        string            `yaml:"workdir"`
 	Pattern        string            `yaml:"pattern"`
 	SetupActions   []string          `yaml:"setupactions"`
+	RepoListItems  []RepoListItem    `yaml:"repolist"`
 	Files          []ProjectTypeFile `yaml:"files"`
 }
 
