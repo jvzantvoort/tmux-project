@@ -37,6 +37,6 @@ jobs:
         echo "DEBUG: ls pkg/"
         ls pkg/
         echo "========================================================="
-        go get -u github.com/tcnksm/ghr
+        go install  github.com/tcnksm/ghr@latest
         $GOPATH/bin/ghr -n ${TAGNAME} -b "Release ${TAGNAME}" -draft ${TAGNAME} pkg/
 
