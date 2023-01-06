@@ -6,13 +6,14 @@ require (
 	github.com/fatih/color v1.7.0
 	github.com/google/subcommands v1.2.0
 	github.com/manifoldco/promptui v0.9.0
+	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mitchellh/go-homedir v1.0.0
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/sirupsen/logrus v1.7.0
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.7.1
-	github.com/stretchr/testify v1.5.1 // indirect
-	golang.org/x/sys v0.0.0-20201231184435-2d18734c6014 // indirect
-	golang.org/x/text v0.3.3 // indirect
+	github.com/stretchr/testify v1.7.0 // indirect
+	golang.org/x/sys v0.1.0 // indirect
+	golang.org/x/text v0.4.0 // indirect
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 )
