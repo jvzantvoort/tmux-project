@@ -36,6 +36,16 @@ func (*ResumeSubCmd) Usage() string {
 	return string(msgstr)
 }
 
+func stringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
+}
+
+
 func (c *ResumeSubCmd) SetFlags(f *flag.FlagSet) {
 	f.StringVar(&c.projectname, "projectname", "", "Name of project")
 	f.StringVar(&c.projectname, "n", "", "Name of project")
@@ -44,10 +54,17 @@ func (c *ResumeSubCmd) SetFlags(f *flag.FlagSet) {
 
 func ListSessions() []string {
 	retv := []string{}
+	tmux := tmux.NewTmux()
+	active, _ := tmux.ListActive()
 
 	sess := sessions.NewTmuxSessions()
 	for _, sesi := range sess.Sessions {
-		message := fmt.Sprintf("%-10s %s", sesi.Name, sesi.Description)
+		state := " "
+		if stringInSlice(sesi.Name, active) {
+			state = "active"
+		}
+		message := fmt.Sprintf("%-32s %-6s %s", sesi.Name, state, sesi.Description)
+
 		retv = append(retv, message)
 	}
 
@@ -66,6 +83,7 @@ func (c *ResumeSubCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interfac
 	if len(c.projectname) == 0 {
 		prompt := promptui.Select{
 			Label: "Select project",
+			Size: 20,
 			Items: ListSessions(),
 		}
 		_, result, err := prompt.Run()
