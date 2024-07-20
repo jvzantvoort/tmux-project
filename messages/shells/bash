@@ -7,9 +7,9 @@
 declare -x SESSIONNAME=$(tmux display-message -p '#S'  2>/dev/null)
 
 #shellcheck disable=SC1090
-if [ -f "$HOME/.bash/tmux.d/${SESSIONNAME}.env" ]
+if [ -f "$HOME/.tmux.d/${SESSIONNAME}.env" ]
 then
-  source  "$HOME/.bash/tmux.d/${SESSIONNAME}.env"
+  source  "$HOME/.tmux.d/${SESSIONNAME}.env"
 fi
 
 function __tmuxp_ls()
@@ -30,9 +30,9 @@ function __tmuxp_attach()
   local configfile
 
   session=$1;
-  configfile="${HOME}/.bash/tmux.d/${session}.rc"
+  configfile="${HOME}/.tmux.d/${session}.rc"
 
-  [[ -f "${configfile}" ]] || configfile="${HOME}/.bash/tmux.d/default.rc"
+  [[ -f "${configfile}" ]] || configfile="${HOME}/.tmux.d/default.rc"
 
   TERM="screen-256color" tmux -f "${configfile}" attach -d -t "${session}"
 }
@@ -43,9 +43,9 @@ function __tmuxp_new()
   local configfile
 
   session=$1;
-  configfile="${HOME}/.bash/tmux.d/${session}.rc"
+  configfile="${HOME}/.tmux.d/${session}.rc"
 
-  [[ -f "${configfile}" ]] || configfile="${HOME}/.bash/tmux.d/default.rc"
+  [[ -f "${configfile}" ]] || configfile="${HOME}/.tmux.d/default.rc"
 
   TERM="screen-256color" tmux -f "${configfile}" new -s "${session}"
 }

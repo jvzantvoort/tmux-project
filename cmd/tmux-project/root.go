@@ -8,7 +8,6 @@ import (
 	"os"
 	"path"
 
-	//	"github.com/jvzantvoort/gextend-bash/config"
 	"github.com/jvzantvoort/tmux-project/messages"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"

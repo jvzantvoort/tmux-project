@@ -12,9 +12,9 @@ allows me to resume working on a project by executing:
 
 This solution consists of a few distinct targets:
 
-* ``HOME/.bash/tmux.d/<project>.rc``, the tmux configuration used
+* ``HOME/.tmux.d/<project>.rc``, the tmux configuration used
   for this.
-* ``HOME/.bash/tmux.d/<project>.env``, the bash configuration
+* ``HOME/.tmux.d/<project>.env``, the bash configuration
   sourced when resuming.
 * ``PROJECSTDIR`` the location where projects are checked out.
 

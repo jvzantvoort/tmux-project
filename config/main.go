@@ -38,7 +38,7 @@ func NewMainConfig() *MainConfig {
 	}
 
 	v.HomeDir = usr.HomeDir
-	v.TmuxDir = path.Join(v.HomeDir, ".bash", "tmux.d")
+	v.TmuxDir = path.Join(v.HomeDir, ".tmux.d")
 	v.ProjTypeConfigDir = path.Join(v.HomeDir, ".tmux-project")
 
 	return v
