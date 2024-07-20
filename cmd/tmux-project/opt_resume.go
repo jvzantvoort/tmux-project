@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/google/subcommands"
-	tp "github.com/jvzantvoort/tmux-project"
+	msg "github.com/jvzantvoort/tmux-project/messages"
 	"github.com/jvzantvoort/tmux-project/sessions"
 	"github.com/jvzantvoort/tmux-project/tmux"
 	"github.com/manifoldco/promptui"
@@ -28,12 +28,7 @@ func (*ResumeSubCmd) Synopsis() string {
 }
 
 func (*ResumeSubCmd) Usage() string {
-	msgstr, err := tp.Asset("messages/usage_resume")
-	if err != nil {
-		log.Error(err)
-		msgstr = []byte("undefined")
-	}
-	return string(msgstr)
+	return msg.GetUsage("resume")
 }
 
 func stringInSlice(a string, list []string) bool {
@@ -44,7 +39,6 @@ func stringInSlice(a string, list []string) bool {
 	}
 	return false
 }
-
 
 func (c *ResumeSubCmd) SetFlags(f *flag.FlagSet) {
 	f.StringVar(&c.projectname, "projectname", "", "Name of project")
@@ -71,7 +65,6 @@ func ListSessions() []string {
 	return retv
 }
 
-
 func (c *ResumeSubCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 
 	if c.verbose {
@@ -83,7 +76,7 @@ func (c *ResumeSubCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interfac
 	if len(c.projectname) == 0 {
 		prompt := promptui.Select{
 			Label: "Select project",
-			Size: 20,
+			Size:  20,
 			Items: ListSessions(),
 		}
 		_, result, err := prompt.Run()
@@ -91,7 +84,7 @@ func (c *ResumeSubCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interfac
 		if err != nil {
 			log.Fatalf("Prompt failed %v\n", err)
 		}
-		result = strings.Split(result," ")[0]
+		result = strings.Split(result, " ")[0]
 		c.projectname = result
 	}
 	_tmux := tmux.NewTmux()
@@ -106,7 +99,6 @@ func (c *ResumeSubCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interfac
 			found = true
 		}
 	}
-
 
 	if found {
 		if _tmux.SessionExists(xsess.Name) {

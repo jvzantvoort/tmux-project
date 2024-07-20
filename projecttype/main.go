@@ -1,6 +1,7 @@
 package projecttype
 
 import (
+	"embed"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -16,6 +17,9 @@ import (
 var (
 	mainconfig = config.NewMainConfig()
 )
+
+//go:embed templates/*
+var Content embed.FS
 
 // ProjectTypeFile defines a structure of a file
 type ProjectTypeFile struct {
@@ -89,7 +93,12 @@ func (ptc ProjectTypeConfig) Describe() {
 }
 
 func (ptc ProjectTypeConfig) Write(boxname, target string) error {
-	content, _ := Asset("templates/" + boxname)
+	filename := fmt.Sprintf("templates/%s", boxname)
+	content, err := Content.ReadFile(filename)
+	if err != nil {
+		log.Error(err)
+		content = []byte("undefined")
+	}
 	file, err := os.Create(target)
 	_, err = file.Write(content)
 	if err != nil {

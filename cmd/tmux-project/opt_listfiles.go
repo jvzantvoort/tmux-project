@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	"github.com/google/subcommands"
+	msg "github.com/jvzantvoort/tmux-project/messages"
 
-	tp "github.com/jvzantvoort/tmux-project"
 	"github.com/jvzantvoort/tmux-project/sessions"
 	log "github.com/sirupsen/logrus"
 )
@@ -26,12 +26,7 @@ func (*ListFilesSubCmd) Synopsis() string {
 }
 
 func (*ListFilesSubCmd) Usage() string {
-	msgstr, err := tp.Asset("messages/usage_listfiles")
-	if err != nil {
-		log.Error(err)
-		msgstr = []byte("undefined")
-	}
-	return string(msgstr)
+	return msg.GetUsage("listfiles")
 }
 
 func (c *ListFilesSubCmd) SetFlags(f *flag.FlagSet) {

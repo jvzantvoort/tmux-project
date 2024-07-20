@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/google/subcommands"
-	tp "github.com/jvzantvoort/tmux-project"
+	msg "github.com/jvzantvoort/tmux-project/messages"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -24,12 +24,7 @@ func (*ShellProfileCmd) Synopsis() string {
 }
 
 func (*ShellProfileCmd) Usage() string {
-	msgstr, err := tp.Asset("messages/usage_shell")
-	if err != nil {
-		log.Error(err)
-		msgstr = []byte("undefined")
-	}
-	return string(msgstr)
+	return msg.GetUsage("shell")
 }
 
 func (c *ShellProfileCmd) SetFlags(f *flag.FlagSet) {
@@ -46,15 +41,7 @@ func (c *ShellProfileCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...inter
 
 	log.Debugln("Start")
 
-	msgstr, err := tp.Asset("messages/" + c.shellname)
-	if err != nil {
-		msgstr = []byte("# undefined")
-		if c.verbose {
-			log.Errorf("Error: %s", err)
-
-		}
-	}
-	fmt.Print(string(msgstr))
+	fmt.Print(msg.GetShell(c.shellname))
 
 	log.Debugln("End")
 

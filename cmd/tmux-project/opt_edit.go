@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/subcommands"
 	tp "github.com/jvzantvoort/tmux-project"
+	msg "github.com/jvzantvoort/tmux-project/messages"
 	"github.com/jvzantvoort/tmux-project/sessions"
 	log "github.com/sirupsen/logrus"
 )
@@ -25,12 +26,7 @@ func (*EditSubCmd) Synopsis() string {
 }
 
 func (*EditSubCmd) Usage() string {
-	msgstr, err := tp.Asset("messages/usage_edit")
-	if err != nil {
-		log.Error(err)
-		msgstr = []byte("undefined")
-	}
-	return string(msgstr)
+	return msg.GetUsage("edit")
 }
 
 func (c *EditSubCmd) SetFlags(f *flag.FlagSet) {

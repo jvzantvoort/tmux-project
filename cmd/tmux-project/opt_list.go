@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/subcommands"
 	tp "github.com/jvzantvoort/tmux-project"
+	msg "github.com/jvzantvoort/tmux-project/messages"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -25,12 +26,7 @@ func (*ListSubCmd) Synopsis() string {
 }
 
 func (*ListSubCmd) Usage() string {
-	msgstr, err := tp.Asset("messages/usage_list")
-	if err != nil {
-		log.Error(err)
-		msgstr = []byte("undefined")
-	}
-	return string(msgstr)
+	return msg.GetUsage("list")
 }
 
 func (c *ListSubCmd) SetFlags(f *flag.FlagSet) {
