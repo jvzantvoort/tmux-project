@@ -13,9 +13,3 @@ func printTitle(title string) {
 
 }
 
-func printInfo(itype, ival string) {
-	infNameCol := color.New(InfoNameColor)
-	infValCol := color.New(InfoValueColor)
-	fmt.Printf("%-24s %s\n", infNameCol.Sprint(itype)+":", infValCol.Sprint(ival))
-
-}

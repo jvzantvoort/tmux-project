@@ -2,10 +2,13 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"sort"
 
+	"github.com/fatih/color"
 	"github.com/jvzantvoort/tmux-project/sessions"
+	"github.com/olekukonko/tablewriter"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -46,6 +49,23 @@ func uniqueList(args ...string) []string {
 	return retv
 }
 
+func PrintHeader(data [][]string) {
+
+	infNameCol := color.New(InfoNameColor)
+	infValCol := color.New(InfoValueColor)
+	table := tablewriter.NewWriter(os.Stdout)
+	// table.SetHeader([]string{"Name", "Value"})
+	// table.SetHeaderLine(true)
+	table.SetBorder(true)
+	for _, slice := range data {
+		table.Append([]string{infNameCol.Sprint(slice[0]), infValCol.Sprint(slice[1])})
+	}
+	fmt.Printf("\n")
+	table.Render()
+	fmt.Printf("\n")
+
+}
+
 func main() {
 	defer cleanup()
 	var chapters []string
@@ -56,12 +76,16 @@ func main() {
 		log.SetLevel(log.DebugLevel)
 	}
 
+	// Header
 	sessionname := os.Getenv("SESSIONNAME")
 	session := sessions.NewTmuxSession(sessionname)
-	printInfo("Sessionname", sessionname)
-	printInfo("Projectdir", session.Workdir)
-	printInfo("Description", session.Description)
 
+	header := [][]string{
+		{"Sessionname", sessionname},
+		{"Projectdir", session.Workdir},
+		{"Description", session.Description},
+	}
+	PrintHeader(header)
 	brojects := findAllProjects(session.Workdir)
 
 	for _, proj := range brojects {
@@ -80,4 +104,6 @@ func main() {
 			}
 		}
 	}
+	fmt.Printf("\n")
+	fmt.Printf("\n")
 }
