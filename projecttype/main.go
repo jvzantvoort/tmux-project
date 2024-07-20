@@ -7,10 +7,12 @@ import (
 	"path"
 	"strings"
 
+	"github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
 	"github.com/jvzantvoort/tmux-project/config"
+	"github.com/jvzantvoort/tmux-project/utils"
 )
 
 var (
@@ -50,15 +52,10 @@ func (ptc *ProjectTypeConfig) readConfig(projtypeconfigdir string) {
 	// viper.AddConfigPath(tp.MasterConfigDir)
 
 	err := viper.ReadInConfig() // Find and read the config file
-
-	if err != nil { // Handle errors reading the config file
-		panic(fmt.Errorf("fatal error config file: %s", err))
-	}
+	utils.ErrorExit(err)
 
 	err = viper.Unmarshal(&ptc)
-	if err != nil {
-		log.Fatalf("unable to decode into struct, %v", err)
-	}
+	utils.ErrorExit(err)
 }
 
 // Describe describe
@@ -140,6 +137,27 @@ func (ptc ProjectTypeConfig) UpdateConfigFile(target string) error {
 	return nil
 }
 
+func (ptc ProjectTypeConfig) MkdirAll(targetpath string) error {
+	log.Debugf("mkdir %s, start", targetpath)
+	defer log.Debugf("mkdir %s, end", targetpath)
+
+	if target, err := os.Stat(targetpath); !os.IsNotExist(err) {
+		if !target.IsDir() {
+			return fmt.Errorf("mkdir %s, exists but is not a directory", targetpath)
+		}
+		log.Debugf("mkdir %s, already exists", targetpath)
+		return nil
+	}
+
+	err := os.MkdirAll(targetpath, os.FileMode(int(0755)))
+
+	if err != nil {
+		return fmt.Errorf("mkdir %s, failed: %s", targetpath, err)
+	}
+	return nil
+
+}
+
 func (ptc *ProjectTypeConfig) Init(projtypeconfigdir, projecttype string) error {
 
 	log.Debugf("Init Start: %s", projecttype)
@@ -148,12 +166,8 @@ func (ptc *ProjectTypeConfig) Init(projtypeconfigdir, projecttype string) error 
 	ptc.ProjectType = projecttype
 	ptc.ProjectTypeDir = projtypeconfigdir
 
-	if ptc.Exists(ptc.ProjectTypeDir) {
-		return fmt.Errorf("directory already exists: %s", ptc.ProjectTypeDir)
-	}
-
-	if err := os.MkdirAll(ptc.ProjectTypeDir, os.FileMode(int(0755))); err != nil {
-		return fmt.Errorf("directory cannot be created: %s", ptc.ProjectTypeDir)
+	if err := ptc.MkdirAll(ptc.ProjectTypeDir); err != nil {
+		return err
 	}
 
 	// write basic files
@@ -187,7 +201,7 @@ func NewProjectTypeConfig(projecttype string) ProjectTypeConfig {
 	v.readConfig(projtypeconfigdir)
 
 	var err error
-	v.Workdir, err = mainconfig.ExpandHome(v.Workdir)
+	v.Workdir, err = homedir.Expand(v.Workdir)
 	if err != nil {
 		log.Errorf("%q", err)
 	}

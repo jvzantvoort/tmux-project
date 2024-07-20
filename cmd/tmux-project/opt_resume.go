@@ -11,6 +11,7 @@ import (
 	"github.com/jvzantvoort/tmux-project/messages"
 	"github.com/jvzantvoort/tmux-project/sessions"
 	"github.com/jvzantvoort/tmux-project/tmux"
+	"github.com/jvzantvoort/tmux-project/utils"
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -81,15 +82,6 @@ func handleResumeCmd(cmd *cobra.Command, args []string) {
 
 }
 
-func stringInSlice(a string, list []string) bool {
-	for _, b := range list {
-		if b == a {
-			return true
-		}
-	}
-	return false
-}
-
 
 func ListSessions() []string {
 	retv := []string{}
@@ -99,7 +91,7 @@ func ListSessions() []string {
 	sess := sessions.NewTmuxSessions()
 	for _, sesi := range sess.Sessions {
 		state := " "
-		if stringInSlice(sesi.Name, active) {
+		if utils.StringInSlice(sesi.Name, active) {
 			state = "active"
 		}
 		message := fmt.Sprintf("%-32s %-6s %s", sesi.Name, state, sesi.Description)

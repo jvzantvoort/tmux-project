@@ -1,15 +1,18 @@
 package tmuxproject
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"path"
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 
 	pt "github.com/jvzantvoort/tmux-project/projecttype"
+	"github.com/jvzantvoort/tmux-project/utils"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -27,7 +30,7 @@ func RunSetupAction(workdir, action string) {
 	defer wg.Done() // lower counter
 	defer cleanup() // handle panics
 
-	stdout_list, stderr_list, eerror := Exec(workdir, action)
+	stdout_list, stderr_list, eerror := utils.Exec(workdir, action)
 	for _, stdout_line := range stdout_list {
 		log.Infof("<stdout> %s", stdout_line)
 	}
@@ -82,6 +85,13 @@ func NewProjectConfig(projecttype, projectname string) pt.ProjectTypeConfig {
 	return ptc
 }
 
+func Ask(question string) string {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Printf("%s: ", question)
+	text, _ := reader.ReadString('\n')
+	return strings.TrimSuffix(text, "\n")
+}
+
 // CreateProject create a new project
 func CreateProject(projecttype, projectname string) error {
 	log.Debug("CreateProject: start")
@@ -114,7 +124,7 @@ func CreateProject(projecttype, projectname string) error {
 		}
 	}
 
-	if err := os.MkdirAll(configuration.Workdir, os.FileMode(int(0755))); err != nil {
+	if err := utils.MkdirAll(configuration.Workdir); err != nil {
 		return fmt.Errorf("directory cannot be created: %s", configuration.Workdir)
 	}
 

@@ -3,18 +3,20 @@ package tmuxproject
 import (
 	"fmt"
 	"os"
+	"strings"
 
+	"github.com/jvzantvoort/tmux-project/sessions"
+	"github.com/jvzantvoort/tmux-project/utils"
 	"github.com/jvzantvoort/tmux-project/tmux"
 	"github.com/olekukonko/tablewriter"
+	log "github.com/sirupsen/logrus"
 )
 
-func stringInSlice(a string, list []string) bool {
-	for _, b := range list {
-		if b == a {
-			return true
-		}
-	}
-	return false
+type ListTable struct {
+	Name        string
+	Description string
+	Workdir     string
+	Sane        bool
 }
 
 func PrintFullList() {
@@ -30,7 +32,7 @@ func PrintFullList() {
 		var cols []string
 		cols = append(cols, target.Name)
 
-		if stringInSlice(target.Name, active) {
+		if utils.StringInSlice(target.Name, active) {
 			cols = append(cols, "yes")
 		} else {
 			cols = append(cols, "")
@@ -54,4 +56,38 @@ func PrintShortList() {
 	for _, target := range ListTmuxConfigs() {
 		fmt.Println(target.Name)
 	}
+}
+
+func ListTmuxConfigs() []ListTable {
+	var retv []ListTable
+	targets, err := os.ReadDir(mainconfig.TmuxDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, target := range targets {
+		target_name := target.Name()
+
+		// we only want the session names
+		if !strings.HasSuffix(target_name, ".rc") {
+			continue
+		}
+
+		// "common" is shared by all others
+		if target_name == "common.rc" {
+			continue
+		}
+
+		target_name = strings.TrimSuffix(target_name, ".rc")
+
+		session := sessions.NewTmuxSession(target_name)
+
+		t := ListTable{}
+		t.Name = session.Name
+		t.Description = session.Description
+		t.Workdir = session.Workdir
+		t.Sane = session.IsSane()
+		retv = append(retv, t)
+	}
+	return retv
 }

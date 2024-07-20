@@ -11,6 +11,7 @@ import (
 
 	"github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
+	"github.com/jvzantvoort/tmux-project/utils"
 )
 
 // GitCmd object for git
@@ -170,9 +171,7 @@ func NewGitCmd(dir string) *GitCmd {
 	var err error
 
 	retv.command, _ = retv.which("git")
-	if err != nil {
-		panic(err)
-	}
+	utils.ErrorExit(err)
 
 	return retv
 }

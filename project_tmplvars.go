@@ -5,7 +5,10 @@ import (
 	"os"
 	"text/template"
 
+	"github.com/mitchellh/go-homedir"
+
 	"github.com/jvzantvoort/tmux-project/projecttype"
+	"github.com/jvzantvoort/tmux-project/utils"
 )
 
 type ProjTmplVars struct {
@@ -18,7 +21,7 @@ type ProjTmplVars struct {
 func NewProjTmplVars(projectname string, conf projecttype.ProjectTypeConfig) *ProjTmplVars {
 
 	v := &ProjTmplVars{}
-	v.HomeDir = mainconfig.HomeDir
+	v.HomeDir, _ = homedir.Dir()
 	v.ProjectDir = conf.Workdir
 	v.ProjectName = projectname
 
@@ -28,14 +31,10 @@ func NewProjTmplVars(projectname string, conf projecttype.ProjectTypeConfig) *Pr
 // buildConfig construct the text from the template definition and arguments.
 func (t ProjTmplVars) Parse(templatestring string) string {
 	tmpl, err := template.New("prompt").Parse(templatestring)
-	if err != nil {
-		panic(err)
-	}
+	utils.ErrorExit(err)
 	buf := new(bytes.Buffer)
 	err = tmpl.Execute(buf, t)
-	if err != nil {
-		panic(err)
-	}
+	utils.ErrorExit(err)
 	return buf.String()
 }
 

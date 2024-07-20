@@ -6,9 +6,9 @@ package main
 import (
 	"os"
 
-	tp "github.com/jvzantvoort/tmux-project"
 	"github.com/jvzantvoort/tmux-project/messages"
 	"github.com/jvzantvoort/tmux-project/sessions"
+	"github.com/jvzantvoort/tmux-project/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -37,7 +37,7 @@ func handleEditCmd(cmd *cobra.Command, args []string) {
 
 	session := sessions.NewTmuxSession(ProjectName)
 
-	tp.Edit("-O", session.Configfile, session.Environment)
+	utils.Edit("-O", session.Configfile, session.Environment)
 
 }
 
