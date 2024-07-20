@@ -49,7 +49,12 @@ func uniqueList(args ...string) []string {
 func main() {
 	defer cleanup()
 	var chapters []string
+	verbose := flag.Bool("v", false, "Verbose")
 	flag.Parse()
+
+	if *verbose {
+		log.SetLevel(log.DebugLevel)
+	}
 
 	sessionname := os.Getenv("SESSIONNAME")
 	session := sessions.NewTmuxSession(sessionname)
