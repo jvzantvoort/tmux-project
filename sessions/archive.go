@@ -11,11 +11,47 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var tw *tar.Writer
+
+func Walker(file string, fi os.FileInfo, inerr error) error {
+	err := inerr
+	if err != nil {
+		log.Errorf("this passed an error: %q", err)
+	}
+	// generate tar header
+	header, err := tar.FileInfoHeader(fi, file)
+	if err != nil {
+		return err
+	}
+
+	// must provide real name
+	// (see https://golang.org/src/archive/tar/common.go?#L626)
+	header.Name = filepath.ToSlash(file)
+
+	// write header
+	if err := tw.WriteHeader(header); err != nil {
+		return err
+	}
+	// if not a dir, write file content
+	if !fi.IsDir() {
+		data, err := os.Open(file)
+		if err != nil {
+			return err
+		}
+		if _, err := io.Copy(tw, data); err != nil {
+			return err
+		}
+		data.Close()
+	}
+	return nil
+
+}
+
 func MakeTarArchive(buf io.Writer, targets []string) error {
 
 	// tar > gzip > buf
 	zr := gzip.NewWriter(buf)
-	tw := tar.NewWriter(zr)
+	tw = tar.NewWriter(zr)
 
 	for _, target := range targets {
 		if !TargetExists(target) {
@@ -52,34 +88,7 @@ func MakeTarArchive(buf io.Writer, targets []string) error {
 		} else if mode.IsDir() { // folder
 
 			// walk through every file in the folder
-			filepath.Walk(target, func(file string, fi os.FileInfo, err error) error {
-				// generate tar header
-				header, err := tar.FileInfoHeader(fi, file)
-				if err != nil {
-					return err
-				}
-
-				// must provide real name
-				// (see https://golang.org/src/archive/tar/common.go?#L626)
-				header.Name = filepath.ToSlash(file)
-
-				// write header
-				if err := tw.WriteHeader(header); err != nil {
-					return err
-				}
-				// if not a dir, write file content
-				if !fi.IsDir() {
-					data, err := os.Open(file)
-					if err != nil {
-						return err
-					}
-					if _, err := io.Copy(tw, data); err != nil {
-						return err
-					}
-					data.Close()
-				}
-				return nil
-			})
+			filepath.Walk(target, Walker)
 		} else {
 			return fmt.Errorf("error: file type not supported")
 		}

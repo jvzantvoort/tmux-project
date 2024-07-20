@@ -2,7 +2,6 @@ package sessions
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
@@ -43,17 +42,15 @@ func LoadFile(targetpath string) ([]string, error) {
 	var retv []string
 
 	if !FileExists(targetpath) {
-		return retv, fmt.Errorf("File %s does not exists", targetpath)
+		return retv, fmt.Errorf("file %s does not exists", targetpath)
 	}
 
-	content, err := ioutil.ReadFile(targetpath)
+	content, err := os.ReadFile(targetpath)
 	if err != nil {
 		return retv, err
 	}
 
-	for _, line := range strings.Split(string(content), "\n") {
-		retv = append(retv, line)
-	}
+	retv = append(retv, strings.Split(string(content), "\n")...)
 	return retv, nil
 
 }

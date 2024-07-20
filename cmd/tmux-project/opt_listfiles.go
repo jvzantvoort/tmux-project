@@ -1,62 +1,47 @@
+/*
+Copyright © 2024 John van Zantvoort <john@vanzantvoort.org>
+*/
 package main
 
 import (
-	"context"
-	"flag"
 	"fmt"
+	"os"
 
-	"github.com/google/subcommands"
-
-	tp "github.com/jvzantvoort/tmux-project"
+	"github.com/jvzantvoort/tmux-project/messages"
 	"github.com/jvzantvoort/tmux-project/sessions"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
-type ListFilesSubCmd struct {
-	projectname string
-	verbose     bool
+// ListfileCmd represents the list command
+var ListfileCmd = &cobra.Command{
+	Use:   "listfiles <projectname>",
+	Short: "List a project",
+	Long:  messages.GetLong("list"),
+	Run:   handleListfileCmd,
 }
 
-func (*ListFilesSubCmd) Name() string {
-	return "listfiles"
-}
-
-func (*ListFilesSubCmd) Synopsis() string {
-	return "Archive a project"
-}
-
-func (*ListFilesSubCmd) Usage() string {
-	msgstr, err := tp.Asset("messages/usage_listfiles")
-	if err != nil {
-		log.Error(err)
-		msgstr = []byte("undefined")
-	}
-	return string(msgstr)
-}
-
-func (c *ListFilesSubCmd) SetFlags(f *flag.FlagSet) {
-	f.StringVar(&c.projectname, "projectname", "", "Name of project")
-	f.StringVar(&c.projectname, "n", "", "Name of project")
-	f.BoolVar(&c.verbose, "v", false, "Verbose logging")
-}
-
-func (c *ListFilesSubCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
-
-	if c.verbose {
+func handleListfileCmd(cmd *cobra.Command, args []string) {
+	if verbose {
 		log.SetLevel(log.DebugLevel)
 	}
+	log.Debugf("%s: start", cmd.Use)
+	defer log.Debugf("%s: end", cmd.Use)
 
-	log.Debugln("Start")
-	//
-	if len(c.projectname) == 0 {
-		log.Fatalf("no name provided")
+	if len(args) != 1 {
+		log.Error("No project provided")
+		cmd.Help()
+		os.Exit(1)
 	}
-	session := sessions.NewTmuxSession(c.projectname)
+	ProjectName := args[0]
+
+	session := sessions.NewTmuxSession(ProjectName)
 	for _, ink := range session.TargetPaths() {
 		fmt.Printf("%s\n", ink)
 	}
 
-	log.Debugln("End")
+}
 
-	return subcommands.ExitSuccess
+func init() {
+	rootCmd.AddCommand(ListfileCmd)
 }

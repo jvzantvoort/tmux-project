@@ -127,8 +127,8 @@ tmux-project shell [-s | -shellname <shell>]
 
 ## Targets
 
-| Target                                   | Description                 |
-|:-----------------------------------------|:----------------------------|
-| ```${HOME}/.bash/tmux.d/<project>.env``` | environment file            |
-| ```${HOME}/.bash/tmux.d/<project>.rc```  | tmux configuration          |
-| ```PROJECTS```                           | location projects are setup |
+| Target                              | Description                 |
+|:------------------------------------|:----------------------------|
+| ```${HOME}/.tmux.d/<project>.env``` | environment file            |
+| ```${HOME}/.tmux.d/<project>.rc```  | tmux configuration          |
+| ```PROJECTS```                      | location projects are setup |

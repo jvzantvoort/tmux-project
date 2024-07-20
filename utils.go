@@ -3,7 +3,6 @@ package tmuxproject
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -20,6 +19,7 @@ type ListTable struct {
 	Name        string
 	Description string
 	Workdir     string
+	Sane        bool
 }
 
 func Exec(cwd, args string) ([]string, []string, error) {
@@ -117,7 +117,7 @@ func Ask(question string) string {
 
 func ListTmuxConfigs() []ListTable {
 	var retv []ListTable
-	targets, err := ioutil.ReadDir(mainconfig.TmuxDir)
+	targets, err := os.ReadDir(mainconfig.TmuxDir)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -143,6 +143,7 @@ func ListTmuxConfigs() []ListTable {
 		t.Name = session.Name
 		t.Description = session.Description
 		t.Workdir = session.Workdir
+		t.Sane = session.IsSane()
 		retv = append(retv, t)
 	}
 	return retv
@@ -164,14 +165,13 @@ func ExpandHome(pathstr string) (string, error) {
 
 func LoadStringLines(target string) ([]string, error) {
 	var retv []string
-	content, err := ioutil.ReadFile(target)
+	content, err := os.ReadFile(target)
 	if err != nil {
 		return retv, err
 	}
 
-	for _, line := range strings.Split(string(content), "\n") {
-		retv = append(retv, line)
-	}
+	retv = append(retv, strings.Split(string(content), "\n")...)
+
 	return retv, nil
 }
 

@@ -1,8 +1,8 @@
 package projecttype
 
 import (
+	"embed"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -17,11 +17,19 @@ var (
 	mainconfig = config.NewMainConfig()
 )
 
+//go:embed templates/*
+var Content embed.FS
+
 // ProjectTypeFile defines a structure of a file
 type ProjectTypeFile struct {
 	Name        string `yaml:"name"`
 	Destination string `yaml:"destination"`
 	Mode        string `yaml:"mode"`
+}
+
+type RepoListItem struct {
+	Name      string `yaml:"name"`
+	RepoNames string `yaml:"reponames"`
 }
 
 // ProjectTypeConfig defines a structure of a project type
@@ -31,6 +39,7 @@ type ProjectTypeConfig struct {
 	Workdir        string            `yaml:"workdir"`
 	Pattern        string            `yaml:"pattern"`
 	SetupActions   []string          `yaml:"setupactions"`
+	RepoListItems  []RepoListItem    `yaml:"repolist"`
 	Files          []ProjectTypeFile `yaml:"files"`
 }
 
@@ -43,7 +52,7 @@ func (ptc *ProjectTypeConfig) readConfig(projtypeconfigdir string) {
 	err := viper.ReadInConfig() // Find and read the config file
 
 	if err != nil { // Handle errors reading the config file
-		panic(fmt.Errorf("Fatal error config file: %s", err))
+		panic(fmt.Errorf("fatal error config file: %s", err))
 	}
 
 	err = viper.Unmarshal(&ptc)
@@ -83,8 +92,13 @@ func (ptc ProjectTypeConfig) Describe() {
 }
 
 func (ptc ProjectTypeConfig) Write(boxname, target string) error {
-	content, _ := Asset("templates/" + boxname)
-	file, err := os.Create(target)
+	filename := fmt.Sprintf("templates/%s", boxname)
+	content, err := Content.ReadFile(filename)
+	if err != nil {
+		log.Error(err)
+		content = []byte("undefined")
+	}
+	file, _ := os.Create(target)
 	_, err = file.Write(content)
 	if err != nil {
 		return err
@@ -106,7 +120,7 @@ func (ptc ProjectTypeConfig) Exists(targetpath string) bool {
 
 func (ptc ProjectTypeConfig) UpdateConfigFile(target string) error {
 
-	read, err := ioutil.ReadFile(target)
+	read, err := os.ReadFile(target)
 	if err != nil {
 		return err
 	}
@@ -119,7 +133,7 @@ func (ptc ProjectTypeConfig) UpdateConfigFile(target string) error {
 		content = ncontent
 	}
 
-	err = ioutil.WriteFile(target, []byte(content), 0)
+	err = os.WriteFile(target, []byte(content), 0)
 	if err != nil {
 		return err
 	}
@@ -135,11 +149,11 @@ func (ptc *ProjectTypeConfig) Init(projtypeconfigdir, projecttype string) error 
 	ptc.ProjectTypeDir = projtypeconfigdir
 
 	if ptc.Exists(ptc.ProjectTypeDir) {
-		return fmt.Errorf("Directory already exists: %s", ptc.ProjectTypeDir)
+		return fmt.Errorf("directory already exists: %s", ptc.ProjectTypeDir)
 	}
 
 	if err := os.MkdirAll(ptc.ProjectTypeDir, os.FileMode(int(0755))); err != nil {
-		return fmt.Errorf("Directory cannot be created: %s", ptc.ProjectTypeDir)
+		return fmt.Errorf("directory cannot be created: %s", ptc.ProjectTypeDir)
 	}
 
 	// write basic files
@@ -148,11 +162,11 @@ func (ptc *ProjectTypeConfig) Init(projtypeconfigdir, projecttype string) error 
 		fpath := path.Join(ptc.ProjectTypeDir, target)
 		err := ptc.Write(target, fpath)
 		if err != nil {
-			return fmt.Errorf("Error: %s", err)
+			return fmt.Errorf("error: %s", err)
 		}
 		err = ptc.UpdateConfigFile(fpath)
 		if err != nil {
-			return fmt.Errorf("Error: %s", err)
+			return fmt.Errorf("error: %s", err)
 		}
 	}
 

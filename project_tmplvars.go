@@ -2,7 +2,7 @@ package tmuxproject
 
 import (
 	"bytes"
-	"io/ioutil"
+	"os"
 	"text/template"
 
 	"github.com/jvzantvoort/tmux-project/projecttype"
@@ -41,7 +41,7 @@ func (t ProjTmplVars) Parse(templatestring string) string {
 
 func (t ProjTmplVars) LoadFile(target string) (string, error) {
 	var retv string
-	content, err := ioutil.ReadFile(target)
+	content, err := os.ReadFile(target)
 	if err != nil {
 		return "", err
 	}

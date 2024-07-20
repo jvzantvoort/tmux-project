@@ -1,63 +1,51 @@
+/*
+Copyright © 2024 John van Zantvoort <john@vanzantvoort.org>
+*/
 package main
 
 import (
-	"context"
-	"flag"
+	"os"
 
-	"github.com/google/subcommands"
-	tp "github.com/jvzantvoort/tmux-project"
+	"github.com/jvzantvoort/tmux-project/messages"
 	"github.com/jvzantvoort/tmux-project/projecttype"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
-type InitProjSubCmd struct {
-	projecttype string
-	force       bool
-	verbose     bool
+// InitProjCmdCmd represents the create command
+var InitProjCmdCmd = &cobra.Command{
+	Use:   "init <projectname>",
+	Short: "InitProjCmd a project",
+	Long:  messages.GetLong("create"),
+	Run:   handleInitProjCmdCmd,
 }
 
-func (*InitProjSubCmd) Name() string {
-	return "init"
-}
-
-func (*InitProjSubCmd) Synopsis() string {
-	return "Initialize a new project type"
-}
-
-func (*InitProjSubCmd) Usage() string {
-	msgstr, err := tp.Asset("messages/usage_projectinit")
-	if err != nil {
-		log.Error(err)
-		msgstr = []byte("undefined")
-	}
-	return string(msgstr)
-}
-
-func (c *InitProjSubCmd) SetFlags(f *flag.FlagSet) {
-	f.StringVar(&c.projecttype, "projecttype", "default", "Type of project")
-	f.StringVar(&c.projecttype, "t", "default", "Type of project")
-	f.BoolVar(&c.force, "f", false, "Force (re)creation")
-	f.BoolVar(&c.verbose, "v", false, "Verbose logging")
-}
-
-func (c *InitProjSubCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
-
-	if c.verbose {
+func handleInitProjCmdCmd(cmd *cobra.Command, args []string) {
+	if verbose {
 		log.SetLevel(log.DebugLevel)
 	}
+	log.Debugf("%s: start", cmd.Use)
+	defer log.Debugf("%s: end", cmd.Use)
 
-	log.Debugln("Start")
-	//
-	if len(c.projecttype) == 0 {
-		log.Fatalf("no type provided")
-	} else if c.projecttype == "default" {
-		if !c.force {
+	if len(args) != 1 {
+		log.Error("No project type provided")
+		cmd.Help()
+		os.Exit(1)
+	}
+	ProjectType := args[0]
+
+	Force, _ := cmd.Flags().GetBool("force")
+
+	if ProjectType == "default" {
+		if !Force {
 			log.Fatalf("Cannot overwrite default")
 		}
 	}
-	log.Debugf("type: %s", c.projecttype)
-	projecttype.CreateProjectType(c.projecttype)
-	log.Debugln("End")
+	projecttype.CreateProjectType(ProjectType)
 
-	return subcommands.ExitSuccess
+}
+
+func init() {
+	rootCmd.AddCommand(InitProjCmdCmd)
+	InitProjCmdCmd.Flags().BoolP("force", "f", false, "Force")
 }

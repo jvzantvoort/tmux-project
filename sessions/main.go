@@ -3,7 +3,6 @@ package sessions
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -92,6 +91,18 @@ func (tm TmuxSession) Archive(archivename string) error {
 
 }
 
+func (tm TmuxSession) IsSane() bool {
+
+	_, err := os.Stat(tm.Workdir)
+	if err != nil {
+		return false
+	}
+	if os.IsNotExist(err) {
+		return false
+	}
+	return true
+}
+
 func NewTmuxSession(sessionname string) *TmuxSession {
 	tm := &TmuxSession{Name: sessionname}
 	tm.Configfile = path.Join(mainconfig.TmuxDir, tm.Name+".rc")
@@ -105,7 +116,7 @@ func NewTmuxSession(sessionname string) *TmuxSession {
 func NewTmuxSessions() *TmuxSessions {
 	tmux_sessions := &TmuxSessions{}
 
-	targets, err := ioutil.ReadDir(mainconfig.TmuxDir)
+	targets, err := os.ReadDir(mainconfig.TmuxDir)
 	if err != nil {
 		log.Fatal(err)
 	}
