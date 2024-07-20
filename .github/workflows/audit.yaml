@@ -25,7 +25,7 @@ jobs:
     - name: Build
       run: |
         go build -v -o build/tmux-project ./cmd/tmux-project
-        go build -v -o build/pinfo ./cmd/pinfo
+        go build -v -o build/proj_info ./cmd/proj_info
 
     - name: Run go vet
       run: go vet ./...
