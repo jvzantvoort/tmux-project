@@ -16,6 +16,7 @@ type ProjTmplVars struct {
 	ProjectDescription string
 	ProjectDir         string
 	ProjectName        string
+	ProjectType        string
 }
 
 func NewProjTmplVars(projectname string, conf projecttype.ProjectTypeConfig) *ProjTmplVars {
@@ -24,6 +25,7 @@ func NewProjTmplVars(projectname string, conf projecttype.ProjectTypeConfig) *Pr
 	v.HomeDir, _ = homedir.Dir()
 	v.ProjectDir = conf.Workdir
 	v.ProjectName = projectname
+	v.ProjectType = conf.ProjectType
 
 	return v
 }
