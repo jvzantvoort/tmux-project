@@ -1,12 +1,10 @@
 // Package tmux provides interface
 //
-//   import (
-//       "fmt"
-//       "github.com/jvzantvoort/tmux-project/tmux"
-//   )
-//   tmux := tmux.NewTmux()
-//
-//
+//	import (
+//	    "fmt"
+//	    "github.com/jvzantvoort/tmux-project/tmux"
+//	)
+//	tmux := tmux.NewTmux()
 package tmux
 
 import (
@@ -14,36 +12,17 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"os/user"
-	"path"
 	"strings"
 
 	"github.com/jvzantvoort/tmux-project/sessions"
+	"github.com/jvzantvoort/tmux-project/utils"
+	"github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
 )
 
 type Tmux struct {
 	CommandPath string
 	CommandCwd  string
-}
-
-func which(command string) string {
-	Path := strings.Split(os.Getenv("PATH"), ":")
-	var retv string
-	for _, dirname := range Path {
-		fullpath := path.Join(dirname, command)
-		log.Debugf("test path: %s", fullpath)
-
-		_, err := os.Stat(fullpath)
-		if err == nil {
-			if os.IsNotExist(err) {
-				continue
-			}
-			retv = fullpath
-		}
-	}
-	return retv
-
 }
 
 func (t Tmux) Exec(args ...string) ([]string, []string, error) {
@@ -63,7 +42,7 @@ func (t Tmux) Exec(args ...string) ([]string, []string, error) {
 	if err != nil {
 		log.Errorf("stdout pipe failed, %v", err)
 		log.Fatal(err)
-		panic(err)
+		utils.ErrorExit(err)
 	}
 
 	// Setup stderr pipe
@@ -71,7 +50,7 @@ func (t Tmux) Exec(args ...string) ([]string, []string, error) {
 	if err != nil {
 		log.Errorf("stderr pipe failed, %v", err)
 		log.Fatal(err)
-		panic(err)
+		utils.ErrorExit(err)
 	}
 
 	// Start the command
@@ -185,15 +164,9 @@ func (t Tmux) ResumeSession(sess sessions.TmuxSession) {
 func NewTmux() *Tmux {
 
 	t := &Tmux{}
-	t.CommandPath = which("tmux")
+	t.CommandPath = utils.Which("tmux")
 
-	// Get user info
-	usrobj, err := user.Current()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	t.CommandCwd = usrobj.HomeDir
+	t.CommandCwd, _ = homedir.Dir()
 
 	return t
 }

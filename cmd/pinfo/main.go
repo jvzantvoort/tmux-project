@@ -11,6 +11,7 @@ import (
 	"github.com/fatih/color"
 
 	"github.com/jvzantvoort/tmux-project/sessions"
+	"github.com/jvzantvoort/tmux-project/utils"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -24,7 +25,7 @@ type Project struct {
 
 func (p Project) PrintLine() {
 	br_col := color.New(BranchChangedColor)
-	if stringInSlice(p.Branch, []string{"master", "main", "develop"}) {
+	if utils.StringInSlice(p.Branch, []string{"master", "main", "develop"}) {
 		br_col = color.New(BranchDefaultColor)
 	}
 	var stat_str string
@@ -70,15 +71,6 @@ func printInfo(itype, ival string) {
 	infValCol := color.New(InfoValueColor)
 	fmt.Printf("%-24s %s\n", infNameCol.Sprint(itype)+":", infValCol.Sprint(ival))
 
-}
-
-func stringInSlice(a string, list []string) bool {
-	for _, b := range list {
-		if b == a {
-			return true
-		}
-	}
-	return false
 }
 
 func main() {
@@ -132,7 +124,7 @@ func main() {
 		if strings.HasSuffix(target_name, "_domain") {
 			proj.Expected = true
 			projects = append(projects, proj)
-		} else if stringInSlice(target_name, reserved) {
+		} else if utils.StringInSlice(target_name, reserved) {
 			proj.Expected = true
 			projects = append(projects, proj)
 		} else {

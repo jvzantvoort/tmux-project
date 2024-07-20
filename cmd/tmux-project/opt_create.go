@@ -6,8 +6,8 @@ package main
 import (
 	"os"
 
-	tp "github.com/jvzantvoort/tmux-project"
 	"github.com/jvzantvoort/tmux-project/messages"
+	"github.com/jvzantvoort/tmux-project/project"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -35,7 +35,7 @@ func handleCreateCmd(cmd *cobra.Command, args []string) {
 	ProjectName := args[0]
 	ProjectType := GetString(*cmd, "type")
 
-	err := tp.CreateProject(ProjectType, ProjectName)
+	err := project.CreateProject(ProjectType, ProjectName)
 	if err != nil {
 		log.Fatalf("Encountered error: %q", err)
 	}

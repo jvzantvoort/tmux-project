@@ -5,12 +5,16 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"runtime"
 	"strings"
 
+	"github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 
 	"github.com/jvzantvoort/tmux-project/config"
+	"github.com/jvzantvoort/tmux-project/utils"
+
+	"gopkg.in/yaml.v2"
 )
 
 var (
@@ -43,26 +47,37 @@ type ProjectTypeConfig struct {
 	Files          []ProjectTypeFile `yaml:"files"`
 }
 
+// prefix returns a prefix for logging and messages based on function name.
+func (ptc ProjectTypeConfig) prefix() string {
+	pc, _, _, _ := runtime.Caller(1)
+	elements := strings.Split(runtime.FuncForPC(pc).Name(), ".")
+	return elements[len(elements)-1]
+}
+
 func (ptc *ProjectTypeConfig) readConfig(projtypeconfigdir string) {
+	// Setup logging
+	log_prefix := ptc.prefix()
+	log.Debugf("%s: start", log_prefix)
+	defer log.Debugf("%s: end", log_prefix)
 
-	viper.SetConfigName("config")
-	viper.AddConfigPath(projtypeconfigdir)
-	// viper.AddConfigPath(tp.MasterConfigDir)
+	filepath := path.Join(projtypeconfigdir, "config.yml")
+	log.Debugf("filepath: %s", filepath)
 
-	err := viper.ReadInConfig() // Find and read the config file
+	yamlFile, err := os.ReadFile(filepath)
+	utils.ErrorExit(err)
 
-	if err != nil { // Handle errors reading the config file
-		panic(fmt.Errorf("fatal error config file: %s", err))
-	}
+	err = yaml.Unmarshal(yamlFile, &ptc)
+	utils.ErrorExit(err)
 
-	err = viper.Unmarshal(&ptc)
-	if err != nil {
-		log.Fatalf("unable to decode into struct, %v", err)
-	}
 }
 
 // Describe describe
 func (ptc ProjectTypeConfig) Describe() {
+	// Setup logging
+	log_prefix := ptc.prefix()
+	log.Debugf("%s: start", log_prefix)
+	defer log.Debugf("%s: end", log_prefix)
+
 	log.Debugf("Describe: %s", ptc.ProjectType)
 	log.Debugf("  Workdir: %s", ptc.Workdir)
 	log.Debugf("  Pattern: %s", ptc.Pattern)
@@ -92,6 +107,10 @@ func (ptc ProjectTypeConfig) Describe() {
 }
 
 func (ptc ProjectTypeConfig) Write(boxname, target string) error {
+	// Setup logging
+	log_prefix := ptc.prefix()
+	log.Debugf("%s: start", log_prefix)
+	defer log.Debugf("%s: end", log_prefix)
 	filename := fmt.Sprintf("templates/%s", boxname)
 	content, err := Content.ReadFile(filename)
 	if err != nil {
@@ -108,6 +127,10 @@ func (ptc ProjectTypeConfig) Write(boxname, target string) error {
 }
 
 func (ptc ProjectTypeConfig) Exists(targetpath string) bool {
+	// Setup logging
+	log_prefix := ptc.prefix()
+	log.Debugf("%s: start", log_prefix)
+	defer log.Debugf("%s: end", log_prefix)
 	_, err := os.Stat(targetpath)
 	if err != nil {
 		return false
@@ -119,6 +142,10 @@ func (ptc ProjectTypeConfig) Exists(targetpath string) bool {
 }
 
 func (ptc ProjectTypeConfig) UpdateConfigFile(target string) error {
+	// Setup logging
+	log_prefix := ptc.prefix()
+	log.Debugf("%s: start", log_prefix)
+	defer log.Debugf("%s: end", log_prefix)
 
 	read, err := os.ReadFile(target)
 	if err != nil {
@@ -140,7 +167,36 @@ func (ptc ProjectTypeConfig) UpdateConfigFile(target string) error {
 	return nil
 }
 
+func (ptc ProjectTypeConfig) MkdirAll(targetpath string) error {
+	// Setup logging
+	log_prefix := ptc.prefix()
+	log.Debugf("%s: start", log_prefix)
+	defer log.Debugf("%s: end", log_prefix)
+	log.Debugf("mkdir %s, start", targetpath)
+	defer log.Debugf("mkdir %s, end", targetpath)
+
+	if target, err := os.Stat(targetpath); !os.IsNotExist(err) {
+		if !target.IsDir() {
+			return fmt.Errorf("mkdir %s, exists but is not a directory", targetpath)
+		}
+		log.Debugf("mkdir %s, already exists", targetpath)
+		return nil
+	}
+
+	err := os.MkdirAll(targetpath, os.FileMode(int(0755)))
+
+	if err != nil {
+		return fmt.Errorf("mkdir %s, failed: %s", targetpath, err)
+	}
+	return nil
+
+}
+
 func (ptc *ProjectTypeConfig) Init(projtypeconfigdir, projecttype string) error {
+	// Setup logging
+	log_prefix := ptc.prefix()
+	log.Debugf("%s: start", log_prefix)
+	defer log.Debugf("%s: end", log_prefix)
 
 	log.Debugf("Init Start: %s", projecttype)
 	projtypeconfigdir = path.Join(projtypeconfigdir, projecttype)
@@ -148,12 +204,8 @@ func (ptc *ProjectTypeConfig) Init(projtypeconfigdir, projecttype string) error 
 	ptc.ProjectType = projecttype
 	ptc.ProjectTypeDir = projtypeconfigdir
 
-	if ptc.Exists(ptc.ProjectTypeDir) {
-		return fmt.Errorf("directory already exists: %s", ptc.ProjectTypeDir)
-	}
-
-	if err := os.MkdirAll(ptc.ProjectTypeDir, os.FileMode(int(0755))); err != nil {
-		return fmt.Errorf("directory cannot be created: %s", ptc.ProjectTypeDir)
+	if err := ptc.MkdirAll(ptc.ProjectTypeDir); err != nil {
+		return err
 	}
 
 	// write basic files
@@ -187,10 +239,12 @@ func NewProjectTypeConfig(projecttype string) ProjectTypeConfig {
 	v.readConfig(projtypeconfigdir)
 
 	var err error
-	v.Workdir, err = mainconfig.ExpandHome(v.Workdir)
+	v.Workdir, err = homedir.Expand(v.Workdir)
 	if err != nil {
 		log.Errorf("%q", err)
 	}
+
+	log.Debugf("config >> %#v", v)
 
 	return v
 }

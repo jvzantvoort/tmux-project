@@ -12,6 +12,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.7.1
+	gopkg.in/yaml.v2 v2.2.8
 )
 
 require (
@@ -33,5 +34,4 @@ require (
 	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
-	gopkg.in/yaml.v2 v2.2.8 // indirect
 )

@@ -10,7 +10,4 @@ const (
 	InfoValueColor     color.Attribute = color.FgYellow
 	BranchDefaultColor color.Attribute = color.FgBlue
 	BranchChangedColor color.Attribute = color.FgYellow
-
-	ApplicationName string = "tmux-project"
-	Editor          string = "vim"
 )

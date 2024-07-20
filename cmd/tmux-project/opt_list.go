@@ -4,7 +4,7 @@ Copyright © 2024 John van Zantvoort <john@vanzantvoort.org>
 package main
 
 import (
-	tp "github.com/jvzantvoort/tmux-project"
+	"github.com/jvzantvoort/tmux-project/project"
 	"github.com/jvzantvoort/tmux-project/messages"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -28,9 +28,9 @@ func handleListCmd(cmd *cobra.Command, args []string) {
 	PrintFull, _ := cmd.Flags().GetBool("full")
 
 	if PrintFull {
-		tp.PrintFullList()
+		project.PrintFullList()
 	} else {
-		tp.PrintShortList()
+		project.PrintShortList()
 	}
 
 }

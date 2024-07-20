@@ -3,7 +3,6 @@ package sessions
 import (
 	"fmt"
 	"os"
-	"regexp"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -53,21 +52,4 @@ func LoadFile(targetpath string) ([]string, error) {
 	retv = append(retv, strings.Split(string(content), "\n")...)
 	return retv, nil
 
-}
-
-// GetMatches parses each line and sticks the findings in a map
-func GetMatches(regEx string, lines []string) (paramsMap map[string]string) {
-	var compRegEx = regexp.MustCompile(regEx)
-
-	paramsMap = make(map[string]string)
-
-	for _, line := range lines {
-		match := compRegEx.FindStringSubmatch(line)
-		for i, name := range compRegEx.SubexpNames() {
-			if i > 0 && i <= len(match) {
-				paramsMap[name] = match[i]
-			}
-		}
-	}
-	return
 }

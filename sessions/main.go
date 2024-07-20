@@ -5,10 +5,11 @@ import (
 	"io"
 	"os"
 	"path"
-	"path/filepath"
 	"strings"
 
 	"github.com/jvzantvoort/tmux-project/config"
+	"github.com/jvzantvoort/tmux-project/utils"
+	"github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -28,20 +29,6 @@ type TmuxSessions struct {
 	Sessions []TmuxSession
 }
 
-// ExpandHome expand the tilde in a given path.
-func ExpandHome(pathstr string) string {
-	if len(pathstr) == 0 {
-		return pathstr
-	}
-
-	if pathstr[0] != '~' {
-		return pathstr
-	}
-
-	return filepath.Join(mainconfig.HomeDir, pathstr[1:])
-
-}
-
 func (tm *TmuxSession) LoadConfig() {
 	var err error
 	var config_lines []string
@@ -51,12 +38,12 @@ func (tm *TmuxSession) LoadConfig() {
 	}
 
 	if len(config_lines) != 0 {
-		config_matches := GetMatches(`^#\s+DESCRIPTION\:\s*(?P<description>.*)\s*$`, config_lines)
-		env_matches := GetMatches(`^#\s+WORKDIR\:\s*(?P<workdir>.*)\s*$`, config_lines)
+		config_matches := utils.GetMatches(`^#\s+DESCRIPTION\:\s*(?P<description>.*)\s*$`, config_lines)
+		env_matches := utils.GetMatches(`^#\s+WORKDIR\:\s*(?P<workdir>.*)\s*$`, config_lines)
 
 		tm.Description = strings.TrimSuffix(config_matches["description"], "\n")
 		tm.Workdir = strings.TrimSuffix(env_matches["workdir"], "\n")
-		tm.Workdir = ExpandHome(tm.Workdir)
+		tm.Workdir, _ = homedir.Expand(tm.Workdir)
 	}
 }
 
@@ -76,16 +63,13 @@ func (tm TmuxSession) Archive(archivename string) error {
 
 	_ = MakeTarArchive(&buf, targets)
 
-	archivename = ExpandHome(archivename)
+	archivename, _ = homedir.Expand(archivename)
 
 	fileToWrite, err := os.OpenFile(archivename, os.O_CREATE|os.O_RDWR, os.FileMode(0600))
-	if err != nil {
-		panic(err)
-	}
+	utils.ErrorExit(err)
 
-	if _, err := io.Copy(fileToWrite, &buf); err != nil {
-		panic(err)
-	}
+	_, err = io.Copy(fileToWrite, &buf)
+	utils.ErrorExit(err)
 
 	return nil
 
