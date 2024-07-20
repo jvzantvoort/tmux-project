@@ -11,7 +11,7 @@ import (
 	"strings"
 	"sync"
 
-	pt "github.com/jvzantvoort/tmux-project/projecttype"
+	"github.com/jvzantvoort/tmux-project/projecttype"
 	"github.com/jvzantvoort/tmux-project/utils"
 	log "github.com/sirupsen/logrus"
 )
@@ -44,14 +44,21 @@ func RunSetupAction(workdir, action string) {
 
 // NewProjectConfig derives from ProjectTypeConfig and returns an updated
 // object with translated values.
-func NewProjectConfig(projecttype, projectname string) pt.ProjectTypeConfig {
+func NewProjectConfig(ptname, projectname string) projecttype.ProjectTypeConfig {
 
-	ptc := pt.NewProjectTypeConfig(projecttype)
+	ptc := projecttype.NewProjectTypeConfig(ptname)
 
-	projtypeconfigdir := path.Join(mainconfig.ProjTypeConfigDir, projecttype)
+	projtypeconfigdir := path.Join(mainconfig.ProjTypeConfigDir, ptname)
 	projtmplvars := NewProjTmplVars(projectname, ptc)
 
 	ptc.Workdir = projtmplvars.Parse(ptc.Workdir)
+
+
+	// Fail if directory already exists
+	if _, err := os.Stat(ptc.Workdir); !os.IsNotExist(err) {
+		utils.ErrorExit(fmt.Errorf("%s already exists", ptc.Workdir))
+	}
+
 	pattern := regexp.MustCompile(ptc.Pattern)
 	if pattern.MatchString(projectname) {
 		log.Debugf("project name matches pattern")
