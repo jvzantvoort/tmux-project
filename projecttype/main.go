@@ -5,14 +5,16 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"runtime"
 	"strings"
 
 	"github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 
 	"github.com/jvzantvoort/tmux-project/config"
 	"github.com/jvzantvoort/tmux-project/utils"
+
+	"gopkg.in/yaml.v2"
 )
 
 var (
@@ -45,21 +47,37 @@ type ProjectTypeConfig struct {
 	Files          []ProjectTypeFile `yaml:"files"`
 }
 
+// prefix returns a prefix for logging and messages based on function name.
+func (ptc ProjectTypeConfig) prefix() string {
+	pc, _, _, _ := runtime.Caller(1)
+	elements := strings.Split(runtime.FuncForPC(pc).Name(), ".")
+	return elements[len(elements)-1]
+}
+
 func (ptc *ProjectTypeConfig) readConfig(projtypeconfigdir string) {
+	// Setup logging
+	log_prefix := ptc.prefix()
+	log.Debugf("%s: start", log_prefix)
+	defer log.Debugf("%s: end", log_prefix)
 
-	viper.SetConfigName("config")
-	viper.AddConfigPath(projtypeconfigdir)
-	// viper.AddConfigPath(tp.MasterConfigDir)
+	filepath := path.Join(projtypeconfigdir, "config.yml")
+	log.Debugf("filepath: %s", filepath)
 
-	err := viper.ReadInConfig() // Find and read the config file
+	yamlFile, err := os.ReadFile(filepath)
 	utils.ErrorExit(err)
 
-	err = viper.Unmarshal(&ptc)
+	err = yaml.Unmarshal(yamlFile, &ptc)
 	utils.ErrorExit(err)
+
 }
 
 // Describe describe
 func (ptc ProjectTypeConfig) Describe() {
+	// Setup logging
+	log_prefix := ptc.prefix()
+	log.Debugf("%s: start", log_prefix)
+	defer log.Debugf("%s: end", log_prefix)
+
 	log.Debugf("Describe: %s", ptc.ProjectType)
 	log.Debugf("  Workdir: %s", ptc.Workdir)
 	log.Debugf("  Pattern: %s", ptc.Pattern)
@@ -89,6 +107,10 @@ func (ptc ProjectTypeConfig) Describe() {
 }
 
 func (ptc ProjectTypeConfig) Write(boxname, target string) error {
+	// Setup logging
+	log_prefix := ptc.prefix()
+	log.Debugf("%s: start", log_prefix)
+	defer log.Debugf("%s: end", log_prefix)
 	filename := fmt.Sprintf("templates/%s", boxname)
 	content, err := Content.ReadFile(filename)
 	if err != nil {
@@ -105,6 +127,10 @@ func (ptc ProjectTypeConfig) Write(boxname, target string) error {
 }
 
 func (ptc ProjectTypeConfig) Exists(targetpath string) bool {
+	// Setup logging
+	log_prefix := ptc.prefix()
+	log.Debugf("%s: start", log_prefix)
+	defer log.Debugf("%s: end", log_prefix)
 	_, err := os.Stat(targetpath)
 	if err != nil {
 		return false
@@ -116,6 +142,10 @@ func (ptc ProjectTypeConfig) Exists(targetpath string) bool {
 }
 
 func (ptc ProjectTypeConfig) UpdateConfigFile(target string) error {
+	// Setup logging
+	log_prefix := ptc.prefix()
+	log.Debugf("%s: start", log_prefix)
+	defer log.Debugf("%s: end", log_prefix)
 
 	read, err := os.ReadFile(target)
 	if err != nil {
@@ -138,6 +168,10 @@ func (ptc ProjectTypeConfig) UpdateConfigFile(target string) error {
 }
 
 func (ptc ProjectTypeConfig) MkdirAll(targetpath string) error {
+	// Setup logging
+	log_prefix := ptc.prefix()
+	log.Debugf("%s: start", log_prefix)
+	defer log.Debugf("%s: end", log_prefix)
 	log.Debugf("mkdir %s, start", targetpath)
 	defer log.Debugf("mkdir %s, end", targetpath)
 
@@ -159,6 +193,10 @@ func (ptc ProjectTypeConfig) MkdirAll(targetpath string) error {
 }
 
 func (ptc *ProjectTypeConfig) Init(projtypeconfigdir, projecttype string) error {
+	// Setup logging
+	log_prefix := ptc.prefix()
+	log.Debugf("%s: start", log_prefix)
+	defer log.Debugf("%s: end", log_prefix)
 
 	log.Debugf("Init Start: %s", projecttype)
 	projtypeconfigdir = path.Join(projtypeconfigdir, projecttype)
@@ -205,6 +243,8 @@ func NewProjectTypeConfig(projecttype string) ProjectTypeConfig {
 	if err != nil {
 		log.Errorf("%q", err)
 	}
+
+	log.Debugf("config >> %#v", v)
 
 	return v
 }
