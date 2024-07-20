@@ -1,49 +1,39 @@
+/*
+Copyright © 2024 John van Zantvoort <john@vanzantvoort.org>
+*/
 package main
 
 import (
-	"context"
-	"flag"
 	"fmt"
 
-	"github.com/google/subcommands"
-	msg "github.com/jvzantvoort/tmux-project/messages"
+	"github.com/jvzantvoort/tmux-project/messages"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
-type ShellProfileCmd struct {
-	shellname string
-	verbose   bool
+// ShellCmd represents the shell command
+var ShellCmd = &cobra.Command{
+	Use:   "shell",
+	Short: "Shell output",
+	Long:  messages.GetLong("shell"),
+	Run:   handleShellCmd,
 }
 
-func (*ShellProfileCmd) Name() string {
-	return "shell"
-}
-
-func (*ShellProfileCmd) Synopsis() string {
-	return "Edit a projects tmux configuration"
-}
-
-func (*ShellProfileCmd) Usage() string {
-	return msg.GetUsage("shell")
-}
-
-func (c *ShellProfileCmd) SetFlags(f *flag.FlagSet) {
-	f.StringVar(&c.shellname, "shellname", "bash", "Name of the shell profile to provide")
-	f.StringVar(&c.shellname, "s", "bash", "Name of the shell profile to provide")
-	f.BoolVar(&c.verbose, "v", false, "Verbose logging")
-}
-
-func (c *ShellProfileCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
-
-	if c.verbose {
+func handleShellCmd(cmd *cobra.Command, args []string) {
+	if verbose {
 		log.SetLevel(log.DebugLevel)
 	}
+	log.Debugf("%s: start", cmd.Use)
+	defer log.Debugf("%s: end", cmd.Use)
 
-	log.Debugln("Start")
+	ShellName := "bash"
 
-	fmt.Print(msg.GetShell(c.shellname))
+	if len(args) == 1 {
+		ShellName = args[0]
+	}
+	fmt.Print(messages.GetShell(ShellName))
+}
 
-	log.Debugln("End")
-
-	return subcommands.ExitSuccess
+func init() {
+	rootCmd.AddCommand(ShellCmd)
 }

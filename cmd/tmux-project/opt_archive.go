@@ -1,66 +1,57 @@
+/*
+Copyright © 2024 John van Zantvoort <john@vanzantvoort.org>
+*/
 package main
 
 import (
-	"context"
-	"flag"
+	"os"
 
-	"github.com/google/subcommands"
-	msg "github.com/jvzantvoort/tmux-project/messages"
+	"github.com/jvzantvoort/tmux-project/messages"
 	"github.com/jvzantvoort/tmux-project/sessions"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
-type ArchiveSubCmd struct {
-	projecttype string
-	projectname string
-	archivename string
-	verbose     bool
+// ArchiveCmd represents the archive command
+var ArchiveCmd = &cobra.Command{
+	Use:   "archive <projectname>",
+	Short: "Archive a project",
+	Long:  messages.GetLong("archive"),
+	Run:   handleArchiveCmd,
 }
 
-func (*ArchiveSubCmd) Name() string {
-	return "archive"
-}
-
-func (*ArchiveSubCmd) Synopsis() string {
-	return "Archive a project"
-}
-
-func (*ArchiveSubCmd) Usage() string {
-	return msg.GetUsage("archive")
-}
-
-func (c *ArchiveSubCmd) SetFlags(f *flag.FlagSet) {
-	f.StringVar(&c.archivename, "archivename", "", "Archive file")
-	f.StringVar(&c.archivename, "a", "", "Archive file")
-	f.StringVar(&c.projectname, "projectname", "", "Name of project")
-	f.StringVar(&c.projectname, "n", "", "Name of project")
-	f.BoolVar(&c.verbose, "v", false, "Verbose logging")
-}
-
-func (c *ArchiveSubCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
-
-	if c.verbose {
+func handleArchiveCmd(cmd *cobra.Command, args []string) {
+	if verbose {
 		log.SetLevel(log.DebugLevel)
 	}
+	log.Debugf("%s: start", cmd.Use)
+	defer log.Debugf("%s: end", cmd.Use)
 
-	log.Debugln("Start")
-	//
-	if len(c.projectname) == 0 {
-		log.Fatalf("no name provided")
+
+	if len(args) != 1 {
+		log.Error("No project provided")
+		cmd.Help()
+		os.Exit(1)
+	}
+	ProjectName := args[0]
+
+	session := sessions.NewTmuxSession(ProjectName)
+
+	ArchiveName := GetString(*cmd, "archivename")
+
+	if ArchiveName == "" {
+		ArchiveName = session.Workdir + ".tar.gz"
 	}
 
-	session := sessions.NewTmuxSession(c.projectname)
-
-	if c.archivename == "" {
-		c.archivename = session.Workdir + ".tar.gz"
-	}
-
-	err := session.Archive(c.archivename)
+	err := session.Archive(ArchiveName)
 	if err != nil {
 		log.Fatalf("Encountered error: %q", err)
 	}
+	// name: cmd.Use
+}
 
-	log.Debugln("End")
-
-	return subcommands.ExitSuccess
+func init() {
+	rootCmd.AddCommand(ArchiveCmd)
+	ArchiveCmd.Flags().StringP("archivename", "a", "", "Archive file")
+	// ArchiveCmd.Flags().StringP("projectname", "n", "", "Name of project")
 }

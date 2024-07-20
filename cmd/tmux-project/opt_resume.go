@@ -1,34 +1,84 @@
+/*
+Copyright © 2024 John van Zantvoort <john@vanzantvoort.org>
+*/
 package main
 
 import (
-	"context"
-	"flag"
 	"fmt"
+	"os"
 	"strings"
 
-	"github.com/google/subcommands"
-	msg "github.com/jvzantvoort/tmux-project/messages"
+	"github.com/jvzantvoort/tmux-project/messages"
 	"github.com/jvzantvoort/tmux-project/sessions"
 	"github.com/jvzantvoort/tmux-project/tmux"
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
-type ResumeSubCmd struct {
-	projectname string
-	verbose     bool
+// ResumeCmd represents the resume command
+var ResumeCmd = &cobra.Command{
+	Use:   "resume <projectname>",
+	Short: "Resume a project",
+	Long:  messages.GetLong("resume"),
+	Run:   handleResumeCmd,
 }
 
-func (*ResumeSubCmd) Name() string {
-	return "resume"
-}
+func handleResumeCmd(cmd *cobra.Command, args []string) {
+	if verbose {
+		log.SetLevel(log.DebugLevel)
+	}
+	log.Debugf("%s: start", cmd.Use)
+	defer log.Debugf("%s: end", cmd.Use)
 
-func (*ResumeSubCmd) Synopsis() string {
-	return "Resume a project"
-}
+	if len(args) != 1 {
+		log.Error("No project provided")
+		cmd.Help()
+		os.Exit(1)
+	}
+	ProjectName := args[0]
 
-func (*ResumeSubCmd) Usage() string {
-	return msg.GetUsage("resume")
+	if len(ProjectName) == 0 {
+		prompt := promptui.Select{
+			Label: "Select project",
+			Size:  20,
+			Items: ListSessions(),
+		}
+		_, result, err := prompt.Run()
+
+		if err != nil {
+			log.Fatalf("Prompt failed %v\n", err)
+		}
+		result = strings.Split(result, " ")[0]
+		ProjectName = result
+	}
+	_tmux := tmux.NewTmux()
+	found := false
+	active := false
+
+	sess := sessions.NewTmuxSessions()
+	xsess := sessions.TmuxSession{}
+	for _, sesi := range sess.Sessions {
+		if ProjectName == sesi.Name {
+			xsess = sesi
+			found = true
+		}
+	}
+
+	if found {
+		if _tmux.SessionExists(xsess.Name) {
+			active = true
+		}
+	} else {
+		os.Exit(1)
+	}
+
+	if active {
+		_tmux.ResumeSession(xsess)
+	} else {
+		_tmux.CreateSession(xsess)
+	}
+
 }
 
 func stringInSlice(a string, list []string) bool {
@@ -40,11 +90,6 @@ func stringInSlice(a string, list []string) bool {
 	return false
 }
 
-func (c *ResumeSubCmd) SetFlags(f *flag.FlagSet) {
-	f.StringVar(&c.projectname, "projectname", "", "Name of project")
-	f.StringVar(&c.projectname, "n", "", "Name of project")
-	f.BoolVar(&c.verbose, "v", false, "Verbose logging")
-}
 
 func ListSessions() []string {
 	retv := []string{}
@@ -65,60 +110,6 @@ func ListSessions() []string {
 	return retv
 }
 
-func (c *ResumeSubCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
-
-	if c.verbose {
-		log.SetLevel(log.DebugLevel)
-	}
-
-	log.Debugln("Start")
-	//
-	if len(c.projectname) == 0 {
-		prompt := promptui.Select{
-			Label: "Select project",
-			Size:  20,
-			Items: ListSessions(),
-		}
-		_, result, err := prompt.Run()
-
-		if err != nil {
-			log.Fatalf("Prompt failed %v\n", err)
-		}
-		result = strings.Split(result, " ")[0]
-		c.projectname = result
-	}
-	_tmux := tmux.NewTmux()
-	found := false
-	active := false
-
-	sess := sessions.NewTmuxSessions()
-	xsess := sessions.TmuxSession{}
-	for _, sesi := range sess.Sessions {
-		if c.projectname == sesi.Name {
-			xsess = sesi
-			found = true
-		}
-	}
-
-	if found {
-		if _tmux.SessionExists(xsess.Name) {
-			active = true
-		}
-	} else {
-		return subcommands.ExitFailure
-	}
-
-	if active {
-		_tmux.ResumeSession(xsess)
-	} else {
-		_tmux.CreateSession(xsess)
-	}
-	// err := session.Resume(c.archivename)
-	// if err != nil {
-	// 	log.Fatalf("Encountered error: %q", err)
-	// }
-
-	log.Debugln("End")
-
-	return subcommands.ExitSuccess
+func init() {
+	rootCmd.AddCommand(ResumeCmd)
 }

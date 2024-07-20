@@ -1,58 +1,48 @@
+/*
+Copyright © 2024 John van Zantvoort <john@vanzantvoort.org>
+*/
 package main
 
 import (
-	"context"
-	"flag"
+	"os"
 
-	"github.com/google/subcommands"
 	tp "github.com/jvzantvoort/tmux-project"
-	msg "github.com/jvzantvoort/tmux-project/messages"
+	"github.com/jvzantvoort/tmux-project/messages"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
-type CreateSubCmd struct {
-	projecttype string
-	projectname string
-	verbose     bool
+// CreateCmd represents the create command
+var CreateCmd = &cobra.Command{
+	Use:   "create <projectname>",
+	Short: "Create a project",
+	Long:  messages.GetLong("create"),
+	Run:   handleCreateCmd,
 }
 
-func (*CreateSubCmd) Name() string {
-	return "create"
-}
-
-func (*CreateSubCmd) Synopsis() string {
-	return "Create a new project"
-}
-
-func (*CreateSubCmd) Usage() string {
-	return msg.GetUsage("create")
-}
-
-func (c *CreateSubCmd) SetFlags(f *flag.FlagSet) {
-	f.StringVar(&c.projecttype, "projecttype", "default", "Type of project")
-	f.StringVar(&c.projecttype, "t", "default", "Type of project")
-	f.StringVar(&c.projectname, "projectname", "", "Name of project")
-	f.StringVar(&c.projectname, "n", "", "Name of project")
-	f.BoolVar(&c.verbose, "v", false, "Verbose logging")
-}
-
-func (c *CreateSubCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
-
-	if c.verbose {
+func handleCreateCmd(cmd *cobra.Command, args []string) {
+	if verbose {
 		log.SetLevel(log.DebugLevel)
 	}
+	log.Debugf("%s: start", cmd.Use)
+	defer log.Debugf("%s: end", cmd.Use)
 
-	log.Debugln("Start")
-	//
-	if len(c.projectname) == 0 {
-		log.Fatalf("no name provided")
+	if len(args) != 1 {
+		log.Error("No project provided")
+		cmd.Help()
+		os.Exit(1)
 	}
-	err := tp.CreateProject(c.projecttype, c.projectname)
+	ProjectName := args[0]
+	ProjectType := GetString(*cmd, "type")
+
+	err := tp.CreateProject(ProjectType, ProjectName)
 	if err != nil {
 		log.Fatalf("Encountered error: %q", err)
 	}
-	//
-	log.Debugln("End")
 
-	return subcommands.ExitSuccess
+}
+
+func init() {
+	rootCmd.AddCommand(CreateCmd)
+	CreateCmd.Flags().StringP("type", "t", "default", "Type of project")
 }

@@ -1,56 +1,41 @@
+/*
+Copyright © 2024 John van Zantvoort <john@vanzantvoort.org>
+*/
 package main
 
 import (
-	"context"
-	"flag"
-
-	"github.com/google/subcommands"
 	tp "github.com/jvzantvoort/tmux-project"
-	msg "github.com/jvzantvoort/tmux-project/messages"
+	"github.com/jvzantvoort/tmux-project/messages"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
-type ListSubCmd struct {
-	projecttype string
-	projectname string
-	printfull   bool
-	verbose     bool
+// ListCmd represents the list command
+var ListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List a project",
+	Long:  messages.GetLong("list"),
+	Run:   handleListCmd,
 }
 
-func (*ListSubCmd) Name() string {
-	return "list"
-}
-
-func (*ListSubCmd) Synopsis() string {
-	return "List projects"
-}
-
-func (*ListSubCmd) Usage() string {
-	return msg.GetUsage("list")
-}
-
-func (c *ListSubCmd) SetFlags(f *flag.FlagSet) {
-	f.StringVar(&c.projectname, "projectname", "", "Name of project")
-	f.StringVar(&c.projectname, "n", "", "Name of project")
-	f.BoolVar(&c.printfull, "f", false, "Print full")
-	f.BoolVar(&c.verbose, "v", false, "Verbose logging")
-}
-
-func (c *ListSubCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
-
-	if c.verbose {
+func handleListCmd(cmd *cobra.Command, args []string) {
+	if verbose {
 		log.SetLevel(log.DebugLevel)
 	}
+	log.Debugf("%s: start", cmd.Use)
+	defer log.Debugf("%s: end", cmd.Use)
 
-	log.Debugln("Start")
+	PrintFull, _ := cmd.Flags().GetBool("full")
 
-	if c.printfull {
+	if PrintFull {
 		tp.PrintFullList()
 	} else {
 		tp.PrintShortList()
 	}
 
-	log.Debugln("End")
+}
 
-	return subcommands.ExitSuccess
+func init() {
+	rootCmd.AddCommand(ListCmd)
+	ListCmd.Flags().BoolP("full", "f", false, "Print full")
 }
