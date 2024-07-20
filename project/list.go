@@ -1,4 +1,4 @@
-package tmuxproject
+package project
 
 import (
 	"fmt"
