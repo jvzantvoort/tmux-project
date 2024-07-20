@@ -95,7 +95,8 @@ func CreateProject(projecttype, projectname string) error {
 	// Write the configuration files
 	for _, target := range configuration.Files {
 		srccontent, _ := tmplvars.LoadFile(target.Name)
-		file, err := os.Create(target.Destination)
+		file, _ := os.Create(target.Destination)
+		var err error
 		_, err = file.WriteString(srccontent)
 		if err != nil {
 			return err
@@ -114,7 +115,7 @@ func CreateProject(projecttype, projectname string) error {
 	}
 
 	if err := os.MkdirAll(configuration.Workdir, os.FileMode(int(0755))); err != nil {
-		return fmt.Errorf("Directory cannot be created: %s", configuration.Workdir)
+		return fmt.Errorf("directory cannot be created: %s", configuration.Workdir)
 	}
 
 	for _, action := range configuration.SetupActions {

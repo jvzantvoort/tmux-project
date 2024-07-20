@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"sort"
@@ -16,11 +15,11 @@ import (
 )
 
 type Project struct {
-	Name    string
-	AbsPath string
-	Branch  string
+	Name     string
+	AbsPath  string
+	Branch   string
 	Expected bool
-	Status  map[string]int
+	Status   map[string]int
 }
 
 func (p Project) PrintLine() {
@@ -42,7 +41,6 @@ func (p Project) PrintLine() {
 	fmt.Printf("   %-32s %s%s\n", p.Name, br_str, stat_str)
 	// fmt.Printf("%q\n", p)
 }
-
 
 func init() {
 	log.SetFormatter(&log.TextFormatter{
@@ -70,7 +68,7 @@ func printTitle(title string) {
 func printInfo(itype, ival string) {
 	infNameCol := color.New(InfoNameColor)
 	infValCol := color.New(InfoValueColor)
-	fmt.Printf("%-24s %s\n", infNameCol.Sprint(itype) + ":", infValCol.Sprint(ival))
+	fmt.Printf("%-24s %s\n", infNameCol.Sprint(itype)+":", infValCol.Sprint(ival))
 
 }
 
@@ -93,7 +91,7 @@ func main() {
 	printInfo("Projectdir", session.Workdir)
 	printInfo("Description", session.Description)
 
-	targets, err := ioutil.ReadDir(session.Workdir)
+	targets, err := os.ReadDir(session.Workdir)
 	if err != nil {
 		log.Fatal(err)
 	}

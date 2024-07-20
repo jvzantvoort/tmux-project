@@ -3,7 +3,6 @@ package sessions
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -117,7 +116,7 @@ func NewTmuxSession(sessionname string) *TmuxSession {
 func NewTmuxSessions() *TmuxSessions {
 	tmux_sessions := &TmuxSessions{}
 
-	targets, err := ioutil.ReadDir(mainconfig.TmuxDir)
+	targets, err := os.ReadDir(mainconfig.TmuxDir)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -18,7 +18,6 @@ type GitCmd struct {
 	path    []string
 	cwd     string
 	command string
-	branch  string
 }
 
 func (g GitCmd) which(command string) (string, error) {
