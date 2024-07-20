@@ -1,9 +1,9 @@
 NAME := tmux-project
 VERSION := $(shell git describe --tags --abbrev=0)
 REVISION := $(shell git rev-parse --short HEAD)
-COMMANDS := tmux-project
+COMMANDS := tmux-project pinfo
 LDFLAGS := -X 'main.version=$(VERSION)' \
-           -X 'main.revision=$(REVISION)'
+           -X 'main.revision=$(REVISION)' -w -s
 GOIMPORTS ?= goimports
 GOCILINT ?= golangci-lint
 GO ?= GO111MODULE=on go
@@ -11,11 +11,13 @@ GO ?= GO111MODULE=on go
 
 .PHONY: fmt
 fmt: ## Formatting source codes.
-	@$(GOIMPORTS) -w *.go config cmd
+	find . -type f -name '*.go' -not -path '*/vendor/*' -exec $(GOIMPORTS) -w "{}" \;
 
 .PHONY: clean
 clean:
-	@rm -f $(COMMANDS) || true
+	@rm -f $(COMMANDS) || true; \
+	rm -rf pkg || true; \
+	rm -rf tags || true
 
 .PHONY: refresh
 refresh: tags
@@ -40,18 +42,28 @@ lint: ## Run golint and go vet.
 	@$(GOCILINT) run --no-config --disable-all --enable=goimports --enable=misspell ./cmd/*/*.go
 
 .PHONY: test
-test:  ## Run the tests.
+test:
 	@$(GO) test ./...
 
+.PHONY: update
+update:
+	@test -e go.mod || $(GO) mod init
+	@$(GO) mod tidy
+	@$(GO) mod vendor
+
 .PHONY: build
-build: main.go  ## Build a binary.
+build: update
 	$(foreach cmd,$(COMMANDS), $(GO) build -ldflags "$(LDFLAGS)" ./cmd/$(cmd);)
+
+.PHONY: install
+install:
+	$(GO) install ./...
 
 .PHONY: cross
 cross: main.go  ## Build binaries for cross platform.
 	mkdir -p pkg
 	@# darwin
-	@for arch in "amd64" "386"; do \
+	@for arch in "amd64"; do \
 		GOOS=darwin GOARCH=$${arch} make build; \
 		zip pkg/tmux-project_$(VERSION)_darwin_$${arch}.zip $(COMMANDS); \
 	done;

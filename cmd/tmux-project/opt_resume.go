@@ -3,11 +3,14 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
+	"strings"
 
 	"github.com/google/subcommands"
 	tp "github.com/jvzantvoort/tmux-project"
 	"github.com/jvzantvoort/tmux-project/sessions"
 	"github.com/jvzantvoort/tmux-project/tmux"
+	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -33,11 +36,41 @@ func (*ResumeSubCmd) Usage() string {
 	return string(msgstr)
 }
 
+func stringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
+}
+
+
 func (c *ResumeSubCmd) SetFlags(f *flag.FlagSet) {
 	f.StringVar(&c.projectname, "projectname", "", "Name of project")
 	f.StringVar(&c.projectname, "n", "", "Name of project")
 	f.BoolVar(&c.verbose, "v", false, "Verbose logging")
 }
+
+func ListSessions() []string {
+	retv := []string{}
+	tmux := tmux.NewTmux()
+	active, _ := tmux.ListActive()
+
+	sess := sessions.NewTmuxSessions()
+	for _, sesi := range sess.Sessions {
+		state := " "
+		if stringInSlice(sesi.Name, active) {
+			state = "active"
+		}
+		message := fmt.Sprintf("%-32s %-6s %s", sesi.Name, state, sesi.Description)
+
+		retv = append(retv, message)
+	}
+
+	return retv
+}
+
 
 func (c *ResumeSubCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 
@@ -48,7 +81,18 @@ func (c *ResumeSubCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interfac
 	log.Debugln("Start")
 	//
 	if len(c.projectname) == 0 {
-		log.Fatalf("no name provided")
+		prompt := promptui.Select{
+			Label: "Select project",
+			Size: 20,
+			Items: ListSessions(),
+		}
+		_, result, err := prompt.Run()
+
+		if err != nil {
+			log.Fatalf("Prompt failed %v\n", err)
+		}
+		result = strings.Split(result," ")[0]
+		c.projectname = result
 	}
 	_tmux := tmux.NewTmux()
 	found := false

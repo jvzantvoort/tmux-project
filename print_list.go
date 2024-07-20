@@ -21,9 +21,12 @@ func PrintFullList() {
 	tmux := tmux.NewTmux()
 	active, _ := tmux.ListActive()
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "Active", "Description", "Workdir"})
+	table.SetHeader([]string{"Name", "Active", "Description", "Workdir", "Sane"})
 
 	for _, target := range ListTmuxConfigs() {
+		if target.Name == "default" {
+			continue
+		}
 		var cols []string
 		cols = append(cols, target.Name)
 
@@ -34,6 +37,12 @@ func PrintFullList() {
 		}
 		cols = append(cols, target.Description)
 		cols = append(cols, target.Workdir)
+		if target.Sane {
+			cols = append(cols, "true")
+		} else {
+			cols = append(cols, "false")
+
+		}
 		table.Append(cols)
 	}
 	table.SetHeaderLine(true)

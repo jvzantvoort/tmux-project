@@ -86,7 +86,7 @@ func templatesConfigYml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/config.yml", size: 278, mode: os.FileMode(0664), modTime: time.Unix(1609557958, 0)}
+	info := bindataFileInfo{name: "templates/config.yml", size: 278, mode: os.FileMode(0664), modTime: time.Unix(1661162498, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x77, 0x43, 0x7d, 0x75, 0xe4, 0x56, 0xc6, 0xa0, 0x40, 0xbf, 0xb4, 0x41, 0x8f, 0x99, 0xbe, 0x65, 0x59, 0x3f, 0xdc, 0x9b, 0xa3, 0xcd, 0x2a, 0x26, 0xa4, 0x76, 0x2, 0xe1, 0xa3, 0xfc, 0xd8, 0x86}}
 	return a, nil
 }
@@ -106,7 +106,7 @@ func templatesDefaultEnv() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/default.env", size: 314, mode: os.FileMode(0664), modTime: time.Unix(1609557968, 0)}
+	info := bindataFileInfo{name: "templates/default.env", size: 314, mode: os.FileMode(0664), modTime: time.Unix(1661162498, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xf8, 0xbb, 0x73, 0x3, 0x34, 0x4a, 0x6d, 0x95, 0xc1, 0xa0, 0x9c, 0xfd, 0x78, 0xb, 0x6e, 0x39, 0x13, 0x5b, 0x6f, 0x6b, 0xdd, 0x6e, 0x1, 0x3a, 0x94, 0x5f, 0x58, 0x31, 0xfa, 0x7a, 0x5f, 0xa3}}
 	return a, nil
 }
@@ -126,7 +126,7 @@ func templatesDefaultRc() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/default.rc", size: 230, mode: os.FileMode(0664), modTime: time.Unix(1609532582, 0)}
+	info := bindataFileInfo{name: "templates/default.rc", size: 230, mode: os.FileMode(0664), modTime: time.Unix(1661162498, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x62, 0x27, 0xff, 0x59, 0x43, 0x5a, 0xda, 0x73, 0xd6, 0x4a, 0x2a, 0x3b, 0x73, 0x24, 0xc, 0x6, 0x9, 0xe7, 0x98, 0xfb, 0x83, 0xf3, 0xec, 0x40, 0x88, 0x61, 0xc2, 0xf2, 0xba, 0x32, 0x5a, 0xf}}
 	return a, nil
 }
@@ -272,9 +272,9 @@ type bintree struct {
 
 var _bintree = &bintree{nil, map[string]*bintree{
 	"templates": {nil, map[string]*bintree{
-		"config.yml":  {templatesConfigYml, map[string]*bintree{}},
+		"config.yml": {templatesConfigYml, map[string]*bintree{}},
 		"default.env": {templatesDefaultEnv, map[string]*bintree{}},
-		"default.rc":  {templatesDefaultRc, map[string]*bintree{}},
+		"default.rc": {templatesDefaultRc, map[string]*bintree{}},
 	}},
 }}
 

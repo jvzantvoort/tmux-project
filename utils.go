@@ -20,6 +20,7 @@ type ListTable struct {
 	Name        string
 	Description string
 	Workdir     string
+	Sane        bool
 }
 
 func Exec(cwd, args string) ([]string, []string, error) {
@@ -143,6 +144,7 @@ func ListTmuxConfigs() []ListTable {
 		t.Name = session.Name
 		t.Description = session.Description
 		t.Workdir = session.Workdir
+		t.Sane = session.IsSane()
 		retv = append(retv, t)
 	}
 	return retv
