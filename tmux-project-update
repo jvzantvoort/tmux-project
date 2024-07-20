@@ -1,6 +1,8 @@
 #!/bin/bash
 
 APPLICATION="jvzantvoort/tmux-project"
+BLACKLIST=()
+BLACKLIST+=("pinfo")
 
 function die() { printf "FATAL: %s\n" "$1" >&2 ; exit 1; }
 
@@ -68,5 +70,13 @@ do
   install -m 755 "${target}" "${BINDIR}/${target}"
 done
 popd >/dev/null 2>&1 || die "change dir back"
+
+for target in "${BLACKLIST[@]}"
+do
+  if [[ -f "${BINDIR}/${target}" ]]
+  then
+    rm -vf "${BINDIR}/${target}"
+  fi
+done
 
 rm -rf "${STAGING_AREA}"
