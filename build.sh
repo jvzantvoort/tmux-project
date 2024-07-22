@@ -221,6 +221,7 @@ function action_build()
   do
     dest="$(__calcdest "${goos}" "${arch}" "${target}")"
 
+    CGO_ENABLED=0 \
     GOOS=${goos} GOARCH=${arch} \
       go  build -ldflags "${LDFLAGS}" \
       -o "${dest}" "./cmd/${target}"
