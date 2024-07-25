@@ -25,7 +25,10 @@ type Project struct {
 	Info     os.FileInfo
 }
 
-func (p Project) PrintLine() {
+func (p Project) GetFields() []string {
+	retv := []string{}
+	retv = append(retv, p.Name)
+
 	br_col := color.New(BranchChangedColor)
 	if utils.StringInSlice(p.Branch, []string{"master", "main", "develop"}) {
 		br_col = color.New(BranchDefaultColor)
@@ -36,13 +39,14 @@ func (p Project) PrintLine() {
 		stat_str = strings.TrimSpace(stat_str)
 	}
 	if len(stat_str) != 0 {
-		stat_str = fmt.Sprintf(" [%s]", stat_str)
+		retv = append(retv, fmt.Sprintf("[%s]", stat_str))
+	} else {
+		retv = append(retv, " ")
 	}
 
-	br_str := br_col.Sprint(p.Branch)
+	retv = append(retv, br_col.Sprint(p.Branch))
 
-	fmt.Printf("   %-32s %s%s\n", p.Name, br_str, stat_str)
-	// fmt.Printf("%q\n", p)
+	return retv
 }
 
 func NewProject(projdir, dirname string) *Project {
