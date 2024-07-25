@@ -98,12 +98,15 @@ func main() {
 
 	for _, chapter := range chapters {
 		printTitle(chapter)
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"Name", "Status", "Branch"})
+		table.SetBorder(false)
 		for _, proj := range brojects {
 			if chapter == proj.Chapter {
-				proj.PrintLine()
+				table.Append(proj.GetFields())
 			}
 		}
+		table.Render()
 	}
-	fmt.Printf("\n")
 	fmt.Printf("\n")
 }
