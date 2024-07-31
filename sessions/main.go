@@ -9,12 +9,7 @@ import (
 
 	"github.com/jvzantvoort/tmux-project/config"
 	"github.com/jvzantvoort/tmux-project/utils"
-	"github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
-)
-
-var (
-	mainconfig = config.NewMainConfig()
 )
 
 type TmuxSession struct {
@@ -32,7 +27,7 @@ type TmuxSessions struct {
 func (tm *TmuxSession) LoadConfig() {
 	var err error
 	var config_lines []string
-	config_lines, err = LoadFile(tm.Configfile)
+	config_lines, err = utils.LoadFile(tm.Configfile)
 	if err != nil {
 		log.Errorf("%q", err)
 	}
@@ -43,7 +38,7 @@ func (tm *TmuxSession) LoadConfig() {
 
 		tm.Description = strings.TrimSuffix(config_matches["description"], "\n")
 		tm.Workdir = strings.TrimSuffix(env_matches["workdir"], "\n")
-		tm.Workdir, _ = homedir.Expand(tm.Workdir)
+		tm.Workdir, _ = utils.Expand(tm.Workdir)
 	}
 }
 
@@ -63,7 +58,7 @@ func (tm TmuxSession) Archive(archivename string) error {
 
 	_ = MakeTarArchive(&buf, targets)
 
-	archivename, _ = homedir.Expand(archivename)
+	archivename, _ = utils.Expand(archivename)
 
 	fileToWrite, err := os.OpenFile(archivename, os.O_CREATE|os.O_RDWR, os.FileMode(0600))
 	utils.ErrorExit(err)
@@ -89,8 +84,8 @@ func (tm TmuxSession) IsSane() bool {
 
 func NewTmuxSession(sessionname string) *TmuxSession {
 	tm := &TmuxSession{Name: sessionname}
-	tm.Configfile = path.Join(mainconfig.TmuxDir, tm.Name+".rc")
-	tm.Environment = path.Join(mainconfig.TmuxDir, tm.Name+".env")
+	tm.Configfile = path.Join(config.SessionDir(), tm.Name+".rc")
+	tm.Environment = path.Join(config.SessionDir(), tm.Name+".env")
 
 	tm.LoadConfig()
 
@@ -100,7 +95,7 @@ func NewTmuxSession(sessionname string) *TmuxSession {
 func NewTmuxSessions() *TmuxSessions {
 	tmux_sessions := &TmuxSessions{}
 
-	targets, err := os.ReadDir(mainconfig.TmuxDir)
+	targets, err := os.ReadDir(config.SessionDir())
 	if err != nil {
 		log.Fatal(err)
 	}

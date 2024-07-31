@@ -8,17 +8,12 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/jvzantvoort/tmux-project/config"
 	"github.com/jvzantvoort/tmux-project/utils"
 
 	"gopkg.in/yaml.v2"
-)
-
-var (
-	mainconfig = config.NewMainConfig()
 )
 
 //go:embed templates/*
@@ -230,16 +225,16 @@ func (ptc *ProjectTypeConfig) Init(projtypeconfigdir, projecttype string) error 
 func NewProjectTypeConfig(projecttype string) ProjectTypeConfig {
 
 	// Load main configuration targets
-	projtypeconfigdir := path.Join(mainconfig.ProjTypeConfigDir, projecttype)
+	projtypeconfigdir := path.Join(config.ConfigDir(), projecttype)
 
 	log.Debugf("project type config dir: %s", projtypeconfigdir)
-	log.Debugf("tmux dir: %s", mainconfig.TmuxDir)
+	log.Debugf("tmux dir: %s", config.SessionDir())
 
 	v := ProjectTypeConfig{}
 	v.readConfig(projtypeconfigdir)
 
 	var err error
-	v.Workdir, err = homedir.Expand(v.Workdir)
+	v.Workdir, err = utils.Expand(v.Workdir)
 	if err != nil {
 		log.Errorf("%q", err)
 	}
@@ -251,6 +246,6 @@ func NewProjectTypeConfig(projecttype string) ProjectTypeConfig {
 
 func CreateProjectType(projecttype string) error {
 	var pt ProjectTypeConfig
-	pt.Init(mainconfig.ProjTypeConfigDir, projecttype)
+	pt.Init(config.ConfigDir(), projecttype)
 	return nil
 }
