@@ -7,7 +7,6 @@ toolchain go1.21.5
 require (
 	github.com/fatih/color v1.17.0
 	github.com/manifoldco/promptui v0.9.0
-	github.com/mitchellh/go-homedir v1.0.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.1

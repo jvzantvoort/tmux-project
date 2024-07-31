@@ -5,24 +5,26 @@ import (
 	"os"
 	"text/template"
 
-	"github.com/mitchellh/go-homedir"
-
 	"github.com/jvzantvoort/tmux-project/projecttype"
 	"github.com/jvzantvoort/tmux-project/utils"
 )
 
 type ProjTmplVars struct {
-	HomeDir            string
-	ProjectDescription string
-	ProjectDir         string
-	ProjectName        string
-	ProjectType        string
+	HomeDir            string `json:"homedir"`
+	ProjectDescription string `json:"description"`
+	ProjectDir         string `json:"directory"`
+	ProjectName        string `json:"name"`
+	ProjectType        string `json:"type"`
+	GOARCH             string `json:"-"` // target architecture
+	GOOS               string `json:"-"` // target operating system
+	GOPATH             string `json:"-"` // Go paths
+	USER               string `json:"-"`
 }
 
 func NewProjTmplVars(projectname string, conf projecttype.ProjectTypeConfig) *ProjTmplVars {
 
 	v := &ProjTmplVars{}
-	v.HomeDir, _ = homedir.Dir()
+	v.HomeDir, _ = os.UserHomeDir()
 	v.ProjectDir = conf.Workdir
 	v.ProjectName = projectname
 	v.ProjectType = conf.ProjectType

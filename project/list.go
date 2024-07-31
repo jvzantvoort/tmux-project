@@ -5,9 +5,10 @@ import (
 	"os"
 	"strings"
 
+	"github.com/jvzantvoort/tmux-project/config"
 	"github.com/jvzantvoort/tmux-project/sessions"
-	"github.com/jvzantvoort/tmux-project/utils"
 	"github.com/jvzantvoort/tmux-project/tmux"
+	"github.com/jvzantvoort/tmux-project/utils"
 	"github.com/olekukonko/tablewriter"
 	log "github.com/sirupsen/logrus"
 )
@@ -60,7 +61,7 @@ func PrintShortList() {
 
 func ListTmuxConfigs() []ListTable {
 	var retv []ListTable
-	targets, err := os.ReadDir(mainconfig.TmuxDir)
+	targets, err := os.ReadDir(config.SessionDir())
 	if err != nil {
 		log.Fatal(err)
 	}
