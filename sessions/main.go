@@ -1,12 +1,11 @@
 package sessions
 
 import (
-	"bytes"
-	"io"
 	"os"
 	"path"
 	"strings"
 
+	"github.com/jvzantvoort/tmux-project/archive"
 	"github.com/jvzantvoort/tmux-project/config"
 	"github.com/jvzantvoort/tmux-project/utils"
 	log "github.com/sirupsen/logrus"
@@ -51,22 +50,13 @@ func (tm TmuxSession) TargetPaths() (targets []string) {
 
 func (tm TmuxSession) Archive(archivename string) error {
 
-	var buf bytes.Buffer
-	targets := tm.TargetPaths()
-
-	log.Debugf("targets: %d", len(targets))
-
-	_ = MakeTarArchive(&buf, targets)
-
 	archivename, _ = utils.Expand(archivename)
+	tar := archive.NewTarArchive(archivename)
 
-	fileToWrite, err := os.OpenFile(archivename, os.O_CREATE|os.O_RDWR, os.FileMode(0600))
-	utils.ErrorExit(err)
+	targets := tm.TargetPaths()
+	tar.AddFiles(targets)
 
-	_, err = io.Copy(fileToWrite, &buf)
-	utils.ErrorExit(err)
-
-	return nil
+	return tar.CreateArchive()
 
 }
 
