@@ -16,7 +16,6 @@ import (
 
 	"github.com/jvzantvoort/tmux-project/sessions"
 	"github.com/jvzantvoort/tmux-project/utils"
-	"github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -166,7 +165,7 @@ func NewTmux() *Tmux {
 	t := &Tmux{}
 	t.CommandPath = utils.Which("tmux")
 
-	t.CommandCwd, _ = homedir.Dir()
+	t.CommandCwd, _ = os.UserHomeDir()
 
 	return t
 }

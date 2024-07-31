@@ -9,9 +9,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/mitchellh/go-homedir"
-	log "github.com/sirupsen/logrus"
 	"github.com/jvzantvoort/tmux-project/utils"
+	log "github.com/sirupsen/logrus"
 )
 
 // GitCmd object for git
@@ -47,7 +46,8 @@ func (g GitCmd) exec(args ...string) ([]string, error) {
 	cmd := exec.Command(g.command, cmnd...)
 	stdout, _ := cmd.StdoutPipe()
 	cmd.Dir = g.cwd
-	cmd.Start()
+	err := cmd.Start()
+	utils.ErrorExit(err)
 	scanner := bufio.NewScanner(stdout)
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
@@ -159,9 +159,8 @@ func (g GitCmd) IsGit() bool {
 func NewGitCmd(dir string) *GitCmd {
 	retv := &GitCmd{}
 	path := strings.Split(os.Getenv("PATH"), ":")
-	homedir.Dir()
 	for _, dirn := range path {
-		dpath, err := homedir.Expand(dirn)
+		dpath, err := utils.Expand(dirn)
 		if err == nil {
 			retv.path = append(retv.path, dpath)
 		}

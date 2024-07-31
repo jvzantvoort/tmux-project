@@ -27,7 +27,8 @@ func Exec(cwd, args string) ([]string, []string, error) {
 	stderr, err := command.StderrPipe()
 	ErrorExit(err)
 
-	command.Start()
+	err = command.Start()
+	ErrorExit(err)
 
 	stdout_scan := bufio.NewScanner(stdout)
 	stdout_scan.Split(bufio.ScanLines)

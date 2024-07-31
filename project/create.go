@@ -1,76 +1,41 @@
 package project
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"path"
 	"path/filepath"
-	"regexp"
 	"strconv"
-	"strings"
-	"sync"
 
+	"github.com/jvzantvoort/tmux-project/config"
 	"github.com/jvzantvoort/tmux-project/projecttype"
 	"github.com/jvzantvoort/tmux-project/utils"
 	log "github.com/sirupsen/logrus"
 )
 
-var (
-	wg sync.WaitGroup
-)
-
-func cleanup() {
-	if r := recover(); r != nil {
-		log.Errorf("Paniced %s", r)
-	}
-}
-
-func RunSetupAction(workdir, action string) {
-	defer wg.Done() // lower counter
-	defer cleanup() // handle panics
-
-	stdout_list, stderr_list, eerror := utils.Exec(workdir, action)
-	for _, stdout_line := range stdout_list {
-		log.Infof("<stdout> %s", stdout_line)
-	}
-	for _, stderr_line := range stderr_list {
-		log.Errorf("<stderr> %s", stderr_line)
-	}
-	if eerror != nil {
-		panic(fmt.Sprintf("Action \"%s\" failed", action))
-	}
-}
-
 // NewProjectConfig derives from ProjectTypeConfig and returns an updated
 // object with translated values.
 func NewProjectConfig(ptname, projectname string) projecttype.ProjectTypeConfig {
 
-	ptc := projecttype.NewProjectTypeConfig(ptname)
+	retv := projecttype.NewProjectTypeConfig(ptname)
 
-	projtypeconfigdir := path.Join(mainconfig.ProjTypeConfigDir, ptname)
-	projtmplvars := NewProjTmplVars(projectname, ptc)
+	projtypeconfigdir := path.Join(config.ConfigDir(), ptname)
+	projtmplvars := NewProjTmplVars(projectname, retv)
 
-	ptc.Workdir = projtmplvars.Parse(ptc.Workdir)
-
+	retv.Workdir = projtmplvars.Parse(retv.Workdir)
 
 	// Fail if directory already exists
-	if _, err := os.Stat(ptc.Workdir); !os.IsNotExist(err) {
-		utils.ErrorExit(fmt.Errorf("%s already exists", ptc.Workdir))
+	if _, err := os.Stat(retv.Workdir); !os.IsNotExist(err) {
+		utils.ErrorExit(fmt.Errorf("%s already exists", retv.Workdir))
 	}
 
-	pattern := regexp.MustCompile(ptc.Pattern)
-	if pattern.MatchString(projectname) {
-		log.Debugf("project name matches pattern")
-	} else {
-		log.Warningf("project name %s does not matches pattern %s", projectname, ptc.Pattern)
-	}
+	CheckPattern(projectname, retv.Pattern)
 
 	var err error
-	for indx, cfgfile := range ptc.Files {
+	for indx, cfgfile := range retv.Files {
 		// Translate source names
 		name := cfgfile.Name
-		ptc.Files[indx].Name, err = filepath.Abs(path.Join(projtypeconfigdir, name))
+		retv.Files[indx].Name, err = filepath.Abs(path.Join(projtypeconfigdir, name))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -78,39 +43,32 @@ func NewProjectConfig(ptname, projectname string) projecttype.ProjectTypeConfig 
 		// Translate destination names
 		dest := cfgfile.Destination
 		dest = projtmplvars.Parse(dest)
-		ptc.Files[indx].Destination, err = filepath.Abs(path.Join(mainconfig.TmuxDir, dest))
+		retv.Files[indx].Destination, err = filepath.Abs(path.Join(config.SessionDir(), dest))
 		if err != nil {
 			log.Fatal(err)
 		}
 
 	}
 
-	for indx, action := range ptc.SetupActions {
-		ptc.SetupActions[indx] = projtmplvars.Parse(action)
+	for indx, action := range retv.SetupActions {
+		retv.SetupActions[indx] = projtmplvars.Parse(action)
 	}
 
-	return ptc
-}
-
-func Ask(question string) string {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Printf("%s: ", question)
-	text, _ := reader.ReadString('\n')
-	return strings.TrimSuffix(text, "\n")
+	return retv
 }
 
 // CreateProject create a new project
 func CreateProject(projecttype, projectname string) error {
 	log.Debug("CreateProject: start")
-	configuration := NewProjectConfig(projecttype, projectname)
-	configuration.Describe()
+	projconf := NewProjectConfig(projecttype, projectname)
+	projconf.Describe()
 
-	tmplvars := NewProjTmplVars(projectname, configuration)
+	tmplvars := NewProjTmplVars(projectname, projconf)
 	tmplvars.ProjectDescription = Ask("Description")
 	log.Debugf("CreateProject: description \"%s\"", tmplvars.ProjectDescription)
 
-	// Write the configuration files
-	for _, target := range configuration.Files {
+	// Write the projconf files
+	for _, target := range projconf.Files {
 		srccontent, _ := tmplvars.LoadFile(target.Name)
 		file, _ := os.Create(target.Destination)
 		var err error
@@ -131,15 +89,12 @@ func CreateProject(projecttype, projectname string) error {
 		}
 	}
 
-	if err := utils.MkdirAll(configuration.Workdir); err != nil {
-		return fmt.Errorf("directory cannot be created: %s", configuration.Workdir)
+	if err := utils.MkdirAll(projconf.Workdir); err != nil {
+		return fmt.Errorf("directory cannot be created: %s", projconf.Workdir)
 	}
 
-	for _, action := range configuration.SetupActions {
-		wg.Add(1)
-		go RunSetupAction(configuration.Workdir, action)
-	}
-	wg.Wait()
+	RunSetupActions(projconf)
+
 	log.Debug("CreateProject: end")
 	return nil
 }

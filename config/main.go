@@ -1,29 +1,31 @@
 // Package config provides configuration data globally used
+//
+// Example:
+//
+//	import (
+//	  "fmt"
+//	  "github.com/jvzantvoort/tmux-project/config"
+//	)
+//
+//	fmt.Printf("home dir: %s", config.Home())
+//	fmt.Printf("tmux dir: %s", config.SessionDir())
+//	fmt.Printf("project type config dir: %s", mainconfig.ConfigDir())
 package config
 
 import (
 	"path"
 
-	"github.com/mitchellh/go-homedir"
 	"github.com/jvzantvoort/tmux-project/utils"
 )
 
-type MainConfig struct {
-	HomeDir           string
-	TmuxDir           string
-	ProjTypeConfigDir string
+func Home() string {
+	return utils.HomeDir()
 }
 
-func NewMainConfig() *MainConfig {
+func ConfigDir() string {
+	return path.Join(Home(), ".tmux-project")
+}
 
-	v := &MainConfig{}
-
-	home, err := homedir.Dir()
-	utils.ErrorExit(err)
-	v.HomeDir = home
-	v.TmuxDir = path.Join(v.HomeDir, ".tmux.d")
-	v.ProjTypeConfigDir = path.Join(v.HomeDir, ".tmux-project")
-
-	return v
-
+func SessionDir() string {
+	return path.Join(Home(), ".tmux.d")
 }

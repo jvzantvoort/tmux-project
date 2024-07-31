@@ -9,7 +9,6 @@ import (
 	"path"
 
 	"github.com/jvzantvoort/tmux-project/messages"
-	"github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -70,7 +69,7 @@ func GetConfigParamName(instr string) string {
 
 func PrincipalConfigDir() string {
 	// Find home directory.
-	home, err := homedir.Dir()
+	home, err := os.UserHomeDir()
 	cobra.CheckErr(err)
 
 	return path.Join(home, ".config", ApplicationName)
