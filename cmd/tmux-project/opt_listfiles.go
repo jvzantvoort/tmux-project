@@ -15,9 +15,9 @@ import (
 
 // ListfileCmd represents the list command
 var ListfileCmd = &cobra.Command{
-	Use:   "listfiles <projectname>",
+	Use:   messages.GetUsage("listfiles"),
 	Short: "List a project",
-	Long:  messages.GetLong("list"),
+	Long:  messages.GetLong("listfiles"),
 	Run:   handleListfileCmd,
 }
 

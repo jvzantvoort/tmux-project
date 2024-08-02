@@ -13,7 +13,7 @@ import (
 
 // ShellCmd represents the shell command
 var ShellCmd = &cobra.Command{
-	Use:   "shell",
+	Use:   messages.GetUsage("shell"),
 	Short: "Shell output",
 	Long:  messages.GetLong("shell"),
 	Run:   handleShellCmd,

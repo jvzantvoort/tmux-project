@@ -13,7 +13,7 @@ import (
 	"github.com/jvzantvoort/tmux-project/utils"
 )
 
-type Project struct {
+type ProjectDef struct {
 	Name     string
 	AbsPath  string
 	Path     string
@@ -25,7 +25,7 @@ type Project struct {
 	Info     os.FileInfo
 }
 
-func (p Project) GetFields() []string {
+func (p ProjectDef) GetFields() []string {
 	retv := []string{}
 	retv = append(retv, p.Name)
 
@@ -49,8 +49,8 @@ func (p Project) GetFields() []string {
 	return retv
 }
 
-func NewProject(projdir, dirname string) *Project {
-	retv := &Project{}
+func NewProjectDef(projdir, dirname string) *ProjectDef {
+	retv := &ProjectDef{}
 
 	retv.Path = dirname
 	retv.Info, _ = os.Lstat(dirname)
@@ -71,8 +71,8 @@ func NewProject(projdir, dirname string) *Project {
 	return retv
 }
 
-func findAllProjects(projdir string) []Project {
-	var retv []Project
+func findAllProjects(projdir string) []ProjectDef {
+	var retv []ProjectDef
 
 	filepath.Walk(projdir, func(file string, fi os.FileInfo, inerr error) error {
 		err := inerr
@@ -81,7 +81,7 @@ func findAllProjects(projdir string) []Project {
 		}
 		if fi.IsDir() && fi.Name() == ".git" {
 			dirname := filepath.Dir(file)
-			repos := NewProject(projdir, dirname)
+			repos := NewProjectDef(projdir, dirname)
 			retv = append(retv, *repos)
 		}
 		return nil

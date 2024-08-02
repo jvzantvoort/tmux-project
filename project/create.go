@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strconv"
 
 	"github.com/jvzantvoort/tmux-project/config"
@@ -12,6 +13,17 @@ import (
 	"github.com/jvzantvoort/tmux-project/utils"
 	log "github.com/sirupsen/logrus"
 )
+
+func CheckPattern(projectname, patstr string) bool {
+	pattern := regexp.MustCompile(patstr)
+	if pattern.MatchString(projectname) {
+		log.Debugf("project name matches pattern")
+		return true
+	} else {
+		log.Warningf("project name %s does not matches pattern %s", projectname, patstr)
+		return false
+	}
+}
 
 // NewProjectConfig derives from ProjectTypeConfig and returns an updated
 // object with translated values.
@@ -64,7 +76,7 @@ func CreateProject(projecttype, projectname string) error {
 	projconf.Describe()
 
 	tmplvars := NewProjTmplVars(projectname, projconf)
-	tmplvars.ProjectDescription = Ask("Description")
+	tmplvars.ProjectDescription = utils.Ask("Description")
 	log.Debugf("CreateProject: description \"%s\"", tmplvars.ProjectDescription)
 
 	// Write the projconf files
@@ -93,7 +105,11 @@ func CreateProject(projecttype, projectname string) error {
 		return fmt.Errorf("directory cannot be created: %s", projconf.Workdir)
 	}
 
-	RunSetupActions(projconf)
+	queue := utils.NewQueue()
+	for _, step := range projconf.SetupActions {
+		queue.Add(projconf.Workdir, step)
+	}
+	queue.Run()
 
 	log.Debug("CreateProject: end")
 	return nil
