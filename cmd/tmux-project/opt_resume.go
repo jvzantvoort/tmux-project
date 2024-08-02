@@ -19,7 +19,7 @@ import (
 
 // ResumeCmd represents the resume command
 var ResumeCmd = &cobra.Command{
-	Use:   "resume <projectname>",
+	Use:   messages.GetUsage("resume"),
 	Short: "Resume a project",
 	Long:  messages.GetLong("resume"),
 	Run:   handleResumeCmd,

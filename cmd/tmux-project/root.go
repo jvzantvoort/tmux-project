@@ -4,7 +4,6 @@ Copyright © 2024 John van Zantvoort <john@vanzantvoort.org>
 package main
 
 import (
-	"fmt"
 	"os"
 	"path"
 
@@ -63,9 +62,9 @@ func init() {
 }
 
 // GetConfigParamName wrapper to get subsection of the configfile
-func GetConfigParamName(instr string) string {
-	return fmt.Sprintf("%s.%s", "main", instr)
-}
+// func GetConfigParamName(instr string) string {
+// 	return fmt.Sprintf("%s.%s", "main", instr)
+// }
 
 func PrincipalConfigDir() string {
 	// Find home directory.

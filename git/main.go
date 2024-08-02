@@ -63,18 +63,6 @@ func (g GitCmd) exec(args ...string) ([]string, error) {
 	return retv, eerror
 }
 
-// URL function returning the git url
-func (g GitCmd) URL() (string, error) {
-	retv, err := g.exec("config", "--get", "remote.origin.url")
-	if err != nil {
-		return "", err
-	}
-	if len(retv) == 0 {
-		return "", err
-	}
-	return string(retv[0]), err
-}
-
 func (g GitCmd) GetStatus() map[string]int {
 	retv := make(map[string]int)
 
@@ -106,18 +94,6 @@ func (g GitCmd) GetStatus() map[string]int {
 // Branch function returning the current git branch
 func (g GitCmd) Branch() (string, error) {
 	retv, err := g.exec("rev-parse", "--abbrev-ref", "HEAD")
-	if err != nil {
-		return "", err
-	}
-	if len(retv) == 0 {
-		return "", err
-	}
-	return string(retv[0]), err
-}
-
-// Root function returning the git root
-func (g GitCmd) Root() (string, error) {
-	retv, err := g.exec("rev-parse", "--show-toplevel")
 	if err != nil {
 		return "", err
 	}

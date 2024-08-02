@@ -14,9 +14,9 @@ import (
 
 // InitProjCmdCmd represents the create command
 var InitProjCmdCmd = &cobra.Command{
-	Use:   "init <projectname>",
+	Use:   messages.GetUsage("init"),
 	Short: "InitProjCmd a project",
-	Long:  messages.GetLong("create"),
+	Long:  messages.GetLong("init"),
 	Run:   handleInitProjCmdCmd,
 }
 
