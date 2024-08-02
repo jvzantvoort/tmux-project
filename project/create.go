@@ -93,7 +93,11 @@ func CreateProject(projecttype, projectname string) error {
 		return fmt.Errorf("directory cannot be created: %s", projconf.Workdir)
 	}
 
-	RunSetupActions(projconf)
+	queue := utils.NewQueue()
+	for _, step := range projconf.SetupActions {
+		queue.Add(projconf.Workdir, step)
+	}
+	queue.Run()
 
 	log.Debug("CreateProject: end")
 	return nil
