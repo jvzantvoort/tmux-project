@@ -16,7 +16,7 @@ import (
 // EditCmd represents the edit command
 var EditCmd = &cobra.Command{
 	Use:   messages.GetUse("edit"),
-	Short: "Edit a project",
+	Short: messages.GetShort("edit"),
 	Long:  messages.GetLong("edit"),
 	Run:   handleEditCmd,
 }

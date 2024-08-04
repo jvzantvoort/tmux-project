@@ -13,7 +13,7 @@ import (
 // ListCmd represents the list command
 var ListCmd = &cobra.Command{
 	Use:   messages.GetUse("list"),
-	Short: "List a project",
+	Short: messages.GetShort("list"),
 	Long:  messages.GetLong("list"),
 	Run:   handleListCmd,
 }

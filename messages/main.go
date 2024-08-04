@@ -10,7 +10,7 @@ import (
 
 // Content missing godoc.
 //
-//go:embed usage/* long/* shells/* use/*
+//go:embed usage/* long/* shells/* use/* short/*
 var Content embed.FS
 
 func GetContent(folder, name string) string {
@@ -26,6 +26,10 @@ func GetContent(folder, name string) string {
 
 func GetUsage(name string) string {
 	return GetContent("usage", name)
+}
+
+func GetShort(name string) string {
+	return GetContent("short", name)
 }
 
 func GetUse(name string) string {
