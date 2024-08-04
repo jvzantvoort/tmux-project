@@ -14,7 +14,7 @@ import (
 
 // CreateCmd represents the create command
 var CreateCmd = &cobra.Command{
-	Use:   messages.GetUsage("create"),
+	Use:   messages.GetUse("create"),
 	Short: "Create a project",
 	Long:  messages.GetLong("create"),
 	Run:   handleCreateCmd,

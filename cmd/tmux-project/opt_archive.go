@@ -14,7 +14,7 @@ import (
 
 // ArchiveCmd represents the archive command
 var ArchiveCmd = &cobra.Command{
-	Use:   messages.GetUsage("archive"),
+	Use:   messages.GetUse("archive"),
 	Short: "Archive a project",
 	Long:  messages.GetLong("archive"),
 	Run:   handleArchiveCmd,
