@@ -1,4 +1,0 @@
-The "listfiles" command lists the projects currrently in a project's
-configuration.
-
-listfiles [-projectname|-n <name>] [-v]
