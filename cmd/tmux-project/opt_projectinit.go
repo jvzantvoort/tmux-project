@@ -8,6 +8,7 @@ import (
 
 	"github.com/jvzantvoort/tmux-project/messages"
 	"github.com/jvzantvoort/tmux-project/projecttype"
+	"github.com/jvzantvoort/tmux-project/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -41,7 +42,11 @@ func handleInitProjCmdCmd(cmd *cobra.Command, args []string) {
 			log.Fatalf("Cannot overwrite default")
 		}
 	}
-	projecttype.CreateProjectType(ProjectType)
+	ptc := projecttype.NewProjectTypeConfig(ProjectType)
+	err := ptc.SetupProjectTypeConfig()
+	if err != nil {
+		utils.Abort("Error: %s", err)
+	}
 
 }
 
