@@ -11,14 +11,11 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-func ListActive() []string {
-	tmux := tmux.NewTmux()
-	retv, _ := tmux.ListActive()
-	return retv
-}
-
+// PrintFullList prints the list of sessions
 func PrintFullList() {
-	active := ListActive()
+	active, err := tmux.ListActive()
+	utils.ErrorExit(err)
+
 	sessiondata, err := sessions.ListTmuxConfigs(config.SessionDir())
 	utils.ErrorExit(err)
 
@@ -46,6 +43,7 @@ func PrintFullList() {
 	table.Render()
 }
 
+// PrintShortList prints the list of sessions
 func PrintShortList() {
 	sessiondata, err := sessions.ListTmuxConfigs(config.SessionDir())
 	utils.ErrorExit(err)

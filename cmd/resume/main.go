@@ -7,6 +7,7 @@ import (
 	"github.com/jvzantvoort/tmux-project/project"
 	"github.com/jvzantvoort/tmux-project/sessions"
 	"github.com/jvzantvoort/tmux-project/tmux"
+	"github.com/jvzantvoort/tmux-project/utils"
 )
 
 func main() {
@@ -20,31 +21,9 @@ func main() {
 		return
 	}
 
-	_tmux := tmux.NewTmux()
-	found := false
-	active := false
-
 	sess := sessions.NewTmuxSessions()
-	xsess := sessions.TmuxSession{}
-	for _, sesi := range sess.Sessions {
-		if sessionname == sesi.Name {
-			xsess = sesi
-			found = true
-		}
-	}
-
-	if found {
-		if _tmux.SessionExists(xsess.Name) {
-			active = true
-		}
-	} else {
-		os.Exit(1)
-	}
-
-	if active {
-		_tmux.ResumeSession(xsess)
-	} else {
-		_tmux.CreateSession(xsess)
-	}
+	xsess, err := sess.Find(sessionname)
+	utils.ErrorExit(err)
+	tmux.Resume(sessionname, xsess.Configfile)
 
 }

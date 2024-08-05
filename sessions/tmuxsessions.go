@@ -1,6 +1,7 @@
 package sessions
 
 import (
+	"fmt"
 	"os"
 	"sort"
 	"strings"
@@ -43,6 +44,16 @@ func NewTmuxSessions() *TmuxSessions {
 	}
 	return retv
 
+}
+
+func (sess TmuxSessions) Find(name string) (*TmuxSession, error) {
+	retv := &TmuxSession{}
+	for _, sesi := range sess.Sessions {
+		if name == sesi.Name {
+			return &sesi, nil
+		}
+	}
+	return retv, fmt.Errorf("cannot find %s", name)
 }
 
 func ListSessions(inputdir string) (map[string]TmuxSession, error) {

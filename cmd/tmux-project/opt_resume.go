@@ -53,39 +53,14 @@ func handleResumeCmd(cmd *cobra.Command, args []string) {
 		result = strings.Split(result, " ")[0]
 		ProjectName = result
 	}
-	_tmux := tmux.NewTmux()
-	found := false
-	active := false
-
 	sess := sessions.NewTmuxSessions()
-	xsess := sessions.TmuxSession{}
-	for _, sesi := range sess.Sessions {
-		if ProjectName == sesi.Name {
-			xsess = sesi
-			found = true
-		}
-	}
-
-	if found {
-		if _tmux.SessionExists(xsess.Name) {
-			active = true
-		}
-	} else {
-		os.Exit(1)
-	}
-
-	if active {
-		_tmux.ResumeSession(xsess)
-	} else {
-		_tmux.CreateSession(xsess)
-	}
-
+	xsess, err := sess.Find(ProjectName)
+	utils.ErrorExit(err)
+	tmux.Resume(ProjectName, xsess.Configfile)
 }
-
 
 func ListSessions() []string {
 	retv := []string{}
-	tmux := tmux.NewTmux()
 	active, _ := tmux.ListActive()
 
 	sess := sessions.NewTmuxSessions()
