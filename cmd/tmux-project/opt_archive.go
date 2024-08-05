@@ -4,10 +4,11 @@ Copyright © 2024 John van Zantvoort <john@vanzantvoort.org>
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/jvzantvoort/tmux-project/messages"
-	"github.com/jvzantvoort/tmux-project/sessions"
+	"github.com/jvzantvoort/tmux-project/project"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -27,7 +28,6 @@ func handleArchiveCmd(cmd *cobra.Command, args []string) {
 	log.Debugf("%s: start", cmd.Use)
 	defer log.Debugf("%s: end", cmd.Use)
 
-
 	if len(args) != 1 {
 		log.Error("No project provided")
 		cmd.Help()
@@ -35,16 +35,27 @@ func handleArchiveCmd(cmd *cobra.Command, args []string) {
 	}
 	ProjectName := args[0]
 
-	session := sessions.NewTmuxSession(ProjectName)
-
 	ArchiveName := GetString(*cmd, "archivename")
 
+	project := project.NewProject(ProjectName)
+	project.RefreshStruct()
+	project.Confess()
+
 	if ArchiveName == "" {
-		ArchiveName = session.Workdir + ".tar.gz"
+		if len(project.ProjectDir) != 0 {
+			ArchiveName = project.ProjectDir + ".tar.gz"
+		}
+	}
+	if ArchiveName == "" {
+		cobra.CheckErr(fmt.Errorf("no archive name provided"))
 	}
 
-	err := session.Archive(ArchiveName)
-	if err != nil {
+	log.Debugf("Outputfile: %s", ArchiveName)
+
+	err := project.Archive(ArchiveName)
+	if err == nil {
+		fmt.Printf("Created %s\n", ArchiveName)
+	} else {
 		log.Fatalf("Encountered error: %q", err)
 	}
 	// name: cmd.Use
@@ -53,5 +64,4 @@ func handleArchiveCmd(cmd *cobra.Command, args []string) {
 func init() {
 	rootCmd.AddCommand(ArchiveCmd)
 	ArchiveCmd.Flags().StringP("archivename", "a", "", "Archive file")
-	// ArchiveCmd.Flags().StringP("projectname", "n", "", "Name of project")
 }
