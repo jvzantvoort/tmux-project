@@ -11,3 +11,9 @@ if [ -f "$HOME/.tmux.d/${SESSIONNAME}.env" ]
 then
   source  "$HOME/.tmux.d/${SESSIONNAME}.env"
 fi
+
+# Based on https://unix.stackexchange.com/questions/50208/how-to-change-the-working-directory-of-invoking-shell-using-a-script
+function pcd()
+{
+  cd $PROJDIR/$1
+}
