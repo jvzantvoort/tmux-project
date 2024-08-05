@@ -9,13 +9,21 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+func (proj Project) CalcDestination(instr string) string {
+	retv := proj.Parse(instr)
+
+	if !filepath.IsAbs(retv) {
+		retv = filepath.Join(config.SessionDir(), retv)
+	}
+	return retv
+}
+
 func (proj Project) ProcessProjectTarget(element *ProjectTarget) error {
-	functionname := utils.FunctionName(2)
+	functionname := utils.FunctionName()
 	log.Debugf("%s: start", functionname)
 	defer log.Debugf("%s: end", functionname)
 
 	element.Name = proj.Parse(element.Name)
-	element.Destination = proj.Parse(element.Destination)
 
 	mode, err := utils.GetMode(element.Mode)
 	if err != nil {
@@ -23,7 +31,7 @@ func (proj Project) ProcessProjectTarget(element *ProjectTarget) error {
 	}
 
 	// source_file := filepath.Join(proj.ProjectTypeDir, element.Name)
-	dest_file := filepath.Join(config.SessionDir(), element.Destination)
+	dest_file := proj.CalcDestination(element.Destination)
 	content := proj.Parse(element.Content)
 
 	filehandle, _ := os.Create(dest_file)
