@@ -74,7 +74,7 @@ func NewProjectDef(projdir, dirname string) *ProjectDef {
 func findAllProjects(projdir string) []ProjectDef {
 	var retv []ProjectDef
 
-	filepath.Walk(projdir, func(file string, fi os.FileInfo, inerr error) error {
+	err := filepath.Walk(projdir, func(file string, fi os.FileInfo, inerr error) error {
 		err := inerr
 		if err != nil {
 			log.Errorf("this passed an error: %q", err)
@@ -86,6 +86,9 @@ func findAllProjects(projdir string) []ProjectDef {
 		}
 		return nil
 	})
+	if err != nil {
+		log.Errorf("Error: %s", err)
+	}
 	return retv
 
 }
