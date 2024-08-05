@@ -4,15 +4,13 @@ Copyright © 2024 John van Zantvoort <john@vanzantvoort.org>
 package main
 
 import (
-	"fmt"
 	"os"
-	"strings"
+	"path/filepath"
 
+	"github.com/jvzantvoort/tmux-project/config"
 	"github.com/jvzantvoort/tmux-project/messages"
-	"github.com/jvzantvoort/tmux-project/sessions"
+	"github.com/jvzantvoort/tmux-project/project"
 	"github.com/jvzantvoort/tmux-project/tmux"
-	"github.com/jvzantvoort/tmux-project/utils"
-	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -37,44 +35,18 @@ func handleResumeCmd(cmd *cobra.Command, args []string) {
 		cmd.Help()
 		os.Exit(1)
 	}
-	ProjectName := args[0]
+	sessionname := args[0]
 
-	if len(ProjectName) == 0 {
-		prompt := promptui.Select{
-			Label: "Select project",
-			Size:  20,
-			Items: ListSessions(),
-		}
-		_, result, err := prompt.Run()
-
-		if err != nil {
-			log.Fatalf("Prompt failed %v\n", err)
-		}
-		result = strings.Split(result, " ")[0]
-		ProjectName = result
-	}
-	sess := sessions.NewTmuxSessions()
-	xsess, err := sess.Find(ProjectName)
-	utils.ErrorExit(err)
-	tmux.Resume(ProjectName, xsess.Configfile)
-}
-
-func ListSessions() []string {
-	retv := []string{}
-	active, _ := tmux.ListActive()
-
-	sess := sessions.NewTmuxSessions()
-	for _, sesi := range sess.Sessions {
-		state := " "
-		if utils.StringInSlice(sesi.Name, active) {
-			state = "active"
-		}
-		message := fmt.Sprintf("%-32s %-6s %s", sesi.Name, state, sesi.Description)
-
-		retv = append(retv, message)
+	if sessionname == "ls" {
+		project.PrintFullList()
+		return
 	}
 
-	return retv
+	proj := project.NewProject(sessionname)
+	configfile := filepath.Join(config.SessionDir(), proj.ProjectName+".rc")
+
+	tmux.Resume(sessionname, configfile)
+
 }
 
 func init() {

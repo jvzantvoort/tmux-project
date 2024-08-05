@@ -8,7 +8,6 @@ import (
 	"github.com/jvzantvoort/tmux-project/config"
 	"github.com/jvzantvoort/tmux-project/project"
 	"github.com/jvzantvoort/tmux-project/tmux"
-	"github.com/jvzantvoort/tmux-project/utils"
 )
 
 func main() {
@@ -25,7 +24,6 @@ func main() {
 	proj := project.NewProject(sessionname)
 	configfile := filepath.Join(config.SessionDir(), proj.ProjectName+".rc")
 
-	utils.ErrorExit(err)
 	tmux.Resume(sessionname, configfile)
 
 }
