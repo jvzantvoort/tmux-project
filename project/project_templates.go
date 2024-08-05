@@ -14,7 +14,7 @@ import (
 
 // buildConfig construct the text from the template definition and arguments.
 func (proj Project) ParseTemplateString(templatestring string) (string, error) {
-	functionname := utils.FunctionName(2)
+	functionname := utils.FunctionName()
 	log.Debugf("%s: start", functionname)
 	defer log.Debugf("%s: end", functionname)
 	var retv string
@@ -34,7 +34,7 @@ func (proj Project) ParseTemplateString(templatestring string) (string, error) {
 }
 
 func (proj Project) ParseTemplateFile(target string) (string, error) {
-	functionname := utils.FunctionName(2)
+	functionname := utils.FunctionName()
 	log.Debugf("%s: start", functionname)
 	defer log.Debugf("%s: end", functionname)
 	var retv string
@@ -50,7 +50,7 @@ func (proj Project) ParseTemplateFile(target string) (string, error) {
 
 // buildConfig construct the text from the template definition and arguments.
 func (proj Project) Parse(templatestring string) string {
-	functionname := utils.FunctionName(2)
+	functionname := utils.FunctionName()
 	log.Debugf("%s: start", functionname)
 	defer log.Debugf("%s: end", functionname)
 	tmpl, err := template.New("prompt").Parse(templatestring)
@@ -62,7 +62,7 @@ func (proj Project) Parse(templatestring string) string {
 }
 
 func (proj Project) LoadFile(target string) (string, error) {
-	functionname := utils.FunctionName(2)
+	functionname := utils.FunctionName()
 	log.Debugf("%s: start", functionname)
 	defer log.Debugf("%s: end", functionname)
 	var retv string
