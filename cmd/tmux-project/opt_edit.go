@@ -5,9 +5,11 @@ package main
 
 import (
 	"os"
+	"path/filepath"
 
+	"github.com/jvzantvoort/tmux-project/config"
 	"github.com/jvzantvoort/tmux-project/messages"
-	"github.com/jvzantvoort/tmux-project/sessions"
+	"github.com/jvzantvoort/tmux-project/project"
 	"github.com/jvzantvoort/tmux-project/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -35,9 +37,12 @@ func handleEditCmd(cmd *cobra.Command, args []string) {
 	}
 	ProjectName := args[0]
 
-	session := sessions.NewTmuxSession(ProjectName)
+	proj := project.NewProject(ProjectName)
+	opts := []string{"-O"}
+	opts = append(opts, filepath.Join(config.SessionDir(), proj.ProjectName+".rc"))
+	opts = append(opts, filepath.Join(config.SessionDir(), proj.ProjectName+".env"))
 
-	utils.Edit("-O", session.Configfile, session.Environment)
+	utils.Edit(opts...)
 
 }
 
