@@ -6,7 +6,6 @@ import (
 	"text/template"
 
 	"github.com/jvzantvoort/tmux-project/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 // Template actions
@@ -14,9 +13,8 @@ import (
 
 // buildConfig construct the text from the template definition and arguments.
 func (proj Project) ParseTemplateString(templatestring string) (string, error) {
-	functionname := utils.FunctionName(2)
-	log.Debugf("%s: start", functionname)
-	defer log.Debugf("%s: end", functionname)
+	utils.LogStart()
+	defer utils.LogEnd()
 	var retv string
 
 	tmpl, err := template.New("prompt").Parse(templatestring)
@@ -34,9 +32,8 @@ func (proj Project) ParseTemplateString(templatestring string) (string, error) {
 }
 
 func (proj Project) ParseTemplateFile(target string) (string, error) {
-	functionname := utils.FunctionName(2)
-	log.Debugf("%s: start", functionname)
-	defer log.Debugf("%s: end", functionname)
+	utils.LogStart()
+	defer utils.LogEnd()
 	var retv string
 	var err error
 
@@ -50,9 +47,8 @@ func (proj Project) ParseTemplateFile(target string) (string, error) {
 
 // buildConfig construct the text from the template definition and arguments.
 func (proj Project) Parse(templatestring string) string {
-	functionname := utils.FunctionName(2)
-	log.Debugf("%s: start", functionname)
-	defer log.Debugf("%s: end", functionname)
+	utils.LogStart()
+	defer utils.LogEnd()
 	tmpl, err := template.New("prompt").Parse(templatestring)
 	utils.ErrorExit(err)
 	buf := new(bytes.Buffer)
@@ -62,9 +58,8 @@ func (proj Project) Parse(templatestring string) string {
 }
 
 func (proj Project) LoadFile(target string) (string, error) {
-	functionname := utils.FunctionName(2)
-	log.Debugf("%s: start", functionname)
-	defer log.Debugf("%s: end", functionname)
+	utils.LogStart()
+	defer utils.LogEnd()
 	var retv string
 	content, err := os.ReadFile(target)
 	if err != nil {

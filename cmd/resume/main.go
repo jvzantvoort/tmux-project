@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
+	"github.com/jvzantvoort/tmux-project/config"
 	"github.com/jvzantvoort/tmux-project/project"
-	"github.com/jvzantvoort/tmux-project/sessions"
 	"github.com/jvzantvoort/tmux-project/tmux"
-	"github.com/jvzantvoort/tmux-project/utils"
 )
 
 func main() {
@@ -21,9 +21,9 @@ func main() {
 		return
 	}
 
-	sess := sessions.NewTmuxSessions()
-	xsess, err := sess.Find(sessionname)
-	utils.ErrorExit(err)
-	tmux.Resume(sessionname, xsess.Configfile)
+	proj := project.NewProject(sessionname)
+	configfile := filepath.Join(config.SessionDir(), proj.ProjectName+".rc")
+
+	tmux.Resume(sessionname, configfile)
 
 }

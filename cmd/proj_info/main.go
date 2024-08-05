@@ -7,7 +7,8 @@ import (
 	"sort"
 
 	"github.com/fatih/color"
-	"github.com/jvzantvoort/tmux-project/sessions"
+	"github.com/jvzantvoort/tmux-project/project"
+	"github.com/jvzantvoort/tmux-project/utils"
 	"github.com/olekukonko/tablewriter"
 	log "github.com/sirupsen/logrus"
 )
@@ -78,15 +79,18 @@ func main() {
 
 	// Header
 	sessionname := os.Getenv("SESSIONNAME")
-	session := sessions.NewTmuxSession(sessionname)
+	proj_obj := project.NewProject(sessionname)
+	err := proj_obj.RefreshStruct()
+	utils.ErrorExit(err)
 
 	header := [][]string{
-		{"Sessionname", sessionname},
-		{"Projectdir", session.Workdir},
-		{"Description", session.Description},
+		{"Sessionname", proj_obj.ProjectName},
+		{"Projectdir", proj_obj.ProjectDir},
+		{"Description", proj_obj.ProjectDescription},
+		{"Type", proj_obj.ProjectType},
 	}
 	PrintHeader(header)
-	brojects := findAllProjects(session.Workdir)
+	brojects := findAllProjects(proj_obj.ProjectDir)
 
 	for _, proj := range brojects {
 		chapters = append(chapters, proj.Chapter)

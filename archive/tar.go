@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 
 	"github.com/jvzantvoort/tmux-project/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 // TarArchive encapsulates the tar.gz creation logic
@@ -50,8 +49,8 @@ func (t *TarArchive) AddFiles(paths []string) {
 
 // CreateArchive creates the tar.gz archive with the added files
 func (t *TarArchive) CreateArchive() error {
-	log.Debugf("CreateArchive: start")
-	defer log.Debugf("CreateArchive: end")
+	utils.LogStart()
+	defer utils.LogEnd()
 	// Create the output file
 	outFile, err := os.Create(t.OutputFile)
 	if err != nil {
@@ -107,7 +106,7 @@ func (t *TarArchive) addFileToTar(tarWriter *tar.Writer, filePath string) error 
 	// must provide real name
 	// (see https://golang.org/src/archive/tar/common.go?#L626)
 	header.Name = filepath.ToSlash(filePath)
-	log.Debugf("header.Name: %s", header.Name)
+	utils.Debugf("header.Name: %s", header.Name)
 
 	// Write the tar header
 	err = tarWriter.WriteHeader(header)
@@ -123,7 +122,6 @@ func (t *TarArchive) addFileToTar(tarWriter *tar.Writer, filePath string) error 
 
 	return nil
 }
-
 
 // addSymlinkToTar adds a symbolic link to the given tar writer
 func (t *TarArchive) addSymlinkToTar(tarWriter *tar.Writer, linkName, target string) error {
@@ -143,4 +141,3 @@ func (t *TarArchive) addSymlinkToTar(tarWriter *tar.Writer, linkName, target str
 
 	return nil
 }
-

@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/jvzantvoort/tmux-project/messages"
-	"github.com/jvzantvoort/tmux-project/sessions"
+	"github.com/jvzantvoort/tmux-project/project"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -35,8 +35,10 @@ func handleListfileCmd(cmd *cobra.Command, args []string) {
 	}
 	ProjectName := args[0]
 
-	session := sessions.NewTmuxSession(ProjectName)
-	for _, ink := range session.TargetPaths() {
+	project := project.NewProject(ProjectName)
+	project.RefreshStruct()
+
+	for _, ink := range project.ListFiles() {
 		fmt.Printf("%s\n", ink)
 	}
 

@@ -8,6 +8,7 @@ import (
 
 	"github.com/jvzantvoort/tmux-project/messages"
 	"github.com/jvzantvoort/tmux-project/project"
+	"github.com/jvzantvoort/tmux-project/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -24,8 +25,8 @@ func handleCreateCmd(cmd *cobra.Command, args []string) {
 	if verbose {
 		log.SetLevel(log.DebugLevel)
 	}
-	log.Debugf("%s: start", cmd.Use)
-	defer log.Debugf("%s: end", cmd.Use)
+	utils.LogStart()
+	defer utils.LogEnd()
 
 	if len(args) != 1 {
 		log.Error("No project provided")
@@ -40,9 +41,9 @@ func handleCreateCmd(cmd *cobra.Command, args []string) {
 	proj.SetDescription(ProjectDescription)
 	err := proj.InitializeProject(ProjectType, true)
 	if err != nil {
-		log.Fatalf("Encountered error: %q", err)
+		utils.Fatalf("Encountered error: %q", err)
 	} else {
-		log.Infof("InitializeProject completed")
+		utils.Infof("InitializeProject completed")
 
 	}
 }

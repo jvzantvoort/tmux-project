@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/jvzantvoort/tmux-project/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 // GitCmd object for git
@@ -41,7 +40,7 @@ func (g GitCmd) exec(args ...string) ([]string, error) {
 
 	// cmnd = append(cmnd, g.command)
 	cmnd = append(cmnd, args...)
-	log.Debugf("command: %s %s", g.command, strings.Join(cmnd, " "))
+	utils.Debugf("command: %s %s", g.command, strings.Join(cmnd, " "))
 
 	cmd := exec.Command(g.command, cmnd...)
 	stdout, _ := cmd.StdoutPipe()
@@ -56,9 +55,9 @@ func (g GitCmd) exec(args ...string) ([]string, error) {
 	}
 	eerror := cmd.Wait()
 	if eerror != nil {
-		log.Errorf(strings.Join(cmnd, " "))
-		log.Errorf("  command failed, %v", eerror)
-		log.Errorf("  cwd: %s", g.cwd)
+		utils.Errorf(strings.Join(cmnd, " "))
+		utils.Errorf("  command failed, %v", eerror)
+		utils.Errorf("  cwd: %s", g.cwd)
 	}
 	return retv, eerror
 }
@@ -69,7 +68,7 @@ func (g GitCmd) GetStatus() map[string]int {
 	lines, err := g.exec("status", "-s")
 
 	if err != nil {
-		log.Errorf("Error in GetStatus: %v", err)
+		utils.Errorf("Error in GetStatus: %v", err)
 		return retv
 	}
 
@@ -85,7 +84,7 @@ func (g GitCmd) GetStatus() map[string]int {
 		}
 		fvar++
 		retv[fcol] = fvar
-		log.Debugf("%s\n", fields[0])
+		utils.Debugf("%s\n", fields[0])
 	}
 
 	return retv
@@ -116,7 +115,7 @@ func (g GitCmd) IsGit() bool {
 			return false
 		}
 	} else {
-		log.Errorf("target: %s, error: %v", g.cwd, err)
+		utils.Errorf("target: %s, error: %v", g.cwd, err)
 	}
 
 	gitdir_stat, nerr := os.Stat(gitdir)

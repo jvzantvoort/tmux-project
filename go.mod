@@ -6,7 +6,6 @@ toolchain go1.21.5
 
 require (
 	github.com/fatih/color v1.17.0
-	github.com/manifoldco/promptui v0.9.0
 	github.com/mitchellh/go-wordwrap v1.0.1
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/sirupsen/logrus v1.9.3
@@ -17,7 +16,6 @@ require (
 )
 
 require (
-	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/fsnotify/fsnotify v1.4.7 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
