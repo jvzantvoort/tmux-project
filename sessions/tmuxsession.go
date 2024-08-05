@@ -7,7 +7,6 @@ import (
 
 	"github.com/jvzantvoort/tmux-project/config"
 	"github.com/jvzantvoort/tmux-project/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 type TmuxSession struct {
@@ -23,7 +22,7 @@ func (tm *TmuxSession) LoadConfig() {
 	var config_lines []string
 	config_lines, err = utils.LoadFile(tm.Configfile)
 	if err != nil {
-		log.Errorf("%q", err)
+		utils.Errorf("%q", err)
 	}
 
 	if len(config_lines) != 0 {

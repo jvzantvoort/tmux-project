@@ -6,8 +6,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-
-	log "github.com/sirupsen/logrus"
 )
 
 func GetMode(instr string) (fs.FileMode, error) {
@@ -35,14 +33,14 @@ func TargetExists(target string) bool {
 
 func FileExists(targetpath string) bool {
 	if !TargetExists(targetpath) {
-		log.Debugf("FileExists[%s]: does not exist", targetpath)
+		Debugf("FileExists[%s]: does not exist", targetpath)
 		return false
 	}
 
 	// is file a folder?
 	fi, err := os.Stat(targetpath)
 	if err != nil {
-		log.Debugf("FileExists[%s]: Cannot be identified", targetpath)
+		Debugf("FileExists[%s]: Cannot be identified", targetpath)
 		return false
 	}
 
@@ -50,7 +48,7 @@ func FileExists(targetpath string) bool {
 	if mode.IsRegular() {
 		return true
 	} else {
-		log.Debugf("FileExists[%s]: is not a regular file", targetpath)
+		Debugf("FileExists[%s]: is not a regular file", targetpath)
 		return false
 	}
 }

@@ -7,8 +7,6 @@ import (
 
 	"fmt"
 	"sync"
-
-	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -17,7 +15,7 @@ var (
 
 func cleanup() {
 	if r := recover(); r != nil {
-		log.Errorf("Paniced %s", r)
+		Errorf("Paniced %s", r)
 	}
 }
 
@@ -55,10 +53,10 @@ func (e QueueElement) Run() {
 
 	stdout_list, stderr_list, eerror := Exec(e.Cwd, e.Command)
 	for _, stdout_line := range stdout_list {
-		log.Infof("<stdout> %s", stdout_line)
+		Infof("<stdout> %s", stdout_line)
 	}
 	for _, stderr_line := range stderr_list {
-		log.Errorf("<stderr> %s", stderr_line)
+		Errorf("<stderr> %s", stderr_line)
 	}
 	if eerror != nil {
 		panic(fmt.Sprintf("Action \"%s\" failed", e.Command))
@@ -75,8 +73,8 @@ func Exec(cwd, args string) ([]string, []string, error) {
 	cmndargs = cmndargs[1:]
 	commandlist = append(commandlist, cmndargs...)
 	command := exec.Command(cmnd, commandlist...)
-	log.Debugf("command: %s %s", cmnd, strings.Join(commandlist, " "))
-	log.Debugf("         cwd: %s", cwd)
+	Debugf("command: %s %s", cmnd, strings.Join(commandlist, " "))
+	Debugf("         cwd: %s", cwd)
 	command.Dir = cwd
 
 	stdout, err := command.StdoutPipe()
@@ -92,7 +90,7 @@ func Exec(cwd, args string) ([]string, []string, error) {
 	stdout_scan.Split(bufio.ScanLines)
 	for stdout_scan.Scan() {
 		msg := stdout_scan.Text()
-		log.Debugln(msg)
+		Debugf(msg)
 		stdout_list = append(stdout_list, msg)
 	}
 
@@ -100,13 +98,13 @@ func Exec(cwd, args string) ([]string, []string, error) {
 	stderr_scan.Split(bufio.ScanLines)
 	for stderr_scan.Scan() {
 		msg := stderr_scan.Text()
-		log.Errorln(msg)
+		Errorf(msg)
 		stderr_list = append(stderr_list, msg)
 	}
 
 	eerror := command.Wait()
 	if eerror != nil {
-		log.Errorf("command failed, %v", err)
+		Errorf("command failed, %v", err)
 	}
 
 	return stdout_list, stderr_list, eerror

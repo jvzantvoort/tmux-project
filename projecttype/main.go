@@ -9,8 +9,6 @@ import (
 
 	"strings"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/jvzantvoort/tmux-project/config"
 	"github.com/jvzantvoort/tmux-project/utils"
 
@@ -46,10 +44,8 @@ type ProjectTypeConfig struct {
 }
 
 func (ptc *ProjectTypeConfig) readConfig() error {
-	// Setup logging
-	log_prefix := utils.FunctionName()
-	log.Debugf("%s: start", log_prefix)
-	defer log.Debugf("%s: end", log_prefix)
+	utils.LogStart()
+	defer utils.LogEnd()
 
 	if !utils.FileExists(ptc.ConfigFile) {
 		return fmt.Errorf("ConfigFile: %s does not exist", ptc.ConfigFile)
@@ -66,36 +62,34 @@ func (ptc *ProjectTypeConfig) readConfig() error {
 
 // Describe describe
 func (ptc ProjectTypeConfig) Describe() {
-	// Setup logging
-	log_prefix := utils.FunctionName()
-	log.Debugf("%s: start", log_prefix)
-	defer log.Debugf("%s: end", log_prefix)
+	utils.LogStart()
+	defer utils.LogEnd()
 
-	log.Debugf("Describe: %s", ptc.ProjectType)
-	log.Debugf("  Workdir: %s", ptc.Workdir)
-	log.Debugf("  Pattern: %s", ptc.Pattern)
+	utils.Debugf("Describe: %s", ptc.ProjectType)
+	utils.Debugf("  Workdir: %s", ptc.Workdir)
+	utils.Debugf("  Pattern: %s", ptc.Pattern)
 
 	fileno := len(ptc.Files)
 	actionsno := len(ptc.SetupActions)
 
 	if fileno > 0 {
-		log.Debugf("  Files:")
+		utils.Debugf("  Files:")
 		for _, act := range ptc.Files {
-			log.Debugf("    - name: %s", act.Name)
-			log.Debugf("      destination: %s", act.Destination)
-			log.Debugf("      mode: %s", act.Mode)
+			utils.Debugf("    - name: %s", act.Name)
+			utils.Debugf("      destination: %s", act.Destination)
+			utils.Debugf("      mode: %s", act.Mode)
 		}
 	}
 
 	if actionsno > 0 {
-		log.Debugf("  Actions:")
+		utils.Debugf("  Actions:")
 		for _, act := range ptc.SetupActions {
-			log.Debugf("    - %s", act)
+			utils.Debugf("    - %s", act)
 
 		}
 	}
 
-	log.Debugf("Describe: %s, end", ptc.ProjectType)
+	utils.Debugf("Describe: %s, end", ptc.ProjectType)
 }
 
 func (ptc *ProjectTypeConfig) SetupProjectTypeConfig() error {
@@ -132,13 +126,12 @@ func (ptc ProjectTypeConfig) Content(target string) (string, error) {
 }
 
 func (ptc ProjectTypeConfig) Write(boxname, target string) error {
-	log_prefix := utils.FunctionName()
-	log.Debugf("%s: start", log_prefix)
-	defer log.Debugf("%s: end", log_prefix)
+	utils.LogStart()
+	defer utils.LogEnd()
 	filename := fmt.Sprintf("templates/%s", boxname)
 	content, err := Content.ReadFile(filename)
 	if err != nil {
-		log.Error(err)
+		utils.Errorf("Error: %s", err)
 		content = []byte("undefined")
 	}
 	file, _ := os.Create(target)
@@ -151,9 +144,8 @@ func (ptc ProjectTypeConfig) Write(boxname, target string) error {
 }
 
 func (ptc ProjectTypeConfig) UpdateConfigFile(target string) error {
-	log_prefix := utils.FunctionName()
-	log.Debugf("%s: start", log_prefix)
-	defer log.Debugf("%s: end", log_prefix)
+	utils.LogStart()
+	defer utils.LogEnd()
 
 	read, err := os.ReadFile(target)
 	if err != nil {
@@ -189,12 +181,12 @@ func NewProjectTypeConfig(projecttype string) ProjectTypeConfig {
 	err = retv.readConfig()
 
 	if err != nil {
-		log.Debugf("Project Type %s does not exist", retv.ProjectType)
+		utils.Debugf("Project Type %s does not exist", retv.ProjectType)
 	}
 
 	retv.Workdir, err = utils.Expand(retv.Workdir)
 	if err != nil {
-		log.Errorf("Failed to get workdir %s", err)
+		utils.Errorf("Failed to get workdir %s", err)
 	}
 
 	return retv

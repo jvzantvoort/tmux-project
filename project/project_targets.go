@@ -6,7 +6,6 @@ import (
 
 	"github.com/jvzantvoort/tmux-project/config"
 	"github.com/jvzantvoort/tmux-project/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 func (proj Project) CalcDestination(instr string) string {
@@ -19,9 +18,9 @@ func (proj Project) CalcDestination(instr string) string {
 }
 
 func (proj Project) ProcessProjectTarget(element *ProjectTarget) error {
-	functionname := utils.FunctionName()
-	log.Debugf("%s: start", functionname)
-	defer log.Debugf("%s: end", functionname)
+
+	utils.LogStart()
+	defer utils.LogEnd()
 
 	element.Name = proj.Parse(element.Name)
 

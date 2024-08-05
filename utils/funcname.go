@@ -9,15 +9,15 @@ import (
 )
 
 // FunctionName returns the name of the function that called it.
-func FunctionName(indent ...int) string {
-	pc, _, _, _ := runtime.Caller(1)
-	elements := strings.Split(runtime.FuncForPC(pc).Name(), ".")
-	retv := elements[len(elements)-1]
-	if len(indent) != 0 {
-		retv = fmt.Sprintf("%s%s", strings.Repeat(" ", indent[0]), retv)
-	}
-	return retv
-}
+// func FunctionName(indent ...int) string {
+// 	pc, _, _, _ := runtime.Caller(1)
+// 	elements := strings.Split(runtime.FuncForPC(pc).Name(), ".")
+// 	retv := elements[len(elements)-1]
+// 	if len(indent) != 0 {
+// 		retv = fmt.Sprintf("%s%s", strings.Repeat(" ", indent[0]), retv)
+// 	}
+// 	return retv
+// }
 
 // LogStart logs the start of a function
 func LogStart() {
@@ -63,6 +63,17 @@ func Errorf(format string, args ...interface{}) {
 	log.Errorf("%s: %s", elements[len(elements)-1], msg)
 
 }
+
+// Warningf logs an warning message with the name of the function that called it
+func Warningf(format string, args ...interface{}) {
+
+	pc, _, _, _ := runtime.Caller(1)
+	elements := strings.Split(runtime.FuncForPC(pc).Name(), ".")
+	msg := fmt.Sprintf(format, args...)
+	log.Warningf("%s: %s", elements[len(elements)-1], msg)
+
+}
+
 
 // Fatalf logs a fatal error message with the name of the function that called it
 func Fatalf(format string, args ...interface{}) {

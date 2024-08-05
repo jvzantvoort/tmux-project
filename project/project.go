@@ -10,14 +10,13 @@ import (
 	errno "github.com/jvzantvoort/tmux-project/errors"
 	"github.com/jvzantvoort/tmux-project/projecttype"
 	"github.com/jvzantvoort/tmux-project/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 // NewProject initialize a Project object
 func NewProject(projectname string) *Project {
-	functionname := utils.FunctionName()
-	log.Debugf("%s: start", functionname)
-	defer log.Debugf("%s: end", functionname)
+
+	utils.LogStart()
+	defer utils.LogEnd()
 
 	retv := &Project{}
 
@@ -28,17 +27,16 @@ func NewProject(projectname string) *Project {
 
 func (proj Project) NameIsValid() bool {
 
-	functionname := utils.FunctionName()
-	log.Debugf("%s: start", functionname)
-	defer log.Debugf("%s: end", functionname)
+	utils.LogStart()
+	defer utils.LogEnd()
 
 	pattern := regexp.MustCompile(proj.Pattern)
 
 	if pattern.MatchString(proj.ProjectName) {
-		log.Debugf("project name matches pattern")
+		utils.Debugf("project name matches pattern")
 		return true
 	} else {
-		log.Warningf("project name %s does not matches pattern %s", proj.ProjectName, proj.Pattern)
+		utils.Warningf("project name %s does not matches pattern %s", proj.ProjectName, proj.Pattern)
 		return false
 	}
 
@@ -128,13 +126,13 @@ func (proj *Project) SetDescription(instr ...string) {
 }
 
 func (proj *Project) InitializeProject(projtype string, safe bool) error {
-	functionname := utils.FunctionName()
-	log.Debugf("%s: start", functionname)
-	defer log.Debugf("%s: end", functionname)
+
+	utils.LogStart()
+	defer utils.LogEnd()
 
 	err := proj.RefreshStruct(projtype)
 	if err != nil {
-		log.Errorf("Error: %s", err)
+		utils.Errorf("Error: %s", err)
 
 	}
 
@@ -157,7 +155,7 @@ func (proj *Project) InitializeProject(projtype string, safe bool) error {
 	for _, target := range proj.Targets {
 		err = proj.ProcessProjectTarget(&target)
 		if err != nil {
-			log.Errorf("Error in target: %s", err)
+			utils.Errorf("Error in target: %s", err)
 
 		}
 	}

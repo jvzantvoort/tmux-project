@@ -4,13 +4,14 @@ import (
 	"os"
 	"path/filepath"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/jvzantvoort/tmux-project/utils"
 )
 
 // FindFiles walks through the given targets and returns a slice of all found non-directory targets.
 func FindFiles(targets []string) ([]string, map[string]string, error) {
-	log.Debugf("FindFiles: start")
-	defer log.Debugf("FindFiles: end")
+	utils.LogStart()
+	defer utils.LogEnd()
+
 	var files []string
 	links := make(map[string]string)
 
@@ -27,7 +28,7 @@ func FindFiles(targets []string) ([]string, map[string]string, error) {
 				}
 				links[path] = linkTarget
 			} else if !info.IsDir() {
-				log.Debugf("add target: %s", path)
+				utils.Debugf("add target: %s", path)
 				files = append(files, path)
 			}
 			return nil
