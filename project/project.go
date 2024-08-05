@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 
+	errno "github.com/jvzantvoort/tmux-project/errors"
 	"github.com/jvzantvoort/tmux-project/projecttype"
 	"github.com/jvzantvoort/tmux-project/utils"
 	log "github.com/sirupsen/logrus"
@@ -27,7 +28,7 @@ func NewProject(projectname string) *Project {
 
 func (proj Project) NameIsValid() bool {
 
-	functionname := utils.FunctionName(2)
+	functionname := utils.FunctionName()
 	log.Debugf("%s: start", functionname)
 	defer log.Debugf("%s: end", functionname)
 
@@ -43,7 +44,25 @@ func (proj Project) NameIsValid() bool {
 
 }
 
+func (proj *Project) InjectExternal() {
+	// load homedir object info
+	proj.HomeDir, _ = os.UserHomeDir()
+
+	// load build object info
+	buildContext := build.Default
+	proj.GOARCH = buildContext.GOARCH
+	proj.GOOS = buildContext.GOOS
+	proj.GOPATH = buildContext.GOPATH
+
+	// load user info
+	if currentUser, err := user.Current(); err == nil {
+		proj.USER = currentUser.Username
+	}
+
+}
+
 func (proj *Project) InjectProjectType(projtype string) {
+
 	// load project type object info
 	ptobj := projecttype.NewProjectTypeConfig(projtype)
 	proj.ProjectDir = ptobj.Workdir
@@ -64,28 +83,40 @@ func (proj *Project) InjectProjectType(projtype string) {
 	}
 }
 
-func (proj *Project) RefreshStruct(projtype string) {
-	functionname := utils.FunctionName(2)
-	log.Debugf("%s: start", functionname)
-	defer log.Debugf("%s: end", functionname)
+func (proj *Project) RefreshStruct(args ...string) error {
+	utils.LogStart()
+	defer utils.LogEnd()
 
-	proj.InjectProjectType(projtype)
+	proj.Confess()
 
-	// load homedir object info
-	proj.HomeDir, _ = os.UserHomeDir()
+	proj.Exists = true
 
-	// load build object info
-	buildContext := build.Default
-	proj.GOARCH = buildContext.GOARCH
-	proj.GOOS = buildContext.GOOS
-	proj.GOPATH = buildContext.GOPATH
+	// try to load the configfile
+	err := proj.Open()
+	if err == nil {
+		utils.Debugf("read configfile")
+	} else {
 
-	// load user info
-	if currentUser, err := user.Current(); err == nil {
-		proj.USER = currentUser.Username
+		// cannot find or open the project
+		proj.Exists = false
+
+		// The error was *not* that the file does not exist
+		if errno.IsProjectNotExist(err) {
+			if len(args) != 1 {
+				return errno.ErrProjectTypeNotDefined
+			}
+			utils.Errorf("project not found")
+			proj.InjectProjectType(args[0])
+		} else {
+			utils.Errorf("failed to open project file: %s", err)
+			return err
+		}
 	}
 
+	proj.InjectExternal()
+
 	proj.ProjectDir = proj.Parse(proj.ProjectDir)
+	return nil
 }
 
 func (proj *Project) SetDescription(instr ...string) {
@@ -97,13 +128,17 @@ func (proj *Project) SetDescription(instr ...string) {
 }
 
 func (proj *Project) InitializeProject(projtype string, safe bool) error {
-	functionname := utils.FunctionName(2)
+	functionname := utils.FunctionName()
 	log.Debugf("%s: start", functionname)
 	defer log.Debugf("%s: end", functionname)
 
-	proj.RefreshStruct(projtype)
+	err := proj.RefreshStruct(projtype)
+	if err != nil {
+		log.Errorf("Error: %s", err)
 
-	if safe {
+	}
+
+	if safe && !proj.Exists {
 		if !proj.NameIsValid() {
 			utils.Abort("Name %s is invalid", proj.ProjectName)
 		}
@@ -120,7 +155,11 @@ func (proj *Project) InitializeProject(projtype string, safe bool) error {
 
 	// Write the proj files
 	for _, target := range proj.Targets {
-		proj.ProcessProjectTarget(&target)
+		err = proj.ProcessProjectTarget(&target)
+		if err != nil {
+			log.Errorf("Error in target: %s", err)
+
+		}
 	}
 
 	queue := utils.NewQueue()
