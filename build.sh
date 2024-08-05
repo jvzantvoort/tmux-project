@@ -39,6 +39,8 @@ Build:
     install
     package
     cleanup
+    check
+    list
 
 HELP
 )
@@ -330,7 +332,10 @@ function action_check()
   go vet ./...
   test_result "$?" "go vet"
 
-  golangci-lint run --skip-dirs $(go env GOROOT) ./...
+  local goroot
+  goroot="$(go env GOROOT)"
+
+  golangci-lint run --skip-dirs "${goroot}" ./...
   test_result "$?" "golangci-lint"
 
   staticcheck ./...
@@ -340,6 +345,22 @@ function action_check()
   deadcode ./...
   test_result "$?" "deadcode"
 
+  popd >/dev/null 2>&1 || die "cannot changedir back"
+
+}
+
+function action_list()
+{
+  pushd "${C_SCRIPTDIR}" >/dev/null 2>&1 || die "cannot changedir to scriptdir"
+
+  find "${C_SCRIPTDIR}" -mindepth 1 -maxdepth 1 -type d \
+    -not -name '.git*' -not -name build -not -name vendor \
+    -printf "%f\n" | sort | while read -r target
+    do
+      find "${target}" -type f
+    done
+  find "${C_SCRIPTDIR}" -mindepth 1 -maxdepth 1 -type f \
+    -name '*.go'
   popd >/dev/null 2>&1 || die "cannot changedir back"
 
 }
@@ -367,6 +388,7 @@ function do_usage()
   exit 0
 }
 function do_check() { print_title "check the sources"; action_check; }
+function do_list() { action_list; }
 # }}}
 
 #------------------------------------------------------------------------------#
@@ -376,12 +398,13 @@ function do_check() { print_title "check the sources"; action_check; }
 case "$1" in
   fmt)     do_fmt          ;;
   tags)    do_tags         ;;
-  cleanup) do_cleanup      ;;
-  check)   do_check        ;;
   build)   do_build        ;;
+  update)  do_dependencies ;;
   install) do_install      ;;
   package) do_package      ;;
-  update)  do_dependencies ;;
+  cleanup) do_cleanup      ;;
+  check)   do_check        ;;
+  list)    do_list         ;;
   help)    do_usage        ;;
   *)       do_usage        ;;
 esac
