@@ -387,7 +387,7 @@ function do_usage()
   printf "\n\n"
   exit 0
 }
-function do_check() { print_title "check the sources"; action_check; do_build; }
+function do_check() { print_title "check the sources"; action_check; }
 function do_list() { action_list; }
 # }}}
 
