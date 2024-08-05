@@ -31,7 +31,7 @@ func handleShellCmd(cmd *cobra.Command, args []string) {
 	if len(args) == 1 {
 		ShellName = args[0]
 	}
-	fmt.Print(messages.GetShell(ShellName))
+	fmt.Println(messages.GetShell(ShellName))
 }
 
 func init() {

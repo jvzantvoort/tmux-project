@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/jvzantvoort/tmux-project/utils"
 )
 
 // Content missing godoc.
@@ -15,9 +15,10 @@ var Content embed.FS
 
 func GetContent(folder, name string) string {
 	filename := fmt.Sprintf("%s/%s", folder, name)
+
 	msgstr, err := Content.ReadFile(filename)
 	if err != nil {
-		log.Error(err)
+		utils.Errorf("%s", err)
 		msgstr = []byte("undefined")
 	}
 	return strings.TrimSuffix(string(msgstr), "\n")
@@ -37,5 +38,5 @@ func GetLong(name string) string {
 }
 
 func GetShell(name string) string {
-	return GetContent("shell", name)
+	return GetContent("shells", name)
 }
