@@ -1,121 +1,135 @@
 package project
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
 	"go/build"
-	"io"
 	"os"
 	"os/user"
-	"text/template"
+	"regexp"
+	"strings"
 
 	"github.com/jvzantvoort/tmux-project/projecttype"
+	"github.com/jvzantvoort/tmux-project/utils"
+	log "github.com/sirupsen/logrus"
 )
 
-type Project struct {
-	HomeDir            string `json:"homedir"`
-	ProjectDescription string `json:"description"`
-	ProjectDir         string `json:"directory"`
-	ProjectName        string `json:"name"`
-	ProjectType        string `json:"type"`
-	GOARCH             string `json:"-"` // target architecture
-	GOOS               string `json:"-"` // target operating system
-	GOPATH             string `json:"-"` // Go paths
-	USER               string `json:"-"`
-}
-
-func NewProject(projectname string, projtype projecttype.ProjectTypeConfig) *Project {
+// NewProject initialize a Project object
+func NewProject(projectname string) *Project {
+	functionname := utils.FunctionName()
+	log.Debugf("%s: start", functionname)
+	defer log.Debugf("%s: end", functionname)
 
 	retv := &Project{}
 
 	retv.ProjectName = projectname
 
-	retv.Init(projtype)
-
 	return retv
 }
 
-func (proj *Project) Init(projtype projecttype.ProjectTypeConfig) {
+func (proj Project) NameIsValid() bool {
+
+	functionname := utils.FunctionName(2)
+	log.Debugf("%s: start", functionname)
+	defer log.Debugf("%s: end", functionname)
+
+	pattern := regexp.MustCompile(proj.Pattern)
+
+	if pattern.MatchString(proj.ProjectName) {
+		log.Debugf("project name matches pattern")
+		return true
+	} else {
+		log.Warningf("project name %s does not matches pattern %s", proj.ProjectName, proj.Pattern)
+		return false
+	}
+
+}
+
+func (proj *Project) InjectProjectType(projtype string) {
+	// load project type object info
+	ptobj := projecttype.NewProjectTypeConfig(projtype)
+	proj.ProjectDir = ptobj.Workdir
+	proj.ProjectType = ptobj.ProjectType
+	proj.Pattern = ptobj.Pattern
+	proj.ProjectTypeDir = ptobj.ProjectTypeDir
+	proj.SetupActions = ptobj.SetupActions
+
+	for _, element := range ptobj.Files {
+		content, _ := ptobj.Content(element.Name)
+		obj := ProjectTarget{
+			Name:        element.Name,
+			Destination: element.Destination,
+			Mode:        element.Mode,
+			Content:     content,
+		}
+		proj.Targets = append(proj.Targets, obj)
+	}
+}
+
+func (proj *Project) RefreshStruct(projtype string) {
+	functionname := utils.FunctionName(2)
+	log.Debugf("%s: start", functionname)
+	defer log.Debugf("%s: end", functionname)
+
+	proj.InjectProjectType(projtype)
+
+	// load homedir object info
 	proj.HomeDir, _ = os.UserHomeDir()
 
-	proj.ProjectDir = projtype.Workdir
-	proj.ProjectType = projtype.ProjectType
-
+	// load build object info
 	buildContext := build.Default
-
 	proj.GOARCH = buildContext.GOARCH
 	proj.GOOS = buildContext.GOOS
 	proj.GOPATH = buildContext.GOPATH
 
+	// load user info
 	if currentUser, err := user.Current(); err == nil {
 		proj.USER = currentUser.Username
 	}
 
+	proj.ProjectDir = proj.Parse(proj.ProjectDir)
 }
 
-// buildConfig construct the text from the template definition and arguments.
-func (t Project) ParseTemplateString(templatestring string) (string, error) {
-	var retv string
-
-	tmpl, err := template.New("prompt").Parse(templatestring)
-	if err != nil {
-		return "", err
+func (proj *Project) SetDescription(instr ...string) {
+	proj.ProjectDescription = strings.Join(instr, " ")
+	proj.ProjectDescription = strings.TrimSpace(proj.ProjectDescription)
+	if len(proj.ProjectDescription) == 0 {
+		proj.ProjectDescription = utils.Ask("Description")
 	}
-
-	buf := new(bytes.Buffer)
-	err = tmpl.Execute(buf, t)
-	if err != nil {
-		return "", err
-	}
-	retv = buf.String()
-	return retv, nil
 }
 
-func (t Project) ParseTemplateFile(target string) (string, error) {
-	var retv string
-	var err error
+func (proj *Project) InitializeProject(projtype string, safe bool) error {
+	functionname := utils.FunctionName(2)
+	log.Debugf("%s: start", functionname)
+	defer log.Debugf("%s: end", functionname)
 
-	content, err := os.ReadFile(target)
-	if err != nil {
-		return retv, err
+	proj.RefreshStruct(projtype)
+
+	if safe {
+		if !proj.NameIsValid() {
+			utils.Abort("Name %s is invalid", proj.ProjectName)
+		}
 	}
 
-	return t.ParseTemplateString(string(content))
+	// Fail if directory already exists
+	if _, err := os.Stat(proj.ProjectDir); !os.IsNotExist(err) {
+		utils.Abort("%s already exists", proj.ProjectDir)
+	}
+
+	if err := utils.MkdirAll(proj.ProjectDir); err != nil {
+		utils.Abort("directory cannot be created: %s", proj.ProjectDir)
+	}
+
+	// Write the proj files
+	for _, target := range proj.Targets {
+		proj.ProcessProjectTarget(&target)
+	}
+
+	queue := utils.NewQueue()
+	for _, step := range proj.SetupActions {
+		step = proj.Parse(step)
+		queue.Add(proj.ProjectDir, step)
+	}
+
+	queue.Run()
+
+	return proj.Save()
 }
-
-// Write json output to an [io.Writer] compatible handle. It returns nil or the
-// error of [json.MarshalIndent]
-func (proj Project) Write(writer io.Writer) error {
-	content, err := json.MarshalIndent(proj, "", "  ")
-	if err == nil {
-		fmt.Fprint(writer, string(content))
-		fmt.Fprintf(writer, "\n")
-	}
-	return err
-}
-
-// Read session content from a [io.Reader] object.
-func (proj *Project) Read(reader io.Reader) error {
-	data, err := io.ReadAll(reader)
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(data, &proj)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// Write session configuration to a projectfile
-func (proj Project) WriteToFile(projectfile string) error {
-	filehandle, err := os.OpenFile(projectfile, os.O_CREATE, 0644)
-	if err != nil {
-		return err
-	}
-	defer filehandle.Close()
-	return proj.Write(filehandle)
-}
-
-// vim: noexpandtab filetype=go

@@ -14,8 +14,8 @@ import (
 
 // CreateCmd represents the create command
 var CreateCmd = &cobra.Command{
-	Use:   messages.GetUsage("create"),
-	Short: "Create a project",
+	Use:   messages.GetUse("create"),
+	Short: messages.GetShort("create"),
 	Long:  messages.GetLong("create"),
 	Run:   handleCreateCmd,
 }
@@ -34,15 +34,21 @@ func handleCreateCmd(cmd *cobra.Command, args []string) {
 	}
 	ProjectName := args[0]
 	ProjectType := GetString(*cmd, "type")
+	ProjectDescription := GetString(*cmd, "description")
 
-	err := project.CreateProject(ProjectType, ProjectName)
+	proj := project.NewProject(ProjectName)
+	proj.SetDescription(ProjectDescription)
+	err := proj.InitializeProject(ProjectType, true)
 	if err != nil {
 		log.Fatalf("Encountered error: %q", err)
-	}
+	} else {
+		log.Infof("InitializeProject completed")
 
+	}
 }
 
 func init() {
 	rootCmd.AddCommand(CreateCmd)
 	CreateCmd.Flags().StringP("type", "t", "default", "Type of project")
+	CreateCmd.Flags().StringP("description", "d", "", "Description of the project")
 }

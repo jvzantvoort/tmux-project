@@ -2,24 +2,26 @@ package utils
 
 import (
 	"fmt"
-// 	"io/fs"
+	"io/fs"
 	"os"
-// 	"strconv"
+	"strconv"
 	"strings"
+
 	log "github.com/sirupsen/logrus"
 )
 
-// func GetMode(instr string) (fs.FileMode, error) {
-// 	var retv fs.FileMode
-// 	mode, err := strconv.ParseUint(instr, 8, 32)
-// 	if err != nil {
-// 		return retv, err
-// 	}
-// 	retv = os.FileMode(mode)
-// 	return retv, err
-// 
-// }
-// 
+func GetMode(instr string) (fs.FileMode, error) {
+	var retv fs.FileMode
+	mode, err := strconv.ParseUint(instr, 8, 32)
+	if err != nil {
+		return retv, err
+	}
+	retv = os.FileMode(mode)
+	return retv, err
+
+}
+
+//
 // func ReplaceBytesToBytes(content []byte, term, replacement string) []byte {
 // 	return []byte(strings.Replace(string(content), term, replacement, -1))
 // }
