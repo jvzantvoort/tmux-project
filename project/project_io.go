@@ -19,8 +19,7 @@ func (proj Project) Write(writer io.Writer) error {
 	defer log.Debugf("%s: end", functionname)
 	content, err := json.MarshalIndent(proj, "", "  ")
 	if err == nil {
-		charno, err := fmt.Fprintf(writer, "%s\n", string(content))
-		log.Debugf("%s:  chars: %d\n", charno)
+		_, err := fmt.Fprintf(writer, "%s\n", string(content))
 		if err != nil {
 			return err
 		}
