@@ -5,7 +5,6 @@ import (
 	"path"
 	"strings"
 
-	"github.com/jvzantvoort/tmux-project/archive"
 	"github.com/jvzantvoort/tmux-project/config"
 	"github.com/jvzantvoort/tmux-project/utils"
 	log "github.com/sirupsen/logrus"
@@ -18,7 +17,6 @@ type TmuxSession struct {
 	Workdir     string
 	Description string
 }
-
 
 func (tm *TmuxSession) LoadConfig() {
 	var err error
@@ -45,18 +43,6 @@ func (tm TmuxSession) TargetPaths() (targets []string) {
 	return
 }
 
-func (tm TmuxSession) Archive(archivename string) error {
-
-	archivename, _ = utils.Expand(archivename)
-	tar := archive.NewTarArchive(archivename)
-
-	targets := tm.TargetPaths()
-	tar.AddFiles(targets)
-
-	return tar.CreateArchive()
-
-}
-
 func (tm TmuxSession) IsSane() bool {
 
 	_, err := os.Stat(tm.Workdir)
@@ -78,4 +64,3 @@ func NewTmuxSession(sessionname string) *TmuxSession {
 
 	return tm
 }
-
