@@ -139,6 +139,9 @@ function test_result()
   if [[ "${retv}" == "0" ]]
   then
     print_ok "${message}"
+  elif [[ "${retv}" == "127" ]]
+  then
+    print_nok "${message} (not found)"
   else
     print_nok "${message}"
   fi
@@ -320,6 +323,27 @@ function action_cleanup()
 
 }
 
+function action_check()
+{
+  pushd "${C_SCRIPTDIR}" >/dev/null 2>&1 || die "cannot changedir to scriptdir"
+
+  go vet ./...
+  test_result "$?" "go vet"
+
+  golangci-lint run --skip-dirs $(go env GOROOT) ./...
+  test_result "$?" "golangci-lint"
+
+  staticcheck ./...
+  test_result "$?" "staticcheck"
+
+  # go install golang.org/x/tools/cmd/deadcode@latest
+  deadcode ./...
+  test_result "$?" "deadcode"
+
+  popd >/dev/null 2>&1 || die "cannot changedir back"
+
+}
+
 # }}}
 
 # interfaces {{{
@@ -342,6 +366,7 @@ function do_usage()
   printf "\n\n"
   exit 0
 }
+function do_check() { print_title "check the sources"; action_check; }
 # }}}
 
 #------------------------------------------------------------------------------#
@@ -352,6 +377,7 @@ case "$1" in
   fmt)     do_fmt          ;;
   tags)    do_tags         ;;
   cleanup) do_cleanup      ;;
+  check)   do_check        ;;
   build)   do_build        ;;
   install) do_install      ;;
   package) do_package      ;;
