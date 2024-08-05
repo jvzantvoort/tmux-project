@@ -9,9 +9,9 @@ import (
 func GetString(cmd cobra.Command, name string) string {
 	retv, _ := cmd.Flags().GetString(name)
 	if len(retv) != 0 {
-		log.Infof("Found %s as %s", name, retv)
+		log.Debugf("%s returned %s", name, retv)
 	} else {
-		log.Infof("Found %s as %s", name, retv)
+		log.Debugf("%s returned nothing", name)
 	}
 	return retv
 }
