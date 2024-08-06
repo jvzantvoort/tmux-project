@@ -1,19 +1,16 @@
 #!/bin/bash
 
-[[ "$-" =~ i ]] || return
-[[ -z "$TMUX" ]] && return
-
-#shellcheck disable=SC2155
-declare -x SESSIONNAME=$(tmux display-message -p '#S'  2>/dev/null)
-
-#shellcheck disable=SC1090
-if [ -f "$HOME/.tmux.d/${SESSIONNAME}.env" ]
+if [[ -n "$TMUX" ]]
 then
-  source  "$HOME/.tmux.d/${SESSIONNAME}.env"
-fi
+  SESSIONNAME="$(tmux display-message -p '#S'  2>/dev/null)"
+  export SESSIONNAME
 
-# Based on https://unix.stackexchange.com/questions/50208/how-to-change-the-working-directory-of-invoking-shell-using-a-script
-function pcd()
-{
-  cd $PROJDIR/$1
-}
+  #shellcheck disable=SC1090
+  if [ -f "$HOME/.tmux.d/${SESSIONNAME}.env" ]
+  then
+    source  "$HOME/.tmux.d/${SESSIONNAME}.env"
+  fi
+
+  #shellcheck disable=SC2164
+  function pcd() { cd "$PROJDIR/$1"; }
+fi
