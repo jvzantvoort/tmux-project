@@ -1,0 +1,63 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""tmux-project-generate-json - generate json from old config"""
+
+import sys
+import pathlib
+import re
+import json
+
+CONFIGDIR = pathlib.Path.home() / ".tmux.d"
+
+def readrc(name):
+    filepath = CONFIGDIR / f"{name}.rc"
+    pattern = re.compile(r"^#\s*([A-Z]+)\:\s+(.*?)\s*$")
+
+    retv = {}
+    with open(filepath) as ifh:
+        for line in ifh.readlines():
+            match = pattern.match(line)
+            if match is not None:
+                retv[match.group(1).lower()] = match.group(2).strip()
+    retv['name'] = name
+    retv["homedir"] = str(pathlib.Path.home())
+
+    return retv
+
+def writejson(rc):
+    outputfile = CONFIGDIR / f"{rc['name']}.json"
+    data = {}
+
+    if outputfile.exists():
+        return False
+
+    data["description"] = rc["description"]
+    data["directory"] = rc["workdir"]
+    data["homedir"] = rc["homedir"]
+    data["name"] = rc["name"]
+
+    data["type"] = "undefined"
+    data["setupactions"] = []
+    data["targets"] = [
+        {"name": "default.env", "destination": "{{.ProjectName}}.env", "mode": "644"},
+        {"name": "default.rc", "destination": "{{.ProjectName}}.rc", "mode": "644"},
+    ]
+
+    with open(outputfile, "w") as ofh:
+        ofh.write(json.dumps(data, indent=2))
+    return True
+
+def main(args):
+
+    for element in CONFIGDIR.glob("*.rc"):
+        sessionname = element.stem
+        if sessionname == "common":
+            continue
+
+        rc = readrc(sessionname)
+        if not rc:
+            continue
+        writejson(rc)
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
