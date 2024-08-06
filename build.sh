@@ -267,13 +267,18 @@ function action_dependencies()
 
 function action_install()
 {
+  local goos="$1"
+  local arch="$2"
   local bindir
   bindir="$(go env GOBIN)"
-  list_binaries | while read -r target
+
+  while read -r target
   do
-    install -m 755 "${C_BUILDDIR}/${target}" "${bindir}/${target}"
+    local dest
+    dest="$(__calcdest "${goos}" "${arch}" "${target}")"
+    install -m 755 "${dest}" "${bindir}/${target}"
     test_result "$?" "    ${target}"
-  done
+  done < <(list_binaries)
 }
 
 function action_package()
@@ -378,7 +383,10 @@ function do_build()
   action_dependencies
   action_build "$(go env GOOS)" "$(go env GOARCH)"
 }
-function do_install() { print_title "install locally"; action_install; }
+function do_install() {
+  print_title "install locally"
+  action_install "$(go env GOOS)" "$(go env GOARCH)"
+}
 function do_package() { print_title "create packages"; action_createpackages; }
 function do_usage()
 {

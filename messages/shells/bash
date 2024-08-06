@@ -1,13 +1,16 @@
 #!/bin/bash
 
-[[ "$-" =~ i ]] || return
-[[ -z "$TMUX" ]] && return
-
-#shellcheck disable=SC2155
-declare -x SESSIONNAME=$(tmux display-message -p '#S'  2>/dev/null)
-
-#shellcheck disable=SC1090
-if [ -f "$HOME/.tmux.d/${SESSIONNAME}.env" ]
+if [[ -n "$TMUX" ]]
 then
-  source  "$HOME/.tmux.d/${SESSIONNAME}.env"
+  SESSIONNAME="$(tmux display-message -p '#S'  2>/dev/null)"
+  export SESSIONNAME
+
+  #shellcheck disable=SC1090
+  if [ -f "$HOME/.tmux.d/${SESSIONNAME}.env" ]
+  then
+    source  "$HOME/.tmux.d/${SESSIONNAME}.env"
+  fi
+
+  #shellcheck disable=SC2164
+  function pcd() { cd "$PROJDIR/$1"; }
 fi
