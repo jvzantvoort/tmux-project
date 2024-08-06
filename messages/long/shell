@@ -1,0 +1,5 @@
+Provides a way to integrate tmux-project into shell by executing:
+
+  eval "$(tmux-project shell)"
+
+(don't forget the quotes)
