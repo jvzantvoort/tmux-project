@@ -130,7 +130,13 @@ func (proj *Project) InitializeProject(projtype string, safe bool) error {
 	utils.LogStart()
 	defer utils.LogEnd()
 
-	err := proj.RefreshStruct(projtype)
+	err := utils.SetupSessionDir()
+	if err != nil {
+		utils.Errorf("Error: %s", err)
+
+	}
+
+	err = proj.RefreshStruct(projtype)
 	if err != nil {
 		utils.Errorf("Error: %s", err)
 
