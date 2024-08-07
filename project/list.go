@@ -34,8 +34,8 @@ func ListConfigs() []string {
 
 // PrintFullList prints the list of sessions
 func PrintFullList() {
-	active, err := tmux.ListActive()
-	utils.ErrorExit(err)
+	var err error
+	active, _ := tmux.ListActive()
 
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Name", "Active", "Description", "Workdir", "Sane"})

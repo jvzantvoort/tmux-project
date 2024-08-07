@@ -62,7 +62,7 @@ func (proj *Project) Open() error {
 
 	filehandle, err := os.Open(projectfile)
 	if err != nil {
-		utils.Errorf("cannot open project file: %s", err)
+		utils.Errorf("cannot open project file for reading: %s", err)
 		return err
 	}
 
@@ -75,7 +75,7 @@ func (proj Project) Save() error {
 	utils.LogStart()
 	defer utils.LogEnd()
 
-	err := utils.MkdirAll(filepath.Join(proj.ProjectDir, ".tmux-project"))
+	err := utils.SetupSessionDir()
 	if err != nil {
 		return err
 	}
@@ -85,7 +85,7 @@ func (proj Project) Save() error {
 
 	filehandle, err := os.OpenFile(projectfile, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		utils.Errorf("cannot open project file: %s", err)
+		utils.Errorf("cannot open project file for writing: %s", err)
 		return err
 	}
 	defer filehandle.Close()

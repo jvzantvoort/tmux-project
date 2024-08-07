@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/jvzantvoort/tmux-project/utils"
 )
@@ -42,12 +43,12 @@ func Resume(name, configfile string) {
 }
 
 func ListActive() ([]string, error) {
-	command := fmt.Sprintf("%s ls -F #{session_name}", utils.Which("tmux"))
+	command := fmt.Sprintf("%s ls -F \"#{session_name}\"", utils.Which("tmux"))
 	cwd, _ := os.UserHomeDir()
-	stdout_lines, _, err := utils.Exec(cwd, command)
-
-	if err != nil {
-		return stdout_lines, err
+	retv := []string{}
+	stdout_lines, _, _ := utils.ExecSilent(cwd, command)
+	for _, line := range stdout_lines {
+		retv = append(retv, strings.Trim(line, "\""))
 	}
-	return stdout_lines, nil
+	return retv, nil
 }

@@ -103,7 +103,6 @@ func (proj *Project) RefreshStruct(args ...string) error {
 			if len(args) != 1 {
 				return errno.ErrProjectTypeNotDefined
 			}
-			utils.Errorf("project not found")
 			proj.InjectProjectType(args[0])
 		} else {
 			utils.Errorf("failed to open project file: %s", err)
@@ -130,7 +129,13 @@ func (proj *Project) InitializeProject(projtype string, safe bool) error {
 	utils.LogStart()
 	defer utils.LogEnd()
 
-	err := proj.RefreshStruct(projtype)
+	err := utils.SetupSessionDir()
+	if err != nil {
+		utils.Errorf("Error: %s", err)
+
+	}
+
+	err = proj.RefreshStruct(projtype)
 	if err != nil {
 		utils.Errorf("Error: %s", err)
 
