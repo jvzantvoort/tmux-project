@@ -103,7 +103,6 @@ func (proj *Project) RefreshStruct(args ...string) error {
 			if len(args) != 1 {
 				return errno.ErrProjectTypeNotDefined
 			}
-			utils.Errorf("project not found")
 			proj.InjectProjectType(args[0])
 		} else {
 			utils.Errorf("failed to open project file: %s", err)
