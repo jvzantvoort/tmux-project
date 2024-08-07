@@ -13,13 +13,13 @@
 package config
 
 import (
+	"os/user"
 	"path"
-
-	"github.com/jvzantvoort/tmux-project/utils"
 )
 
 func Home() string {
-	return utils.HomeDir()
+	usr, _ := user.Current()
+	return usr.HomeDir
 }
 
 func ConfigDir() string {
