@@ -75,7 +75,7 @@ func (proj Project) Save() error {
 	utils.LogStart()
 	defer utils.LogEnd()
 
-	err := utils.MkdirAll(filepath.Join(proj.ProjectDir, ".tmux-project"))
+	err := utils.SetupSessionDir()
 	if err != nil {
 		return err
 	}
