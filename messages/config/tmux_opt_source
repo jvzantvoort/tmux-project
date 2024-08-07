@@ -1,0 +1,65 @@
+#!/bin/bash
+#
+#  source optional configurations if applicable
+#
+
+C_SCRIPTPATH="$(readlink -f "$0")"
+C_SCRIPTNAME="$(basename "$C_SCRIPTPATH" .sh)"
+C_SCRIPTDIR="$(dirname "$C_SCRIPTPATH")"
+
+readonly C_SCRIPTPATH
+readonly C_SCRIPTNAME
+readonly C_SCRIPTDIR
+
+function source_if_exists()
+{
+  local configfile=$1
+
+  [[ -r "${C_SCRIPTDIR}/${configfile}" ]] || return 1
+
+  tmux source-file "${C_SCRIPTDIR}/${configfile}"
+}
+
+function have_themepack()
+{
+
+  [[ -d "${HOME}/.tmux.d/tmux-themepack" ]] && return 0
+
+  printf "\n\nThemepack missing!\n\n"                                  >&2
+  printf "To fix:\n\n"                                                 >&2
+  printf "  cd %s/.tmux.d\n\n" "${HOME}"                               >&2
+  printf "  git clone https://github.com/jimeh/tmux-themepack.git\n\n" >&2
+  return 1
+}
+
+#------------------------------------------------------------------------------#
+#                                    Main                                      #
+#------------------------------------------------------------------------------#
+
+THEME=$1; shift
+
+have_themepack || exit 1
+
+if [[ "${THEME}" = "--help" ]]
+then
+  echo "${C_SCRIPTPATH} <theme name>"
+  echo ""
+  echo "To use put the follown in your tmux configuration:"
+  echo ""
+  echo "run-shell \"bash ~/.tmux.d/${C_SCRIPTNAME} tmux-themepack/powerline/block/gray.tmuxtheme\""
+  echo ""
+  exit 0
+fi
+
+source_if_exists "${THEME}" && exit 0
+
+for theme in "$@"
+do
+  source_if_exists "${theme}" && exit 0
+done < <(find ~/.tmux.d/tmux-themepack/powerline/default/ -name '*.tmuxtheme')
+
+source_if_exists "default.tmuxtheme"
+
+#------------------------------------------------------------------------------#
+#                                  The End                                     #
+#------------------------------------------------------------------------------#

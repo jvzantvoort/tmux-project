@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jvzantvoort/tmux-project/utils"
+	log "github.com/sirupsen/logrus"
 )
 
 // Content missing godoc.
 //
-//go:embed long/* shells/* use/* short/*
+//go:embed long/* shells/* use/* short/* config/*
 var Content embed.FS
 
 func GetContent(folder, name string) string {
@@ -18,7 +18,7 @@ func GetContent(folder, name string) string {
 
 	msgstr, err := Content.ReadFile(filename)
 	if err != nil {
-		utils.Errorf("%s", err)
+		log.Errorf("%s", err)
 		msgstr = []byte("undefined")
 	}
 	return strings.TrimSuffix(string(msgstr), "\n")
@@ -39,4 +39,8 @@ func GetLong(name string) string {
 
 func GetShell(name string) string {
 	return GetContent("shells", name)
+}
+
+func GetConfig(name string) string {
+	return GetContent("config", name)
 }
