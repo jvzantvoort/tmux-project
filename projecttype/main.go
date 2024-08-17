@@ -170,13 +170,23 @@ func (ptc ProjectTypeConfig) UpdateConfigFile(target string) error {
 // NewProjectTypeConfig read the relevant configfile and return
 // ProjectTypeConfig object with relevant data.
 func NewProjectTypeConfig(projecttype string) ProjectTypeConfig {
+	utils.LogStart()
+	defer utils.LogEnd()
+
+	utils.LogArgument("projecttype", projecttype)
+
 	var err error
 
 	retv := ProjectTypeConfig{ProjectType: projecttype}
 
 	retv.ProjectTypeDir = filepath.Join(config.ConfigDir(), retv.ProjectType)
+	utils.LogVariable("retv.ProjectTypeDir", retv.ProjectTypeDir)
+
 	retv.ConfigDir = filepath.Join(config.ConfigDir(), retv.ProjectType)
+	utils.LogVariable("retv.ConfigDir", retv.ConfigDir)
+
 	retv.ConfigFile = filepath.Join(retv.ConfigDir, "config.yml")
+	utils.LogVariable("retv.ConfigDir", retv.ConfigDir)
 
 	err = retv.readConfig()
 

@@ -43,6 +43,26 @@ func LogEnd() {
 	log.Debugf("%s: end", elements[len(elements)-1])
 }
 
+func LogArgument(name, input interface{}) {
+
+	pc, _, _, _ := runtime.Caller(1)
+	elements := strings.Split(runtime.FuncForPC(pc).Name(), ".")
+
+	log.Debugf("%s: %s", elements[len(elements)-1], fmt.Sprintf(" argument: %s(%T)\n", name, input))
+	log.Debugf("%s: %s", elements[len(elements)-1], fmt.Sprintf("    value: %#v\n", input))
+
+}
+
+func LogVariable(name, input interface{}) {
+
+	pc, _, _, _ := runtime.Caller(1)
+	elements := strings.Split(runtime.FuncForPC(pc).Name(), ".")
+
+	log.Debugf("%s: %s", elements[len(elements)-1], fmt.Sprintf(" variable: %s(%T)\n", name, input))
+	log.Debugf("%s: %s", elements[len(elements)-1], fmt.Sprintf("    value: %#v\n", input))
+
+}
+
 // Debugf logs a debug message with the name of the function that called it
 func Debugf(format string, args ...interface{}) {
 

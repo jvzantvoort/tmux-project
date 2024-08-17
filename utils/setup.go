@@ -8,16 +8,21 @@ import (
 	"github.com/jvzantvoort/tmux-project/messages"
 )
 
+// SetupSessionDir setup the ~/.tmux.d directory
 func SetupSessionDir() error {
-	basedir := config.SessionDir()
-	commonfile := filepath.Join(basedir, "common.rc")
-	tos_file := filepath.Join(basedir, "tmux_opt_source")
+	LogStart()
+	defer LogEnd()
+
+	session_dir := config.SessionDir()
+	commonfile := filepath.Join(session_dir, "common.rc")
+	tos_file := filepath.Join(session_dir, "tmux_opt_source")
 
 	if FileExists(commonfile) {
+		Debugf("common.rc file exists")
 		return nil
 	}
 
-	err := MkdirAll(config.SessionDir())
+	err := MkdirAll(session_dir)
 	LogIfError(err)
 	content := messages.GetConfig("common.rc")
 	tos_content := messages.GetConfig("tmux_opt_source")

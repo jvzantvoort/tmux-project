@@ -17,6 +17,7 @@ func NewProject(projectname string) *Project {
 
 	utils.LogStart()
 	defer utils.LogEnd()
+	utils.LogArgument("projectname", projectname)
 
 	retv := &Project{}
 
@@ -43,30 +44,52 @@ func (proj Project) NameIsValid() bool {
 }
 
 func (proj *Project) InjectExternal() {
+	utils.LogStart()
+	defer utils.LogEnd()
+
 	// load homedir object info
 	proj.HomeDir, _ = os.UserHomeDir()
+	utils.LogVariable("proj.HomeDir", proj.HomeDir)
 
 	// load build object info
 	buildContext := build.Default
 	proj.GOARCH = buildContext.GOARCH
+	utils.LogVariable("proj.GOARCH", proj.GOARCH)
+
 	proj.GOOS = buildContext.GOOS
+	utils.LogVariable("proj.GOOS", proj.GOOS)
+
 	proj.GOPATH = buildContext.GOPATH
+	utils.LogVariable("proj.GOPATH", proj.GOPATH)
 
 	// load user info
 	if currentUser, err := user.Current(); err == nil {
 		proj.USER = currentUser.Username
+		utils.LogVariable("proj.USER", proj.USER)
 	}
 
 }
 
 func (proj *Project) InjectProjectType(projtype string) {
+	utils.LogStart()
+	defer utils.LogEnd()
+
+	utils.LogArgument("projtype", projtype)
 
 	// load project type object info
 	ptobj := projecttype.NewProjectTypeConfig(projtype)
 	proj.ProjectDir = ptobj.Workdir
+	utils.LogVariable("proj.ProjectDir", proj.ProjectDir)
+
 	proj.ProjectType = ptobj.ProjectType
+	utils.LogVariable("proj.ProjectType", proj.ProjectType)
+
 	proj.Pattern = ptobj.Pattern
+	utils.LogVariable("proj.Pattern", proj.Pattern)
+
 	proj.ProjectTypeDir = ptobj.ProjectTypeDir
+	utils.LogVariable("proj.ProjectTypeDir", proj.ProjectTypeDir)
+
 	proj.SetupActions = ptobj.SetupActions
 
 	for _, element := range ptobj.Files {
@@ -92,7 +115,7 @@ func (proj *Project) RefreshStruct(args ...string) error {
 	// try to load the configfile
 	err := proj.Open()
 	if err == nil {
-		utils.Debugf("read configfile")
+		utils.Debugf("succesfully read configfile")
 	} else {
 
 		// cannot find or open the project
@@ -112,7 +135,9 @@ func (proj *Project) RefreshStruct(args ...string) error {
 
 	proj.InjectExternal()
 
+	// Translate some stuff
 	proj.ProjectDir = proj.Parse(proj.ProjectDir)
+	utils.LogVariable("proj.ProjectDir", proj.ProjectDir)
 	return nil
 }
 
@@ -128,6 +153,8 @@ func (proj *Project) InitializeProject(projtype string, safe bool) error {
 
 	utils.LogStart()
 	defer utils.LogEnd()
+	utils.LogArgument("projtype", projtype)
+	utils.LogArgument("safe", safe)
 
 	err := utils.SetupSessionDir()
 	if err != nil {
