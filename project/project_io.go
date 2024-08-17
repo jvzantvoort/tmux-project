@@ -75,7 +75,7 @@ func (proj Project) Save() error {
 	utils.LogStart()
 	defer utils.LogEnd()
 
-	err := utils.SetupSessionDir()
+	err := utils.SetupSessionDir(false)
 	if err != nil {
 		return err
 	}

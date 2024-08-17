@@ -169,15 +169,25 @@ func (ptc ProjectTypeConfig) UpdateConfigFile(target string) error {
 
 // NewProjectTypeConfig read the relevant configfile and return
 // ProjectTypeConfig object with relevant data.
-func NewProjectTypeConfig(projecttype string) ProjectTypeConfig {
+func NewProjectTypeConfig(projecttype string) (ProjectTypeConfig, error) {
 	utils.LogStart()
 	defer utils.LogEnd()
 
 	utils.LogArgument("projecttype", projecttype)
 
+	var rerr error // the one we return
 	var err error
 
-	retv := ProjectTypeConfig{ProjectType: projecttype}
+	// Create the object
+	retv := ProjectTypeConfig{}
+
+	if len(projecttype) == 0 {
+		rerr = ErrProjectNameEmpty
+		return retv, rerr
+	}
+
+	retv.ProjectType = projecttype
+
 
 	retv.ProjectTypeDir = filepath.Join(config.ConfigDir(), retv.ProjectType)
 	utils.LogVariable("retv.ProjectTypeDir", retv.ProjectTypeDir)
@@ -192,6 +202,7 @@ func NewProjectTypeConfig(projecttype string) ProjectTypeConfig {
 
 	if err != nil {
 		utils.Debugf("Project Type %s does not exist", retv.ProjectType)
+		rerr = ErrProjectNotExists
 	}
 
 	retv.Workdir, err = utils.Expand(retv.Workdir)
@@ -199,5 +210,5 @@ func NewProjectTypeConfig(projecttype string) ProjectTypeConfig {
 		utils.Errorf("Failed to get workdir %s", err)
 	}
 
-	return retv
+	return retv, rerr
 }

@@ -70,14 +70,17 @@ func (proj *Project) InjectExternal() {
 
 }
 
-func (proj *Project) InjectProjectType(projtype string) {
+func (proj *Project) InjectProjectType(projtype string) error {
 	utils.LogStart()
 	defer utils.LogEnd()
 
 	utils.LogArgument("projtype", projtype)
 
 	// load project type object info
-	ptobj := projecttype.NewProjectTypeConfig(projtype)
+	ptobj, err := projecttype.NewProjectTypeConfig(projtype)
+	if err != nil {
+		return err
+	}
 	proj.ProjectDir = ptobj.Workdir
 	utils.LogVariable("proj.ProjectDir", proj.ProjectDir)
 
@@ -102,13 +105,17 @@ func (proj *Project) InjectProjectType(projtype string) {
 		}
 		proj.Targets = append(proj.Targets, obj)
 	}
+	return nil
 }
 
 func (proj *Project) RefreshStruct(args ...string) error {
 	utils.LogStart()
 	defer utils.LogEnd()
 
-	proj.Confess()
+	var project_type string
+	if len(args) == 1 {
+		project_type = args[0]
+	}
 
 	proj.Exists = true
 
@@ -123,10 +130,13 @@ func (proj *Project) RefreshStruct(args ...string) error {
 
 		// The error was *not* that the file does not exist
 		if errno.IsProjectNotExist(err) {
-			if len(args) != 1 {
+			if len(project_type) == 0 {
 				return errno.ErrProjectTypeNotDefined
 			}
-			proj.InjectProjectType(args[0])
+			err := proj.InjectProjectType(project_type)
+			if err != nil {
+				return err
+			}
 		} else {
 			utils.Errorf("failed to open project file: %s", err)
 			return err
@@ -156,7 +166,7 @@ func (proj *Project) InitializeProject(projtype string, safe bool) error {
 	utils.LogArgument("projtype", projtype)
 	utils.LogArgument("safe", safe)
 
-	err := utils.SetupSessionDir()
+	err := utils.SetupSessionDir(false)
 	if err != nil {
 		utils.Errorf("Error: %s", err)
 

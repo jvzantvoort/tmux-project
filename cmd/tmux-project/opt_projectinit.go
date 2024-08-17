@@ -39,8 +39,11 @@ func handleInitProjCmdCmd(cmd *cobra.Command, args []string) {
 			log.Fatalf("Cannot overwrite default")
 		}
 	}
-	ptc := projecttype.NewProjectTypeConfig(ProjectType)
-	err := ptc.SetupProjectTypeConfig()
+	ptc, err := projecttype.NewProjectTypeConfig(ProjectType)
+	if err != nil {
+		utils.Abort("Error: %s", err)
+	}
+	err = ptc.SetupProjectTypeConfig()
 	if err != nil {
 		utils.Abort("Error: %s", err)
 	}
