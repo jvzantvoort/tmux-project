@@ -19,6 +19,15 @@ import (
 // 	return retv
 // }
 
+func LogIfError(msg interface{}) {
+	if msg == nil {
+		return
+	}
+	pc, _, _, _ := runtime.Caller(1)
+	elements := strings.Split(runtime.FuncForPC(pc).Name(), ".")
+	log.Errorf("%s: return not nil: %s", elements[len(elements)-1], msg)
+}
+
 // LogStart logs the start of a function
 func LogStart() {
 	pc, _, _, _ := runtime.Caller(1)
@@ -73,7 +82,6 @@ func Warningf(format string, args ...interface{}) {
 	log.Warningf("%s: %s", elements[len(elements)-1], msg)
 
 }
-
 
 // Fatalf logs a fatal error message with the name of the function that called it
 func Fatalf(format string, args ...interface{}) {

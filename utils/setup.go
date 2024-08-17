@@ -17,7 +17,8 @@ func SetupSessionDir() error {
 		return nil
 	}
 
-	MkdirAll(config.SessionDir())
+	err := MkdirAll(config.SessionDir())
+	LogIfError(err)
 	content := messages.GetConfig("common.rc")
 	tos_content := messages.GetConfig("tmux_opt_source")
 
