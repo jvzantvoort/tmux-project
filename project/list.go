@@ -38,7 +38,7 @@ func PrintFullList() {
 	active, _ := tmux.ListActive()
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "Active", "Description", "Workdir", "Sane"})
+	table.SetHeader([]string{"Name", "Active", "Description", "Directory", "Sane"})
 
 	for _, sessionname := range ListConfigs() {
 		sessp := NewProject(sessionname)
@@ -54,8 +54,8 @@ func PrintFullList() {
 		} else {
 			cols = append(cols, "")
 		}
-		cols = append(cols, sessp.ProjectDescription)
-		cols = append(cols, sessp.ProjectDir)
+		cols = append(cols, sessp.Description)
+		cols = append(cols, sessp.Directory)
 		sane := "true"
 		for _, target := range sessp.ListFiles() {
 			if !utils.TargetExists(target) {

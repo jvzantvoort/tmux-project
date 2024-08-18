@@ -39,8 +39,8 @@ def writejson(rc):
     data["type"] = "undefined"
     data["setupactions"] = []
     data["targets"] = [
-        {"name": "default.env", "destination": "{{.ProjectName}}.env", "mode": "644"},
-        {"name": "default.rc", "destination": "{{.ProjectName}}.rc", "mode": "644"},
+        {"name": "default.env", "destination": "{{.Name}}.env", "mode": "644"},
+        {"name": "default.rc", "destination": "{{.Name}}.rc", "mode": "644"},
     ]
 
     with open(outputfile, "w") as ofh:

@@ -22,7 +22,7 @@ func main() {
 	}
 
 	proj := project.NewProject(sessionname)
-	configfile := filepath.Join(config.SessionDir(), proj.ProjectName+".rc")
+	configfile := filepath.Join(config.SessionDir(), proj.Name+".rc")
 
 	tmux.Resume(sessionname, configfile)
 

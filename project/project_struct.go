@@ -1,5 +1,6 @@
 package project
 
+// Target defines a structure of a file
 type Target struct {
 	Name        string `json:"name"`
 	Destination string `json:"destination"`
@@ -7,6 +8,7 @@ type Target struct {
 	Content     string `json:"-"`
 }
 
+// Repo defines the struct of a (git) repository
 type Repo struct {
 	Url         string `json:"url"`
 	Destination string `json:"destination"`
@@ -15,22 +17,19 @@ type Repo struct {
 
 // Project defines a structure of a project
 type Project struct {
-	// Stored variables
-	ProjectDescription string   `json:"description"`
-	ProjectDir         string   `json:"directory"` // Workdir for the project
-	ProjectName        string   `json:"name"`
-	ProjectType        string   `json:"type"`
-	SetupActions       []string `json:"setupactions"`
-	Repos              []Repo   `json:"repos"`
-	Targets            []Target `json:"targets"`
-
-	// Derived variables
-	HomeDir        string `json:"-"`
-	ProjectTypeDir string `json:"-"` // Directory where project type files are located
-	Pattern        string `json:"-"` // pattern obtained from ProjectType
-	GOARCH         string `json:"-"` // target architecture
-	GOOS           string `json:"-"` // target operating system
-	GOPATH         string `json:"-"` // Go paths
-	USER           string `json:"-"` // Username
-	Exists         bool   `json:"-"` // project exists
+	Name           string   `json:"name"`
+	ProjectType    string   `json:"type"`
+	Description    string   `json:"description"`
+	Directory      string   `json:"directory"`
+	SetupActions   []string `json:"setupactions"`
+	Repos          []Repo   `json:"repos"`
+	Targets        []Target `json:"targets"`
+	HomeDir        string   `json:"-"`
+	ProjectTypeDir string   `json:"-"` // Directory where project type files are located
+	Pattern        string   `json:"-"` // pattern obtained from ProjectType
+	GOARCH         string   `json:"-"` // target architecture
+	GOOS           string   `json:"-"` // target operating system
+	GOPATH         string   `json:"-"` // Go paths
+	USER           string   `json:"-"` // Username
+	Exists         bool     `json:"-"` // project exists
 }

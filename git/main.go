@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -100,6 +101,42 @@ func (g GitCmd) Branch() (string, error) {
 		return "", err
 	}
 	return string(retv[0]), err
+}
+
+func (g *GitCmd) Clone(url, destination string) error {
+
+	// make the path absolute
+	destination, err := filepath.Abs(destination)
+	if err != nil {
+		return err
+	}
+
+	// when using nested directory make sure they exist
+	directory := filepath.Dir(destination)
+	err = utils.MkdirAll(directory)
+	if err != nil {
+		return err
+	}
+
+	_, err = g.exec("clone", url, destination)
+	if err == nil {
+		g.cwd = destination
+	}
+	return err
+
+}
+
+func (g GitCmd) Checkout(branch string) error {
+	curBranch, err := g.Branch()
+	if err != nil {
+		return err
+	}
+	if curBranch == branch {
+		return nil
+	}
+
+	_, err = g.exec("checkout", branch)
+	return err
 }
 
 func (g GitCmd) IsGit() bool {

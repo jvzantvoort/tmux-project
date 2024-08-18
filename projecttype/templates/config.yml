@@ -1,13 +1,18 @@
 ---
-projecttype: PROJECTTYPE
-workdir: ~/Workspace/{{.ProjectName}}
+type: PROJECTTYPE
+description: PROJECTTYPE
+directory: "{{.HomeDir}}/{{.ProjectType}}/{{.Name}}"
 pattern: ^.*$
 setupactions:
-  - echo {{.ProjectName}}
+  - echo {{.Name}}
+repos: []
+# - url:
+#   destination:
+#   branch:
 targets:
   - name: default.env
-    destination: "{{.ProjectName}}.env"
+    destination: "{{.Name}}.env"
     mode: 644
   - name: default.rc
-    destination: "{{.ProjectName}}.rc"
+    destination: "{{.Name}}.rc"
     mode: 644

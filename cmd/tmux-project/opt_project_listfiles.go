@@ -32,10 +32,10 @@ func handleProjectListfileCmd(cmd *cobra.Command, args []string) {
 	}
 	ProjectName := args[0]
 
-	project := project.NewProject(ProjectName)
-	cobra.CheckErr(project.RefreshStruct())
+	proj := project.NewProject(ProjectName)
+	cobra.CheckErr(proj.RefreshStruct())
 
-	for _, ink := range project.ListFiles() {
+	for _, ink := range proj.ListFiles() {
 		fmt.Printf("%s\n", ink)
 	}
 

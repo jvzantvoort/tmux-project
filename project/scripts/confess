@@ -1,6 +1,6 @@
-Name:        {{ .ProjectName }}
-Description: {{ .ProjectDescription }}
-Dir:         {{ .ProjectDir }}{{if not .Exists }} DOES NOT EXIST{{end}} ##
+Name:        {{ .Name }}
+Description: {{ .Description }}
+Dir:         {{ .Directory }}{{if not .Exists }} DOES NOT EXIST{{end}} ##
 
 # Type
 Type:        {{ .ProjectType }} ##

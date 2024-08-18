@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	errno "github.com/jvzantvoort/tmux-project/errors"
+	"github.com/jvzantvoort/tmux-project/git"
 	"github.com/jvzantvoort/tmux-project/projecttype"
 	"github.com/jvzantvoort/tmux-project/utils"
 )
@@ -21,7 +22,7 @@ func NewProject(projectname string) *Project {
 
 	retv := &Project{}
 
-	retv.ProjectName = projectname
+	retv.Name = projectname
 
 	return retv
 }
@@ -33,11 +34,11 @@ func (proj Project) NameIsValid() bool {
 
 	pattern := regexp.MustCompile(proj.Pattern)
 
-	if pattern.MatchString(proj.ProjectName) {
+	if pattern.MatchString(proj.Name) {
 		utils.Debugf("project name matches pattern")
 		return true
 	} else {
-		utils.Warningf("project name %s does not matches pattern %s", proj.ProjectName, proj.Pattern)
+		utils.Warningf("project name %s does not matches pattern %s", proj.Name, proj.Pattern)
 		return false
 	}
 
@@ -81,8 +82,8 @@ func (proj *Project) InjectProjectType(projtype string) error {
 	if err != nil {
 		return err
 	}
-	proj.ProjectDir = ptobj.Workdir
-	utils.LogVariable("proj.ProjectDir", proj.ProjectDir)
+	proj.Directory = ptobj.Directory
+	utils.LogVariable("proj.Directory", proj.Directory)
 
 	proj.ProjectType = ptobj.ProjectType
 	utils.LogVariable("proj.ProjectType", proj.ProjectType)
@@ -94,8 +95,17 @@ func (proj *Project) InjectProjectType(projtype string) error {
 	utils.LogVariable("proj.ProjectTypeDir", proj.ProjectTypeDir)
 
 	proj.SetupActions = ptobj.SetupActions
+	proj.Repos = []Repo{}
+	for _, inob := range ptobj.Repos {
+		obj := &Repo{}
+		obj.Url = inob.Url
+		obj.Destination = inob.Destination
+		obj.Branch = inob.Branch
+		proj.Repos = append(proj.Repos, *obj)
 
-	for _, element := range ptobj.Files {
+	}
+
+	for _, element := range ptobj.Targets {
 		content, _ := ptobj.Content(element.Name)
 		obj := Target{
 			Name:        element.Name,
@@ -146,16 +156,16 @@ func (proj *Project) RefreshStruct(args ...string) error {
 	proj.InjectExternal()
 
 	// Translate some stuff
-	proj.ProjectDir = proj.Parse(proj.ProjectDir)
-	utils.LogVariable("proj.ProjectDir", proj.ProjectDir)
+	proj.Directory = proj.Parse(proj.Directory)
+	utils.LogVariable("proj.Directory", proj.Directory)
 	return nil
 }
 
 func (proj *Project) SetDescription(instr ...string) {
-	proj.ProjectDescription = strings.Join(instr, " ")
-	proj.ProjectDescription = strings.TrimSpace(proj.ProjectDescription)
-	if len(proj.ProjectDescription) == 0 {
-		proj.ProjectDescription = utils.Ask("Description")
+	proj.Description = strings.Join(instr, " ")
+	proj.Description = strings.TrimSpace(proj.Description)
+	if len(proj.Description) == 0 {
+		proj.Description = utils.Ask("Description")
 	}
 }
 
@@ -180,17 +190,17 @@ func (proj *Project) InitializeProject(projtype string, safe bool) error {
 
 	if safe && !proj.Exists {
 		if !proj.NameIsValid() {
-			utils.Abort("Name %s is invalid", proj.ProjectName)
+			utils.Abort("Name %s is invalid", proj.Name)
 		}
 	}
 
 	// Fail if directory already exists
-	if _, err := os.Stat(proj.ProjectDir); !os.IsNotExist(err) {
-		utils.Abort("%s already exists", proj.ProjectDir)
+	if _, err := os.Stat(proj.Directory); !os.IsNotExist(err) {
+		utils.Abort("%s already exists", proj.Directory)
 	}
 
-	if err := utils.MkdirAll(proj.ProjectDir); err != nil {
-		utils.Abort("directory cannot be created: %s", proj.ProjectDir)
+	if err := utils.MkdirAll(proj.Directory); err != nil {
+		utils.Abort("directory cannot be created: %s", proj.Directory)
 	}
 
 	// Write the proj files
@@ -202,10 +212,16 @@ func (proj *Project) InitializeProject(projtype string, safe bool) error {
 		}
 	}
 
+	gqueue := git.NewQueue()
+	for _, repo := range proj.Repos {
+		gqueue.Add(repo.Url, proj.Directory, repo.Destination, repo.Branch)
+	}
+	gqueue.Run()
+
 	queue := utils.NewQueue()
 	for _, step := range proj.SetupActions {
 		step = proj.Parse(step)
-		queue.Add(proj.ProjectDir, step)
+		queue.Add(proj.Directory, step)
 	}
 
 	queue.Run()

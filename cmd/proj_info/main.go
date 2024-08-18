@@ -84,13 +84,13 @@ func main() {
 	utils.ErrorExit(err)
 
 	header := [][]string{
-		{"Sessionname", proj_obj.ProjectName},
-		{"Projectdir", proj_obj.ProjectDir},
-		{"Description", proj_obj.ProjectDescription},
+		{"Sessionname", proj_obj.Name},
+		{"Projectdir", proj_obj.Directory},
+		{"Description", proj_obj.Description},
 		{"Type", proj_obj.ProjectType},
 	}
 	PrintHeader(header)
-	brojects := findAllProjects(proj_obj.ProjectDir)
+	brojects := findAllProjects(proj_obj.Directory)
 
 	for _, proj := range brojects {
 		chapters = append(chapters, proj.Chapter)

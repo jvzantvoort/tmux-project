@@ -31,13 +31,13 @@ func ListProjectTypeConfigs() error {
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "SetupActions", "Files", "Repos", "ConfigDir", "Pattern"})
+	table.SetHeader([]string{"Name", "SetupActions", "Targets", "Repos", "ConfigDir", "Pattern"})
 
 	for _, item := range ptconfigs {
 		cols := []string{}
 		cols = append(cols, item.ProjectType)
 		cols = append(cols, fmt.Sprintf("%d", len(item.SetupActions)))
-		cols = append(cols, fmt.Sprintf("%d", len(item.Files))) // FIXME
+		cols = append(cols, fmt.Sprintf("%d", len(item.Targets))) // FIXME
 		cols = append(cols, fmt.Sprintf("%d", len(item.Repos)))
 		cols = append(cols, item.ConfigDir)
 		cols = append(cols, item.Pattern)
