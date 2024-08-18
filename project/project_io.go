@@ -45,7 +45,7 @@ func (proj *Project) Read(reader io.Reader) error {
 }
 
 func (proj Project) ProjectConfigFile() string {
-	return filepath.Join(config.SessionDir(), proj.ProjectName+".json")
+	return filepath.Join(config.SessionDir(), proj.Name+".json")
 }
 
 func (proj *Project) Open() error {

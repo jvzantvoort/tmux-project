@@ -32,10 +32,10 @@ func handleProjectCreateCmd(cmd *cobra.Command, args []string) {
 	}
 	ProjectName := args[0]
 	ProjectType := GetString(*cmd, "type")
-	ProjectDescription := GetString(*cmd, "description")
+	project_description := GetString(*cmd, "description")
 
 	proj := project.NewProject(ProjectName)
-	proj.SetDescription(ProjectDescription)
+	proj.SetDescription(project_description)
 	err := proj.InitializeProject(ProjectType, true)
 	if err != nil {
 		utils.Fatalf("Encountered error: %q", err)

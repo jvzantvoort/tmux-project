@@ -44,7 +44,7 @@ func New(projecttype string) (ProjectTypeConfig, error) {
 		rerr = ErrProjectNotExists
 	}
 
-	retv.Workdir, err = utils.Expand(retv.Workdir)
+	retv.Directory, err = utils.Expand(retv.Directory)
 	if err != nil {
 		utils.Errorf("Failed to get workdir %s", err)
 	}

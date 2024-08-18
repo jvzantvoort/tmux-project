@@ -17,10 +17,10 @@ func CreateArchive(projectname, archivename string) error {
 	cobra.CheckErr(obj.RefreshStruct())
 
 	if len(archivename) == 0 {
-		if len(obj.ProjectDir) == 0 {
+		if len(obj.Directory) == 0 {
 			return fmt.Errorf("projectdir is empty")
 		}
-		archivename = obj.ProjectDir + ".tar.gz"
+		archivename = obj.Directory + ".tar.gz"
 	}
 
 	log.Debugf("Outputfile: %s", archivename)

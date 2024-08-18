@@ -11,15 +11,15 @@ func (proj Project) ListFiles() []string {
 
 	retv := []string{}
 
-	utils.Debugf("  add %#v", proj.ProjectDir)
-	retv = append(retv, proj.ProjectDir)
+	utils.Debugf("  add %#v", proj.Directory)
+	retv = append(retv, proj.Directory)
 
 	utils.Debugf("  add %#v", proj.ProjectConfigFile())
 	retv = append(retv, proj.ProjectConfigFile())
 
 	for _, proj_target := range proj.Targets {
 		dest := proj.CalcDestination(proj_target.Destination)
-		utils.Debugf("  add %s (%s)", dest, proj.ProjectDir)
+		utils.Debugf("  add %s (%s)", dest, proj.Directory)
 		retv = append(retv, dest)
 	}
 	return retv
