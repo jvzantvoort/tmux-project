@@ -17,7 +17,7 @@ func (proj Project) CalcDestination(instr string) string {
 	return retv
 }
 
-func (proj Project) ProcessProjectTarget(element *ProjectTarget) error {
+func (proj Project) ProcessTarget(element *Target) error {
 
 	utils.LogStart()
 	defer utils.LogEnd()

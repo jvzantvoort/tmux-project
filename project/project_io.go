@@ -52,15 +52,15 @@ func (proj *Project) Open() error {
 	utils.LogStart()
 	defer utils.LogEnd()
 
-	projectfile := proj.ProjectConfigFile()
-	utils.Debugf("project file: %s", projectfile)
+	configfile := proj.ProjectConfigFile()
+	utils.Debugf("project file: %s", configfile)
 
-	if _, err := os.Stat(projectfile); os.IsNotExist(err) {
+	if _, err := os.Stat(configfile); os.IsNotExist(err) {
 		utils.Debugf("project file not found")
 		return errno.ErrProjectNotExist
 	}
 
-	filehandle, err := os.Open(projectfile)
+	filehandle, err := os.Open(configfile)
 	if err != nil {
 		utils.Errorf("cannot open project file for reading: %s", err)
 		return err
@@ -80,10 +80,10 @@ func (proj Project) Save() error {
 		return err
 	}
 
-	projectfile := proj.ProjectConfigFile()
-	utils.Debugf("project file: %s", projectfile)
+	configfile := proj.ProjectConfigFile()
+	utils.Debugf("project file: %s", configfile)
 
-	filehandle, err := os.OpenFile(projectfile, os.O_CREATE|os.O_WRONLY, 0644)
+	filehandle, err := os.OpenFile(configfile, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		utils.Errorf("cannot open project file for writing: %s", err)
 		return err

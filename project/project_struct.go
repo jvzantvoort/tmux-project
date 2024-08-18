@@ -1,26 +1,28 @@
 package project
 
-import (
-	"fmt"
-
-	"github.com/jvzantvoort/tmux-project/utils"
-)
-
-type ProjectTarget struct {
+type Target struct {
 	Name        string `json:"name"`
 	Destination string `json:"destination"`
 	Mode        string `json:"mode"`
 	Content     string `json:"-"`
 }
 
+type Repo struct {
+	Url         string `json:"url"`
+	Destination string `json:"destination"`
+	Branch      string `json:"branch"`
+}
+
+// Project defines a structure of a project
 type Project struct {
 	// Stored variables
-	ProjectDescription string          `json:"description"`
-	ProjectDir         string          `json:"directory"` // Workdir for the project
-	ProjectName        string          `json:"name"`
-	ProjectType        string          `json:"type"`
-	SetupActions       []string        `json:"setupactions"`
-	Targets            []ProjectTarget `json:"targets"`
+	ProjectDescription string   `json:"description"`
+	ProjectDir         string   `json:"directory"` // Workdir for the project
+	ProjectName        string   `json:"name"`
+	ProjectType        string   `json:"type"`
+	SetupActions       []string `json:"setupactions"`
+	Repos              []Repo   `json:"repos"`
+	Targets            []Target `json:"targets"`
 
 	// Derived variables
 	HomeDir        string `json:"-"`
@@ -31,15 +33,4 @@ type Project struct {
 	GOPATH         string `json:"-"` // Go paths
 	USER           string `json:"-"` // Username
 	Exists         bool   `json:"-"` // project exists
-}
-
-func (proj Project) Confess() {
-	content := proj.Parse(GetScriptContent("confess"))
-	fmt.Print(content)
-}
-
-func (projt ProjectTarget) Confess() {
-	utils.Debugf("  %-32s %s", "Name", projt.Name)
-	utils.Debugf("      %-28s %s", "Name", projt.Destination)
-	utils.Debugf("      %-28s %s", "Name", projt.Mode)
 }

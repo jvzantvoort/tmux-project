@@ -77,7 +77,7 @@ func (proj *Project) InjectProjectType(projtype string) error {
 	utils.LogArgument("projtype", projtype)
 
 	// load project type object info
-	ptobj, err := projecttype.NewProjectTypeConfig(projtype)
+	ptobj, err := projecttype.New(projtype)
 	if err != nil {
 		return err
 	}
@@ -97,7 +97,7 @@ func (proj *Project) InjectProjectType(projtype string) error {
 
 	for _, element := range ptobj.Files {
 		content, _ := ptobj.Content(element.Name)
-		obj := ProjectTarget{
+		obj := Target{
 			Name:        element.Name,
 			Destination: element.Destination,
 			Mode:        element.Mode,
@@ -195,7 +195,7 @@ func (proj *Project) InitializeProject(projtype string, safe bool) error {
 
 	// Write the proj files
 	for _, target := range proj.Targets {
-		err = proj.ProcessProjectTarget(&target)
+		err = proj.ProcessTarget(&target)
 		if err != nil {
 			utils.Errorf("Error in target: %s", err)
 
