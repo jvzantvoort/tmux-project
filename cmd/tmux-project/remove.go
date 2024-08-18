@@ -6,7 +6,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func RemoveArchive(projectname string, interactive bool) error {
+func ProjectRemove(projectname string, interactive bool) error {
+	utils.LogStart()
+	defer utils.LogEnd()
 
 	proj := project.NewProject(projectname)
 	cobra.CheckErr(proj.RefreshStruct())

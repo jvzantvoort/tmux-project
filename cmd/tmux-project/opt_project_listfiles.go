@@ -6,6 +6,7 @@ import (
 
 	"github.com/jvzantvoort/tmux-project/messages"
 	"github.com/jvzantvoort/tmux-project/project"
+	"github.com/jvzantvoort/tmux-project/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -32,10 +33,10 @@ func handleProjectListfileCmd(cmd *cobra.Command, args []string) {
 	}
 	ProjectName := args[0]
 
-	project := project.NewProject(ProjectName)
-	cobra.CheckErr(project.RefreshStruct())
+	proj := project.NewProject(ProjectName)
+	cobra.CheckErr(proj.RefreshStruct())
 
-	for _, ink := range project.ListFiles() {
+	for _, ink := range proj.ListFiles() {
 		fmt.Printf("%s\n", ink)
 	}
 

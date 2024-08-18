@@ -22,8 +22,8 @@ func handleProjectCreateCmd(cmd *cobra.Command, args []string) {
 	if verbose {
 		log.SetLevel(log.DebugLevel)
 	}
-	utils.LogStart()
-	defer utils.LogEnd()
+	log.Debugf("%s: start", cmd.Use)
+	defer log.Debugf("%s: end", cmd.Use)
 
 	if len(args) != 1 {
 		log.Error("No project provided")

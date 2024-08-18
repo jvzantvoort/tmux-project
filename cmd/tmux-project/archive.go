@@ -6,6 +6,7 @@ import (
 	"github.com/jvzantvoort/tmux-project/project"
 	"github.com/jvzantvoort/tmux-project/utils"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 func CreateArchive(projectname, archivename string) error {
@@ -13,8 +14,7 @@ func CreateArchive(projectname, archivename string) error {
 	defer utils.LogEnd()
 
 	obj := project.NewProject(projectname)
-	err := obj.RefreshStruct()
-	utils.LogIfError(err)
+	cobra.CheckErr(obj.RefreshStruct())
 
 	if len(archivename) == 0 {
 		if len(obj.ProjectDir) == 0 {
@@ -25,7 +25,7 @@ func CreateArchive(projectname, archivename string) error {
 
 	log.Debugf("Outputfile: %s", archivename)
 
-	err = obj.Archive(archivename)
+	err := obj.Archive(archivename)
 	if err != nil {
 		return err
 	}
