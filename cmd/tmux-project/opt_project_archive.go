@@ -25,7 +25,7 @@ func handleProjectArchiveCmd(cmd *cobra.Command, args []string) {
 
 	if len(args) != 1 {
 		log.Error("No project provided")
-		cmd.Help()
+		cobra.CheckErr(cmd.Help())
 		os.Exit(1)
 	}
 	ProjectName := args[0]

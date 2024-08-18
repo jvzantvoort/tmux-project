@@ -18,7 +18,7 @@ var (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "tmux-project",
+	Use:   messages.GetUse("root"),
 	Short: messages.GetShort("root"),
 	Long:  messages.GetLong("root"),
 }

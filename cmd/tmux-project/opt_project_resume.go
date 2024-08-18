@@ -12,15 +12,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// ResumeCmd represents the resume command
-var ResumeCmd = &cobra.Command{
-	Use:   messages.GetUse("resume"),
-	Short: messages.GetShort("resume"),
-	Long:  messages.GetLong("resume"),
-	Run:   handleResumeCmd,
+// ProjectResumeCmd represents the resume command
+var ProjectResumeCmd = &cobra.Command{
+	Use:   messages.GetUse("project/resume"),
+	Short: messages.GetShort("project/resume"),
+	Long:  messages.GetLong("project/resume"),
+	Run:   handleProjectResumeCmd,
 }
 
-func handleResumeCmd(cmd *cobra.Command, args []string) {
+func handleProjectResumeCmd(cmd *cobra.Command, args []string) {
 	if verbose {
 		log.SetLevel(log.DebugLevel)
 	}
@@ -29,7 +29,7 @@ func handleResumeCmd(cmd *cobra.Command, args []string) {
 
 	if len(args) != 1 {
 		log.Error("No project provided")
-		cmd.Help()
+		cobra.CheckErr(cmd.Help())
 		os.Exit(1)
 	}
 	sessionname := args[0]
@@ -47,5 +47,6 @@ func handleResumeCmd(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	rootCmd.AddCommand(ResumeCmd)
+	rootCmd.AddCommand(ProjectResumeCmd)
+	ProjectCmd.AddCommand(ProjectResumeCmd)
 }

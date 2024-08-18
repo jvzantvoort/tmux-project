@@ -27,13 +27,13 @@ func handleProjectListfileCmd(cmd *cobra.Command, args []string) {
 
 	if len(args) != 1 {
 		log.Error("No project provided")
-		cmd.Help()
+		cobra.CheckErr(cmd.Help())
 		os.Exit(1)
 	}
 	ProjectName := args[0]
 
 	project := project.NewProject(ProjectName)
-	project.RefreshStruct()
+	cobra.CheckErr(project.RefreshStruct())
 
 	for _, ink := range project.ListFiles() {
 		fmt.Printf("%s\n", ink)

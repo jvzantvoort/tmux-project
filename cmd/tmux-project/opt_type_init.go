@@ -27,7 +27,7 @@ func handleTypeInitCmd(cmd *cobra.Command, args []string) {
 
 	if len(args) != 1 {
 		log.Error("No project type provided")
-		cmd.Help()
+		cobra.CheckErr(cmd.Help())
 		os.Exit(1)
 	}
 	ProjectType := args[0]
