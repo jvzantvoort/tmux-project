@@ -2,10 +2,12 @@
 C_SCRIPTPATH="$(readlink -f "$0")"
 C_SCRIPTNAME="$(basename "$C_SCRIPTPATH" .sh)"
 C_SCRIPTDIR="$(dirname "${C_SCRIPTPATH}")"
+C_TOPDIR="$(git rev-parse --show-toplevel)"
 
 readonly C_SCRIPTPATH
 readonly C_SCRIPTNAME
 readonly C_SCRIPTDIR
+readonly C_TOPDIR
 
 C_HEADER="$(cat <<-ENDHEADER
 [![forthebadge](https://forthebadge.com/images/badges/made-with-crayons.svg)](https://forthebadge.com)
@@ -145,7 +147,7 @@ function print_sub_option()
 function list_options()
 {
 
-  pushd "${C_SCRIPTDIR}" >/dev/null 2>&1 || return
+  pushd "${C_TOPDIR}" >/dev/null 2>&1 || return
   find messages/ -maxdepth 2 -mindepth 2 \( \
        -path '*/short/*'  \
     -o -path '*/use/*' \
@@ -161,7 +163,7 @@ function list_options()
 function list_sub_options()
 {
   local subcommand="$1"
-  pushd "${C_SCRIPTDIR}" >/dev/null 2>&1 || return
+  pushd "${C_TOPDIR}" >/dev/null 2>&1 || return
 
   find messages/  \( \
        -path "*/short/${subcommand}/*"  \
@@ -176,30 +178,38 @@ function list_sub_options()
 
 }
 
+function main()
+{
+
+  COMMAND="${C_TOPDIR}/build/$(go env GOOS)/$(go env GOARCH)/tmux-project"
+
+  echo "${C_HEADER}"
+
+  list_options | while read -r option
+  do
+    print_option "${option}" -h
+  done
+
+  find messages -mindepth 3 -maxdepth 3 -type f -name root -printf "%h\n" | \
+    cut -d/ -f 3|sort -u | while read -r subcommand
+  do
+    printf "## %s\n\n" "$subcommand"
+    list_sub_options "${subcommand}" | while read -r option
+    do
+      print_sub_option "$subcommand" "$option"
+    done
+  done
+
+  echo "${C_FOOTER}"
+
+
+}
 
 #------------------------------------------------------------------------------#
 #                                    Main                                      #
 #------------------------------------------------------------------------------#
 
-COMMAND="${C_SCRIPTDIR}/build/$(go env GOOS)/$(go env GOARCH)/tmux-project"
-
-echo "${C_HEADER}"
-
-list_options | while read -r option
-do
-  print_option "${option}" -h
-done
-
-find messages -mindepth 3 -maxdepth 3 -type f -name root -printf "%h\n" | cut -d/ -f 3|sort -u | while read -r subcommand
-do
-  printf "## %s\n\n" "$subcommand"
-  list_sub_options "${subcommand}" | while read -r option
-  do
-    print_sub_option "$subcommand" "$option"
-  done
-done
-
-echo "${C_FOOTER}"
+main > "${C_TOPDIR}/README.md"
 
 #------------------------------------------------------------------------------#
 #                                  The End                                     #
