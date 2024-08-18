@@ -123,7 +123,21 @@ function print_option()
   cat "messages/long/${option}"
 
   printf "\n\n\`\`\`\n"
-  $COMMAND ${option} --help 2>/dev/null | sed -n '/Usage/,$p'
+  $COMMAND "${option}" --help 2>/dev/null | sed -n '/Usage/,$p'
+  printf "\`\`\`\n\n\n"
+
+}
+
+function print_sub_option()
+{
+  local subcommand="$1"
+  local option="$2"
+  printf "### %s\n\n" "${option}"
+
+  cat "messages/long/${subcommand}/${option}"
+
+  printf "\n\n\`\`\`\n"
+  $COMMAND "${subcommand}" "${option}" --help 2>/dev/null | sed -n '/Usage/,$p'
   printf "\`\`\`\n\n\n"
 
 }
@@ -135,14 +149,30 @@ function list_options()
   find messages/ -maxdepth 2 -mindepth 2 \( \
        -path '*/short/*'  \
     -o -path '*/use/*' \
-    -o -path '*/long/*' \) -printf "%f\n"|sort|uniq -c | \
+    -o -path '*/long/*' \) -type f -printf "%f\n"|sort|uniq -c | \
     while read -r num option
     do
       [[ "${num}" == 3 ]] || continue
       [[ "${option}" == "root" ]] && continue
       echo "${option}"
     done
+}
 
+function list_sub_options()
+{
+  local subcommand="$1"
+  pushd "${C_SCRIPTDIR}" >/dev/null 2>&1 || return
+
+  find messages/  \( \
+       -path "*/short/${subcommand}/*"  \
+    -o -path "*/use/${subcommand}/*" \
+    -o -path "*/long/${subcommand}/*" \) -type f -printf "%f\n"|sort|uniq -c | \
+    while read -r num option
+    do
+      [[ "${num}" == 3 ]] || continue
+      [[ "${option}" == "root" ]] && continue
+      echo "${option}"
+    done
 
 }
 
@@ -158,6 +188,15 @@ echo "${C_HEADER}"
 list_options | while read -r option
 do
   print_option "${option}" -h
+done
+
+find messages -mindepth 3 -maxdepth 3 -type f -name root -printf "%h\n" | cut -d/ -f 3|sort -u | while read -r subcommand
+do
+  printf "## %s\n\n" "$subcommand"
+  list_sub_options "${subcommand}" | while read -r option
+  do
+    print_sub_option "$subcommand" "$option"
+  done
 done
 
 echo "${C_FOOTER}"

@@ -1,0 +1,81 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""tmux-project-update-0.6.0-0.7.0 - update configuration"""
+
+import pathlib
+import re
+
+from yaml import load, dump
+
+try:
+    from yaml import CLoader as Loader, CDumper as Dumper
+except ImportError:
+    from yaml import Loader, Dumper
+
+TEMPLATEDIR = pathlib.Path.home() / ".tmux-project"
+SESSIONDIR = pathlib.Path.home() / ".tmux.d"
+
+
+def process_target(target):
+    """process a single target"""
+    oldlines = []
+    newlines = []
+
+    with open(target, encoding="utf-8") as ifh:
+        for line in ifh.readlines():
+            oldlines.append(line.strip("\n"))
+    for line in oldlines:
+        newline = line.replace("ProjectDescription", "Description")
+        newline = newline.replace("ProjectDir", "Directory")
+        newline = newline.replace("ProjectName", "Name")
+        newline = re.sub(r"^files:(.*)$", r"targets:\1", newline)
+        newline = re.sub(r"^workdir:(.*)$", r"directory:\1", newline)
+        newline = re.sub(r"^projecttype:(.*)$", r"type:\1", newline)
+        newlines.append(newline)
+
+    with open(target, "w", encoding="utf-8") as ofh:
+        ofh.write("\n".join(newlines))
+        ofh.write("\n")
+
+    if target.suffix == ".yml":
+        data = {}
+        name = data.get("type", "undefined")
+        with open(target, encoding="utf-8") as stream:
+            data = load(stream, Loader=Loader)
+        if "repos" not in data:
+            data["repos"] = []
+        if "description" not in data:
+            data["description"] = f"{name} description"
+        with open(target, "w", encoding="utf-8") as ofh:
+            ofh.write(
+                dump(
+                    data,
+                    Dumper=Dumper,
+                    indent=2,
+                    explicit_start=True,
+                    default_flow_style=False,
+                )
+            )
+
+
+def process_template(path):
+    """process a single template"""
+    process_target(path / "config.yml")
+    process_target(path / "default.env")
+    process_target(path / "default.rc")
+
+
+def main():
+    """main function"""
+    for element in TEMPLATEDIR.glob("*"):
+        subpath = TEMPLATEDIR / element
+        if not subpath.is_dir():
+            continue
+        process_template(subpath)
+
+    for target in SESSIONDIR.glob("*.json"):
+        process_target(target)
+
+
+if __name__ == "__main__":
+    main()
