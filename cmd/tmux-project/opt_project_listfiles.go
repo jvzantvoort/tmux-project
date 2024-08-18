@@ -10,15 +10,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// ListfileCmd represents the list command
-var ListfileCmd = &cobra.Command{
-	Use:   messages.GetUse("listfiles"),
-	Short: messages.GetShort("listfiles"),
-	Long:  messages.GetLong("listfiles"),
-	Run:   handleListfileCmd,
+// ProjectListfileCmd represents the list command
+var ProjectListfileCmd = &cobra.Command{
+	Use:   messages.GetUse("project/listfiles"),
+	Short: messages.GetShort("project/listfiles"),
+	Long:  messages.GetLong("project/listfiles"),
+	Run:   handleProjectListfileCmd,
 }
 
-func handleListfileCmd(cmd *cobra.Command, args []string) {
+func handleProjectListfileCmd(cmd *cobra.Command, args []string) {
 	if verbose {
 		log.SetLevel(log.DebugLevel)
 	}
@@ -42,5 +42,5 @@ func handleListfileCmd(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	rootCmd.AddCommand(ListfileCmd)
+	ProjectCmd.AddCommand(ProjectListfileCmd)
 }
