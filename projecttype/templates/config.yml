@@ -4,7 +4,7 @@ workdir: ~/Workspace/{{.ProjectName}}
 pattern: ^.*$
 setupactions:
   - echo {{.ProjectName}}
-files:
+targets:
   - name: default.env
     destination: "{{.ProjectName}}.env"
     mode: 644

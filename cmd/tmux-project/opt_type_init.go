@@ -1,6 +1,3 @@
-/*
-Copyright © 2024 John van Zantvoort <john@vanzantvoort.org>
-*/
 package main
 
 import (
@@ -13,15 +10,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// InitProjCmdCmd represents the create command
-var InitProjCmdCmd = &cobra.Command{
-	Use:   messages.GetUse("init"),
-	Short: messages.GetShort("init"),
-	Long:  messages.GetLong("init"),
-	Run:   handleInitProjCmdCmd,
+// TypeInitCmd represents the type command
+var TypeInitCmd = &cobra.Command{
+	Use:   messages.GetUse("type/init"),
+	Short: messages.GetShort("type/init"),
+	Long:  messages.GetLong("type/init"),
+	Run:   handleTypeInitCmd,
 }
 
-func handleInitProjCmdCmd(cmd *cobra.Command, args []string) {
+func handleTypeInitCmd(cmd *cobra.Command, args []string) {
 	if verbose {
 		log.SetLevel(log.DebugLevel)
 	}
@@ -42,8 +39,11 @@ func handleInitProjCmdCmd(cmd *cobra.Command, args []string) {
 			log.Fatalf("Cannot overwrite default")
 		}
 	}
-	ptc := projecttype.NewProjectTypeConfig(ProjectType)
-	err := ptc.SetupProjectTypeConfig()
+	ptc, err := projecttype.New(ProjectType)
+	if err != nil {
+		utils.Abort("Error: %s", err)
+	}
+	err = ptc.Setup()
 	if err != nil {
 		utils.Abort("Error: %s", err)
 	}
@@ -51,6 +51,6 @@ func handleInitProjCmdCmd(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	rootCmd.AddCommand(InitProjCmdCmd)
-	InitProjCmdCmd.Flags().BoolP("force", "f", false, "Force")
+	TypeCmd.AddCommand(TypeInitCmd)
+	TypeInitCmd.Flags().BoolP("force", "f", false, "Force")
 }

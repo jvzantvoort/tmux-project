@@ -1,0 +1,28 @@
+Name:        {{ .ProjectName }}
+Description: {{ .ProjectDescription }}
+Dir:         {{ .ProjectDir }}{{if not .Exists }} DOES NOT EXIST{{end}} ##
+
+# Type
+Type:        {{ .ProjectType }} ##
+TypeDir:     {{ .ProjectTypeDir }} ##
+Pattern:     {{ .Pattern }} ## 
+
+# Environment
+GOARCH:      {{ .GOARCH }}
+GOOS:        {{ .GOOS }}
+GOPATH:      {{ .GOPATH }}
+USER:        {{ .USER }}
+Home:        {{ .HomeDir }}
+
+# Setup Actions
+{{range $val := .SetupActions }}
+- {{ $val }}
+{{end}}
+
+# Targets
+{{range .Targets}}
+- name: {{ .Name }}
+  destination: {{ .Destination }}
+  mode: {{ .Mode }}
+{{end}}
+

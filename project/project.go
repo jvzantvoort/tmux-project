@@ -17,6 +17,7 @@ func NewProject(projectname string) *Project {
 
 	utils.LogStart()
 	defer utils.LogEnd()
+	utils.LogArgument("projectname", projectname)
 
 	retv := &Project{}
 
@@ -43,35 +44,60 @@ func (proj Project) NameIsValid() bool {
 }
 
 func (proj *Project) InjectExternal() {
+	utils.LogStart()
+	defer utils.LogEnd()
+
 	// load homedir object info
 	proj.HomeDir, _ = os.UserHomeDir()
+	utils.LogVariable("proj.HomeDir", proj.HomeDir)
 
 	// load build object info
 	buildContext := build.Default
 	proj.GOARCH = buildContext.GOARCH
+	utils.LogVariable("proj.GOARCH", proj.GOARCH)
+
 	proj.GOOS = buildContext.GOOS
+	utils.LogVariable("proj.GOOS", proj.GOOS)
+
 	proj.GOPATH = buildContext.GOPATH
+	utils.LogVariable("proj.GOPATH", proj.GOPATH)
 
 	// load user info
 	if currentUser, err := user.Current(); err == nil {
 		proj.USER = currentUser.Username
+		utils.LogVariable("proj.USER", proj.USER)
 	}
 
 }
 
-func (proj *Project) InjectProjectType(projtype string) {
+func (proj *Project) InjectProjectType(projtype string) error {
+	utils.LogStart()
+	defer utils.LogEnd()
+
+	utils.LogArgument("projtype", projtype)
 
 	// load project type object info
-	ptobj := projecttype.NewProjectTypeConfig(projtype)
+	ptobj, err := projecttype.New(projtype)
+	if err != nil {
+		return err
+	}
 	proj.ProjectDir = ptobj.Workdir
+	utils.LogVariable("proj.ProjectDir", proj.ProjectDir)
+
 	proj.ProjectType = ptobj.ProjectType
+	utils.LogVariable("proj.ProjectType", proj.ProjectType)
+
 	proj.Pattern = ptobj.Pattern
+	utils.LogVariable("proj.Pattern", proj.Pattern)
+
 	proj.ProjectTypeDir = ptobj.ProjectTypeDir
+	utils.LogVariable("proj.ProjectTypeDir", proj.ProjectTypeDir)
+
 	proj.SetupActions = ptobj.SetupActions
 
 	for _, element := range ptobj.Files {
 		content, _ := ptobj.Content(element.Name)
-		obj := ProjectTarget{
+		obj := Target{
 			Name:        element.Name,
 			Destination: element.Destination,
 			Mode:        element.Mode,
@@ -79,20 +105,24 @@ func (proj *Project) InjectProjectType(projtype string) {
 		}
 		proj.Targets = append(proj.Targets, obj)
 	}
+	return nil
 }
 
 func (proj *Project) RefreshStruct(args ...string) error {
 	utils.LogStart()
 	defer utils.LogEnd()
 
-	proj.Confess()
+	var project_type string
+	if len(args) == 1 {
+		project_type = args[0]
+	}
 
 	proj.Exists = true
 
 	// try to load the configfile
 	err := proj.Open()
 	if err == nil {
-		utils.Debugf("read configfile")
+		utils.Debugf("succesfully read configfile")
 	} else {
 
 		// cannot find or open the project
@@ -100,10 +130,13 @@ func (proj *Project) RefreshStruct(args ...string) error {
 
 		// The error was *not* that the file does not exist
 		if errno.IsProjectNotExist(err) {
-			if len(args) != 1 {
+			if len(project_type) == 0 {
 				return errno.ErrProjectTypeNotDefined
 			}
-			proj.InjectProjectType(args[0])
+			err := proj.InjectProjectType(project_type)
+			if err != nil {
+				return err
+			}
 		} else {
 			utils.Errorf("failed to open project file: %s", err)
 			return err
@@ -112,7 +145,9 @@ func (proj *Project) RefreshStruct(args ...string) error {
 
 	proj.InjectExternal()
 
+	// Translate some stuff
 	proj.ProjectDir = proj.Parse(proj.ProjectDir)
+	utils.LogVariable("proj.ProjectDir", proj.ProjectDir)
 	return nil
 }
 
@@ -128,8 +163,10 @@ func (proj *Project) InitializeProject(projtype string, safe bool) error {
 
 	utils.LogStart()
 	defer utils.LogEnd()
+	utils.LogArgument("projtype", projtype)
+	utils.LogArgument("safe", safe)
 
-	err := utils.SetupSessionDir()
+	err := utils.SetupSessionDir(false)
 	if err != nil {
 		utils.Errorf("Error: %s", err)
 
@@ -158,7 +195,7 @@ func (proj *Project) InitializeProject(projtype string, safe bool) error {
 
 	// Write the proj files
 	for _, target := range proj.Targets {
-		err = proj.ProcessProjectTarget(&target)
+		err = proj.ProcessTarget(&target)
 		if err != nil {
 			utils.Errorf("Error in target: %s", err)
 

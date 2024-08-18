@@ -1,6 +1,3 @@
-/*
-Copyright © 2024 John van Zantvoort <john@vanzantvoort.org>
-*/
 package main
 
 import (

@@ -1,44 +1,40 @@
 package utils
 
 import (
-	"os"
+	"fmt"
 	"path/filepath"
 
 	"github.com/jvzantvoort/tmux-project/config"
 	"github.com/jvzantvoort/tmux-project/messages"
 )
 
-func SetupSessionDir() error {
-	basedir := config.SessionDir()
-	commonfile := filepath.Join(basedir, "common.rc")
-	tos_file := filepath.Join(basedir, "tmux_opt_source")
+// SetupSessionDir setup the ~/.tmux.d directory
+func SetupSessionDir(noexec bool) error {
+	LogStart()
+	defer LogEnd()
+
+	session_dir := config.SessionDir()
+	commonfile := filepath.Join(session_dir, "common.rc")
+	tos_file := filepath.Join(session_dir, "tmux_opt_source")
 
 	if FileExists(commonfile) {
+		Debugf("common.rc file exists")
 		return nil
 	}
 
-	MkdirAll(config.SessionDir())
-	content := messages.GetConfig("common.rc")
-	tos_content := messages.GetConfig("tmux_opt_source")
-
-	rc_fh, err := os.OpenFile(commonfile, os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		Errorf("cannot open common.rc file for writing: %s", err)
-		return err
+	if noexec {
+		fmt.Printf("create %s file\n", commonfile)
+		fmt.Printf("create %s file\n", tos_file)
+		return nil
 	}
-	defer rc_fh.Close()
-	_, err = rc_fh.WriteString(content)
-	if err != nil {
+
+	if err := messages.Copy("common.rc", commonfile, 0644); err != nil {
 		return err
 	}
 
-	tos_fh, err := os.OpenFile(tos_file, os.O_CREATE|os.O_WRONLY, 0755)
-	if err != nil {
-		Errorf("cannot open tmux_opt_source file for writing: %s", err)
+	if err := messages.Copy("tmux_opt_source", tos_file, 0755); err != nil {
 		return err
 	}
-	defer tos_fh.Close()
-	_, err = tos_fh.WriteString(tos_content)
 
-	return err
+	return nil
 }

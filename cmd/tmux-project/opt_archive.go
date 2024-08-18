@@ -1,14 +1,9 @@
-/*
-Copyright © 2024 John van Zantvoort <john@vanzantvoort.org>
-*/
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/jvzantvoort/tmux-project/messages"
-	"github.com/jvzantvoort/tmux-project/project"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -37,28 +32,9 @@ func handleArchiveCmd(cmd *cobra.Command, args []string) {
 
 	ArchiveName := GetString(*cmd, "archivename")
 
-	project := project.NewProject(ProjectName)
-	project.RefreshStruct()
-	project.Confess()
+	err := CreateArchive(ProjectName, ArchiveName)
+	cobra.CheckErr(err)
 
-	if ArchiveName == "" {
-		if len(project.ProjectDir) != 0 {
-			ArchiveName = project.ProjectDir + ".tar.gz"
-		}
-	}
-	if ArchiveName == "" {
-		cobra.CheckErr(fmt.Errorf("no archive name provided"))
-	}
-
-	log.Debugf("Outputfile: %s", ArchiveName)
-
-	err := project.Archive(ArchiveName)
-	if err == nil {
-		fmt.Printf("Created %s\n", ArchiveName)
-	} else {
-		log.Fatalf("Encountered error: %q", err)
-	}
-	// name: cmd.Use
 }
 
 func init() {
