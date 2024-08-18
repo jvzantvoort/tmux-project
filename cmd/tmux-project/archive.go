@@ -13,7 +13,8 @@ func CreateArchive(projectname, archivename string) error {
 	defer utils.LogEnd()
 
 	obj := project.NewProject(projectname)
-	obj.RefreshStruct()
+	err := obj.RefreshStruct()
+	utils.LogIfError(err)
 
 	if len(archivename) == 0 {
 		if len(obj.ProjectDir) == 0 {
@@ -24,7 +25,7 @@ func CreateArchive(projectname, archivename string) error {
 
 	log.Debugf("Outputfile: %s", archivename)
 
-	err := obj.Archive(archivename)
+	err = obj.Archive(archivename)
 	if err != nil {
 		return err
 	}

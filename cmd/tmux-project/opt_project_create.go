@@ -10,15 +10,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// CreateCmd represents the create command
-var CreateCmd = &cobra.Command{
-	Use:   messages.GetUse("create"),
-	Short: messages.GetShort("create"),
-	Long:  messages.GetLong("create"),
-	Run:   handleCreateCmd,
+// ProjectCreateCmd represents the create command
+var ProjectCreateCmd = &cobra.Command{
+	Use:   messages.GetUse("project/create"),
+	Short: messages.GetShort("project/create"),
+	Long:  messages.GetLong("project/create"),
+	Run:   handleProjectCreateCmd,
 }
 
-func handleCreateCmd(cmd *cobra.Command, args []string) {
+func handleProjectCreateCmd(cmd *cobra.Command, args []string) {
 	if verbose {
 		log.SetLevel(log.DebugLevel)
 	}
@@ -27,7 +27,7 @@ func handleCreateCmd(cmd *cobra.Command, args []string) {
 
 	if len(args) != 1 {
 		log.Error("No project provided")
-		cmd.Help()
+		cobra.CheckErr(cmd.Help())
 		os.Exit(1)
 	}
 	ProjectName := args[0]
@@ -46,7 +46,7 @@ func handleCreateCmd(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	rootCmd.AddCommand(CreateCmd)
-	CreateCmd.Flags().StringP("type", "t", "default", "Type of project")
-	CreateCmd.Flags().StringP("description", "d", "", "Description of the project")
+	ProjectCmd.AddCommand(ProjectCreateCmd)
+	ProjectCreateCmd.Flags().StringP("type", "t", "default", "Type of project")
+	ProjectCreateCmd.Flags().StringP("description", "d", "", "Description of the project")
 }

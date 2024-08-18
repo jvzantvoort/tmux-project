@@ -3,15 +3,8 @@ package utils
 import (
 	"errors"
 	"os"
-	"os/user"
 	"path/filepath"
 )
-
-func HomeDir() string {
-	usr, err := user.Current()
-	ErrorExit(err)
-	return usr.HomeDir
-}
 
 // Expand expands the path to include the home directory if the path
 // is prefixed with `~`. If it isn't prefixed with `~`, the path is

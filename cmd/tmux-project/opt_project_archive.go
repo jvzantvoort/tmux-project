@@ -8,15 +8,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// ArchiveCmd represents the archive command
-var ArchiveCmd = &cobra.Command{
-	Use:   messages.GetUse("archive"),
-	Short: messages.GetShort("archive"),
-	Long:  messages.GetLong("archive"),
-	Run:   handleArchiveCmd,
+// ProjectArchiveCmd represents the archive command
+var ProjectArchiveCmd = &cobra.Command{
+	Use:   messages.GetUse("project/archive"),
+	Short: messages.GetShort("project/archive"),
+	Long:  messages.GetLong("project/archive"),
+	Run:   handleProjectArchiveCmd,
 }
 
-func handleArchiveCmd(cmd *cobra.Command, args []string) {
+func handleProjectArchiveCmd(cmd *cobra.Command, args []string) {
 	if verbose {
 		log.SetLevel(log.DebugLevel)
 	}
@@ -25,7 +25,7 @@ func handleArchiveCmd(cmd *cobra.Command, args []string) {
 
 	if len(args) != 1 {
 		log.Error("No project provided")
-		cmd.Help()
+		cobra.CheckErr(cmd.Help())
 		os.Exit(1)
 	}
 	ProjectName := args[0]
@@ -38,6 +38,6 @@ func handleArchiveCmd(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	rootCmd.AddCommand(ArchiveCmd)
-	ArchiveCmd.Flags().StringP("archivename", "a", "", "Archive file")
+	ProjectCmd.AddCommand(ProjectArchiveCmd)
+	ProjectArchiveCmd.Flags().StringP("archivename", "a", "", "Archive file")
 }

@@ -12,15 +12,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// EditCmd represents the edit command
-var EditCmd = &cobra.Command{
-	Use:   messages.GetUse("edit"),
-	Short: messages.GetShort("edit"),
-	Long:  messages.GetLong("edit"),
-	Run:   handleEditCmd,
+// ProjectEditCmd represents the edit command
+var ProjectEditCmd = &cobra.Command{
+	Use:   messages.GetUse("project/edit"),
+	Short: messages.GetShort("project/edit"),
+	Long:  messages.GetLong("project/edit"),
+	Run:   handleProjectEditCmd,
 }
 
-func handleEditCmd(cmd *cobra.Command, args []string) {
+func handleProjectEditCmd(cmd *cobra.Command, args []string) {
 	if verbose {
 		log.SetLevel(log.DebugLevel)
 	}
@@ -29,7 +29,7 @@ func handleEditCmd(cmd *cobra.Command, args []string) {
 
 	if len(args) != 1 {
 		log.Error("No project provided")
-		cmd.Help()
+		cobra.CheckErr(cmd.Help())
 		os.Exit(1)
 	}
 	ProjectName := args[0]
@@ -44,5 +44,5 @@ func handleEditCmd(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	rootCmd.AddCommand(EditCmd)
+	ProjectCmd.AddCommand(ProjectEditCmd)
 }
