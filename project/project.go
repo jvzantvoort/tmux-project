@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	errno "github.com/jvzantvoort/tmux-project/errors"
+	"github.com/jvzantvoort/tmux-project/git"
 	"github.com/jvzantvoort/tmux-project/projecttype"
 	"github.com/jvzantvoort/tmux-project/utils"
 )
@@ -94,6 +95,15 @@ func (proj *Project) InjectProjectType(projtype string) error {
 	utils.LogVariable("proj.ProjectTypeDir", proj.ProjectTypeDir)
 
 	proj.SetupActions = ptobj.SetupActions
+	proj.Repos = []Repo{}
+	for _, inob := range ptobj.Repos {
+		obj := &Repo{}
+		obj.Url = inob.Url
+		obj.Destination = inob.Destination
+		obj.Branch = inob.Branch
+		proj.Repos = append(proj.Repos, *obj)
+
+	}
 
 	for _, element := range ptobj.Targets {
 		content, _ := ptobj.Content(element.Name)
@@ -201,6 +211,12 @@ func (proj *Project) InitializeProject(projtype string, safe bool) error {
 
 		}
 	}
+
+	gqueue := git.NewQueue()
+	for _, repo := range proj.Repos {
+		gqueue.Add(repo.Url, proj.Directory, repo.Destination, repo.Branch)
+	}
+	gqueue.Run()
 
 	queue := utils.NewQueue()
 	for _, step := range proj.SetupActions {
