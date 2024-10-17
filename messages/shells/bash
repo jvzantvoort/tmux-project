@@ -12,5 +12,31 @@ then
   fi
 
   #shellcheck disable=SC2164
-  function pcd() { cd "$PROJDIR/$1"; }
+  function pcd()
+  {
+    # empty
+    if [[ -z "$1" ]]
+    then
+      cd "${PROJDIR}"
+      return
+    fi
+  
+    __name="$1"
+  
+    # check for a config file and an entry
+    if [[ -f "${PROJDIR}/.pcd.rc" ]]
+    then
+      dst="$(awk -v pat="${__name}" -F";" '$1 == pat { print $2 }' "${PROJDIR}/.pcd.rc" | sed "s,PROJDIR,${PROJDIR},")"
+      if [[ -n "${dst}" ]]
+      then
+        cd "${dst}"
+        return
+      fi
+    fi
+  
+    # subdir in project
+    cd "$PROJDIR/${__name}";
+  
+  }
+
 fi
