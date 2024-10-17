@@ -11,6 +11,19 @@ then
     source  "$HOME/.tmux.d/${SESSIONNAME}.env"
   fi
 
+  # if "${PROJDIR}/.pcd.rc" exists its contenst is read as semicolon delimited
+  # fields:
+  #
+  #  <shortname>;directory
+  #
+  # PROJDIR is replaced by its environment variable
+  #
+  # Example:
+  #
+  #  foo;PROJDIR/bar
+  #
+  # "pcd foo" will change directory to "${PROJDIR}/bar"
+  #
   #shellcheck disable=SC2164
   function pcd()
   {
