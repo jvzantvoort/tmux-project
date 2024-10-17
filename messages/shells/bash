@@ -52,4 +52,8 @@ then
   
   }
 
+  if [[ -f "${PROJDIR}/.pcd.rc" ]]
+  then
+    complete -W "$(awk -F";" '{ printf "%s ", $1 }; END { printf "\n" }' "${PROJDIR}/.pcd.rc")" pcd
+  fi
 fi
