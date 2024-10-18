@@ -45,7 +45,6 @@ func Abort(format string, input ...interface{}) {
 	os.Exit(1)
 }
 
-
 func box_width() int {
 	return int(CONSOLE_WIDTH - (CONSOLE_INDENT * 2))
 }
