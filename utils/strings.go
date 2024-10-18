@@ -8,4 +8,3 @@ func StringInSlice(a string, list []string) bool {
 	}
 	return false
 }
-

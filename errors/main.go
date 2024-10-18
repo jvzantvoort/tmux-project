@@ -8,7 +8,7 @@ import (
 type syscallErrorType = syscall.Errno
 
 var (
-	ErrProjectNotExist = errors.New("project does not exist")
+	ErrProjectNotExist       = errors.New("project does not exist")
 	ErrProjectTypeNotDefined = errors.New("project type not defined")
 )
 

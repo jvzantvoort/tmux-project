@@ -18,4 +18,3 @@ func TestUnderlyingError(t *testing.T) {
 		t.Errorf("Expected %q but got %q", err, retv)
 	}
 }
-

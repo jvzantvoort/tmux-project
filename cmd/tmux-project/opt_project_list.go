@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/jvzantvoort/tmux-project/project"
 	"github.com/jvzantvoort/tmux-project/messages"
+	"github.com/jvzantvoort/tmux-project/project"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )

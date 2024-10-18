@@ -71,6 +71,7 @@ func main() {
 	defer cleanup()
 	var chapters []string
 	verbose := flag.Bool("v", false, "Verbose")
+	depth := flag.Int("d", 2, "Max depth in search")
 	flag.Parse()
 
 	if *verbose {
@@ -90,7 +91,7 @@ func main() {
 		{"Type", proj_obj.ProjectType},
 	}
 	PrintHeader(header)
-	brojects := findAllProjects(proj_obj.Directory)
+	brojects := findAllProjects(proj_obj.Directory, *depth)
 
 	for _, proj := range brojects {
 		chapters = append(chapters, proj.Chapter)

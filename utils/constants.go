@@ -1,5 +1,5 @@
 package utils
 
 const (
-	Editor          string = "vim"
+	Editor string = "vim"
 )
