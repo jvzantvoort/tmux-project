@@ -33,9 +33,9 @@ then
       cd "${PROJDIR}"
       return
     fi
-  
+
     __name="$1"
-  
+
     # check for a config file and an entry
     if [[ -f "${PROJDIR}/.pcd.rc" ]]
     then
@@ -46,14 +46,27 @@ then
         return
       fi
     fi
-  
+
     # subdir in project
     cd "$PROJDIR/${__name}";
-  
+
   }
 
-  if [[ -f "${PROJDIR}/.pcd.rc" ]]
-  then
-    complete -W "$(awk -F";" '{ printf "%s ", $1 }; END { printf "\n" }' "${PROJDIR}/.pcd.rc")" pcd
-  fi
+  _pcd_autocomplete() {
+    local cur opts
+    cur="${COMP_WORDS[COMP_CWORD]}"
+
+    # Collect folder names in $PROJDIR
+    opts="$(find "$PROJDIR" -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)"
+
+    # Collect entries from .pcd.rc if it exists
+    if [[ -f "${PROJDIR}/.pcd.rc" ]]; then
+      opts+=" $(awk -F';' '{print $1}' "$PROJDIR/.pcd.rc")"
+    fi
+
+    COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+  }
+
+  complete -F _pcd_autocomplete pcd
+
 fi
