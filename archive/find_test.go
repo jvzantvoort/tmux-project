@@ -11,8 +11,12 @@ func TestFindFiles_Basic(t *testing.T) {
 	dir := t.TempDir()
 	file1 := filepath.Join(dir, "file1.txt")
 	file2 := filepath.Join(dir, "file2.txt")
-	os.WriteFile(file1, []byte("hello"), 0644)
-	os.WriteFile(file2, []byte("world"), 0644)
+	if err := os.WriteFile(file1, []byte("hello"), 0644); err != nil {
+		t.Fatalf("failed to create file1: %v", err)
+	}
+	if err := os.WriteFile(file2, []byte("world"), 0644); err != nil {
+		t.Fatalf("failed to create file2: %v", err)
+	}
 
 	files, links, err := FindFiles([]string{dir})
 	if err != nil {
@@ -30,9 +34,13 @@ func TestFindFiles_Basic(t *testing.T) {
 func TestFindFiles_Symlink(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "file.txt")
-	os.WriteFile(file, []byte("data"), 0644)
+	if err := os.WriteFile(file, []byte("data"), 0644); err != nil {
+		t.Fatalf("failed to create file: %v", err)
+	}
 	symlink := filepath.Join(dir, "link.txt")
-	os.Symlink(file, symlink)
+	if err := os.Symlink(file, symlink); err != nil {
+		t.Fatalf("failed to create symlink: %v", err)
+	}
 
 	files, links, err := FindFiles([]string{dir})
 	if err != nil {

@@ -10,7 +10,9 @@ func TestProjectTypeConfig_Content(t *testing.T) {
 	dir := t.TempDir()
 	file := "testfile.yml"
 	content := "hello: world"
-	os.WriteFile(dir+"/"+file, []byte(content), 0644)
+	if err := os.WriteFile(dir+"/"+file, []byte(content), 0644); err != nil {
+		t.Fatalf("failed to create test file: %v", err)
+	}
 	ptc := ProjectTypeConfig{ConfigDir: dir}
 	got, err := ptc.Content(file)
 	if err != nil {

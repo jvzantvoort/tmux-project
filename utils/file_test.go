@@ -24,7 +24,9 @@ func TestGetMode_Invalid(t *testing.T) {
 
 func TestTargetExists(t *testing.T) {
 	file := t.TempDir() + "/exists.txt"
-	os.WriteFile(file, []byte("hi"), 0644)
+	if err := os.WriteFile(file, []byte("hi"), 0644); err != nil {
+		t.Fatalf("failed to create test file: %v", err)
+	}
 	if !TargetExists(file) {
 		t.Errorf("expected file to exist")
 	}
@@ -35,7 +37,9 @@ func TestTargetExists(t *testing.T) {
 
 func TestFileExists(t *testing.T) {
 	file := t.TempDir() + "/exists.txt"
-	os.WriteFile(file, []byte("hi"), 0644)
+	if err := os.WriteFile(file, []byte("hi"), 0644); err != nil {
+		t.Fatalf("failed to create test file: %v", err)
+	}
 	if !FileExists(file) {
 		t.Errorf("expected file to exist")
 	}

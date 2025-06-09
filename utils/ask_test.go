@@ -14,7 +14,9 @@ func TestAsk_SimulateInput(t *testing.T) {
 	defer func() { os.Stdin = oldStdin }()
 
 	input := "answer\n"
-	w.Write([]byte(input))
+	if _, err := w.Write([]byte(input)); err != nil {
+		t.Fatalf("failed to write to pipe: %v", err)
+	}
 	w.Close()
 
 	result := Ask("What is your name?")

@@ -6,12 +6,14 @@ import (
 	"testing"
 )
 
-func TestWhich_FindsExecutable(t *testing.T) {
+func TestWhichFindsExecutable(t *testing.T) {
 	// Create a temp dir and fake executable
 	dir := t.TempDir()
 	exe := "mycmd"
 	exePath := filepath.Join(dir, exe)
-	os.WriteFile(exePath, []byte("#!/bin/sh\necho hi\n"), 0755)
+	if err := os.WriteFile(exePath, []byte("#!/bin/sh\necho hi\n"), 0755); err != nil {
+		t.Fatalf("failed to create test executable: %v", err)
+	}
 
 	// Prepend temp dir to PATH
 	oldPath := os.Getenv("PATH")
