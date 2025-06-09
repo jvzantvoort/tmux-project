@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// Which returns the full path of the command
 func Which(command string) string {
 	Path := strings.Split(os.Getenv("PATH"), ":")
 
