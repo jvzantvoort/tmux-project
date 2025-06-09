@@ -18,6 +18,7 @@ func cleanup() {
 	}
 }
 
+// QueueElement represents an item in the queue
 type QueueElement struct {
 	Url         string
 	Basedir     string
@@ -25,6 +26,7 @@ type QueueElement struct {
 	Branch      string
 }
 
+// Queue represents a queue of items
 type Queue struct {
 	Queue []QueueElement
 }
@@ -39,6 +41,7 @@ func (q *Queue) Add(url, basedir, destination, branch string) {
 	})
 }
 
+// Run runs the queue, waiting for all items to finish
 func (q *Queue) Run() {
 	for _, item := range q.Queue {
 		wg.Add(1)
@@ -47,6 +50,7 @@ func (q *Queue) Run() {
 	wg.Wait()
 }
 
+// NewQueue creates a new queue
 func NewQueue() *Queue {
 	return &Queue{}
 }

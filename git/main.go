@@ -20,6 +20,7 @@ type GitCmd struct {
 	command string
 }
 
+// which finds the path to the provided command
 func (g GitCmd) which(command string) (string, error) {
 	for _, dirname := range g.path {
 		fpath := path.Join(dirname, command)
@@ -35,6 +36,7 @@ func (g GitCmd) which(command string) (string, error) {
 	return command, errors.New("unable to find command " + command)
 }
 
+// exec runs a git command, and returns the output
 func (g GitCmd) exec(args ...string) ([]string, error) {
 	retv := []string{}
 	cmnd := []string{}
@@ -63,6 +65,7 @@ func (g GitCmd) exec(args ...string) ([]string, error) {
 	return retv, eerror
 }
 
+// GetStatus function returns the git status as a map of files and their status
 func (g GitCmd) GetStatus() map[string]int {
 	retv := make(map[string]int)
 

@@ -35,6 +35,7 @@ func (t *TarArchive) AddSymlink(linkName, target string) {
 	t.Links[linkName] = target
 }
 
+// AddFiles adds a list of files to the tar.gz archive
 func (t *TarArchive) AddFiles(paths []string) {
 	targets, links, err := FindFiles(paths)
 	utils.ErrorExit(err)

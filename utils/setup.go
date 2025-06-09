@@ -13,9 +13,9 @@ func SetupSessionDir(noexec bool) error {
 	LogStart()
 	defer LogEnd()
 
-	session_dir := config.SessionDir()
-	commonfile := filepath.Join(session_dir, "common.rc")
-	tos_file := filepath.Join(session_dir, "tmux_opt_source")
+	sessionDir := config.SessionDir()
+	commonfile := filepath.Join(sessionDir, "common.rc")
+	tmuxOptSourceFile := filepath.Join(sessionDir, "tmux_opt_source")
 
 	if FileExists(commonfile) {
 		Debugf("common.rc file exists")
@@ -24,7 +24,7 @@ func SetupSessionDir(noexec bool) error {
 
 	if noexec {
 		fmt.Printf("create %s file\n", commonfile)
-		fmt.Printf("create %s file\n", tos_file)
+		fmt.Printf("create %s file\n", tmuxOptSourceFile)
 		return nil
 	}
 
@@ -32,7 +32,7 @@ func SetupSessionDir(noexec bool) error {
 		return err
 	}
 
-	if err := messages.Copy("tmux_opt_source", tos_file, 0755); err != nil {
+	if err := messages.Copy("tmux_opt_source", tmuxOptSourceFile, 0755); err != nil {
 		return err
 	}
 

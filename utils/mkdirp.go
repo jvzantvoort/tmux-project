@@ -5,6 +5,7 @@ import (
 	"os"
 )
 
+// MkdirAll creates a directory and all parent directories
 func MkdirAll(targetpath string) error {
 	if len(targetpath) == 0 {
 		return fmt.Errorf("mkdir called with empty directory")
