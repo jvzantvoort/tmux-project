@@ -28,6 +28,10 @@ func handleShellCmd(cmd *cobra.Command, args []string) {
 	if len(args) == 1 {
 		ShellName = args[0]
 	}
+	if ShellName != "bash" && ShellName != "zsh" {
+		fmt.Printf("Shell '%s' is not supported. Supported shells: bash, zsh\n", ShellName)
+		return
+	}
 	fmt.Println(messages.GetShell(ShellName))
 }
 

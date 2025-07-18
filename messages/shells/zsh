@@ -1,0 +1,61 @@
+# zsh shell configuration for tmux-project
+# Add any zsh-specific setup here
+echo "This is the zsh shell configuration for tmux-project."
+
+if [[ -n "$TMUX" ]]; then
+  SESSIONNAME="$(tmux display-message -p '#S' 2>/dev/null)"
+  export SESSIONNAME
+
+  # Load session-specific environment variables if they exist
+  if [[ -f "$HOME/.tmux.d/${SESSIONNAME}.env" ]]; then
+    source "$HOME/.tmux.d/${SESSIONNAME}.env"
+  fi
+
+  # Function to change directory within the project
+  function pcd() {
+    if [[ -z "$1" ]]; then
+      cd "${PROJDIR}"
+      return
+    fi
+
+    __name="$1"
+
+    # Check for a config file and an entry
+    if [[ -f "${PROJDIR}/.pcd.rc" ]]; then
+      dst="$(awk -v pat="${__name}" -F";" '$1 == pat { print $2 }' "${PROJDIR}/.pcd.rc" | sed "s,PROJDIR,${PROJDIR},")"
+      if [[ -n "${dst}" ]]; then
+        cd "${dst}"
+        return
+      fi
+    fi
+
+    # Change to subdirectory in project
+    cd "$PROJDIR/${__name}"
+  }
+
+# Zsh version of the autocomplete function
+_pcd_autocomplete() {
+  local -a opts
+  local cur
+
+  # Current word being completed
+  cur=${words[CURRENT]}
+
+  # Collect folder names in $PROJDIR
+  if [[ -d "$PROJDIR" ]]; then
+    opts=(${(f)"$(find "$PROJDIR" -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)"})
+  fi
+
+  # Collect entries from .pcd.rc if it exists
+  if [[ -f "${PROJDIR}/.pcd.rc" ]]; then
+    opts+=(${(f)"$(awk -F';' '{print $1}' "$PROJDIR/.pcd.rc")"})
+  fi
+
+  # Use _describe to perform the actual completion
+  _describe 'pcd projects' opts
+}
+
+# Register the completion function for the `pcd` command
+compdef _pcd_autocomplete pcd
+
+fi
