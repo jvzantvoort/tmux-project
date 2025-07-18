@@ -26,4 +26,5 @@ type ProjectTypeConfig struct {
 	ProjectTypeDir string   `yaml:"-"`
 	ConfigFile     string   `yaml:"-"`
 	ConfigDir      string   `yaml:"-"`
+	Root           string   `yaml:"root"`
 }

@@ -94,6 +94,9 @@ func (proj *Project) InjectProjectType(projtype string) error {
 	proj.ProjectTypeDir = ptobj.ProjectTypeDir
 	utils.LogVariable("proj.ProjectTypeDir", proj.ProjectTypeDir)
 
+	proj.Root = ptobj.Root
+	utils.LogVariable("proj.Root", proj.Root)
+
 	proj.SetupActions = ptobj.SetupActions
 	proj.Repos = []Repo{}
 	for _, inob := range ptobj.Repos {
@@ -118,6 +121,8 @@ func (proj *Project) InjectProjectType(projtype string) error {
 	return nil
 }
 
+// RefreshStruct refreshes the project structure by loading the project configuration file.
+// It checks if the project exists and if not, it injects the project type configuration.
 func (proj *Project) RefreshStruct(args ...string) error {
 	utils.LogStart()
 	defer utils.LogEnd()
@@ -153,6 +158,11 @@ func (proj *Project) RefreshStruct(args ...string) error {
 		}
 	}
 
+	if proj.Root == "" {
+		proj.Root = "directory" // Default to "directory" if root is not specified
+		utils.Debugf("no root defined, using default: %s", proj.Root)
+	}
+
 	proj.InjectExternal()
 
 	// Translate some stuff
@@ -176,6 +186,7 @@ func (proj *Project) InitializeProject(projtype string, safe bool) error {
 	utils.LogArgument("projtype", projtype)
 	utils.LogArgument("safe", safe)
 
+	// SetupSessionDir setup the ~/.tmux.d directory
 	err := utils.SetupSessionDir(false)
 	if err != nil {
 		utils.Errorf("Error: %s", err)
@@ -185,7 +196,20 @@ func (proj *Project) InitializeProject(projtype string, safe bool) error {
 	err = proj.RefreshStruct(projtype)
 	if err != nil {
 		utils.Errorf("Error: %s", err)
+	}
 
+	utils.LogVariable("proj.Root", proj.Root)
+
+	if proj.Root != "directory" {
+		// if root is not "directory" the project is a git repository
+		utils.Debugf("project root is not 'directory', cloning from %s", proj.Root)
+
+		// get the parent directory of the project
+		ngit := git.NewGitCmd(proj.HomeDir)
+		if nerr := ngit.Clone(proj.Root, proj.Directory); nerr != nil {
+			return nerr
+		}
+		return proj.Save()
 	}
 
 	if safe && !proj.Exists {

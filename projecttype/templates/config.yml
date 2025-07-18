@@ -1,6 +1,7 @@
 ---
 type: PROJECTTYPE
 description: PROJECTTYPE
+root: "directory"
 directory: "{{.HomeDir}}/{{.ProjectType}}/{{.Name}}"
 pattern: ^.*$
 setupactions:
