@@ -10,6 +10,14 @@ import (
 	"github.com/jvzantvoort/tmux-project/utils"
 )
 
+// walkAllProjects walks through the project directory and returns a list of all projects found.
+// It limits the depth of the search to avoid going too deep into subdirectories.
+// The function returns a slice of strings representing the paths to the projects found.
+// It uses the filepath.Walk function to traverse the directory structure.
+// The maximum depth is controlled by the maxDepth parameter, which is compared against the current depth
+// relative to the project directory.
+// If the current depth exceeds maxDepth, it skips further exploration of that directory.
+// The function returns an error if any issues occur during the directory traversal.
 func walkAllProjects(projdir string, maxDepth int) ([]string, error) {
 	var retv []string
 	utils.LogStart()

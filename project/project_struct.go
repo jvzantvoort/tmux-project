@@ -24,6 +24,7 @@ type Project struct {
 	SetupActions   []string `json:"setupactions"`
 	Repos          []Repo   `json:"repos"`
 	Targets        []Target `json:"targets"`
+	Root           string   `json:"root"` // Root type of the project directory or git url
 	HomeDir        string   `json:"-"`
 	ProjectTypeDir string   `json:"-"` // Directory where project type files are located
 	Pattern        string   `json:"-"` // pattern obtained from ProjectType

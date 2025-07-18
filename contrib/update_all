@@ -26,10 +26,10 @@ declare DEBUG="yes"
 # Constants: Screen measurements {{{
 # Get screenwidth
 SCREENWIDTH="$(tput cols)"
-SCREENWIDTH="$((SCREENWIDTH-(SCREENWIDTH%40)))"
+SCREENWIDTH="$((SCREENWIDTH - (SCREENWIDTH % 40)))"
 [[ "${SCREENWIDTH}" -lt 80 ]] && SCREENWIDTH=80
 
-SCREENWIDTH="$((SCREENWIDTH-20))"
+SCREENWIDTH="$((SCREENWIDTH - 20))"
 MSG_PADSTR_LEN="${SCREENWIDTH}"
 MSG_FORMAT="%-${SCREENWIDTH}s [ %s%-7s%s ]\n"
 
@@ -59,71 +59,65 @@ readonly COLOR_RESET
 #shellcheck disable=SC2034
 function strrep() { for x in $(seq 1 "${1}"); do printf "-"; done; }
 
-function print_msg()
-{
-  local color=$1; shift
-  local state=$1; shift
+function print_msg() {
+  local color=$1
+  shift
+  local state=$1
+  shift
   local msg="$*"
   local pad
-  pad="${#msg}" # length of the string
-  pad="$((MSG_PADSTR_LEN-pad))" # subtract it from then screen width
-  padstr="$(strrep "${pad}")" # create padding
+  pad="${#msg}"                   # length of the string
+  pad="$((MSG_PADSTR_LEN - pad))" # subtract it from then screen width
+  padstr="$(strrep "${pad}")"     # create padding
 
   #shellcheck disable=SC2059
   printf "${MSG_FORMAT}" "$msg ${padstr}" "${color}" "${state}" "${COLOR_RESET}"
 }
-function print_title()   { print_msg "${COLOR_GREY}"   "-------" "$@"; }
-function print_ok()      { print_msg "${COLOR_GREEN}"  "SUCCESS" "$@"; }
-function print_nok()     { print_msg "${COLOR_RED}"    "FAILURE" "$@"; }
-function print_fatal()   { print_msg "${COLOR_RED}"    "FATAL"   "$@"; }
+function print_title() { print_msg "${COLOR_GREY}" "-------" "$@"; }
+function print_ok() { print_msg "${COLOR_GREEN}" "SUCCESS" "$@"; }
+function print_nok() { print_msg "${COLOR_RED}" "FAILURE" "$@"; }
+function print_fatal() { print_msg "${COLOR_RED}" "FATAL" "$@"; }
 function print_warning() { print_msg "${COLOR_ORANGE}" "WARNING" "$@"; }
 function print_unknown() { print_msg "${COLOR_YELLOW}" "UNKNOWN" "$@"; }
-function print_debug()
-{
+function print_debug() {
   [[ "${DEBUG}" != "yes" ]] && return 0
   printf "%s%s%s\n" "${COLOR_GREY}" "$*" "${COLOR_RESET}"
 }
 
-function test_result()
-{
+function test_result() {
   local retv=$1
   local message=$2
-  if [[ "${retv}" == "0" ]]
-  then
+  if [[ "${retv}" == "0" ]]; then
     print_ok "${message}"
   else
     print_nok "${message}"
   fi
 }
 
-function test_result_with_log()
-{
+function test_result_with_log() {
   local retv=$1
   local message=$2
   local extra=$3
   local logfile=$4
 
-  if [[ "${retv}" == "0" ]]
-  then
+  if [[ "${retv}" == "0" ]]; then
     print_ok "${message}"
   else
     print_nok "${message}"
 
-    printf "\n# repo: %s\n" "${extra}" >> "${STAGING_AREA}/main.log"
-    printf "\n%s\n" "${message}"       >> "${STAGING_AREA}/main.log"
-    cat "${logfile}"                   >> "${STAGING_AREA}/main.log"
-    printf "\n\n"                      >> "${STAGING_AREA}/main.log"
+    printf "\n# repo: %s\n" "${extra}" >>"${STAGING_AREA}/main.log"
+    printf "\n%s\n" "${message}" >>"${STAGING_AREA}/main.log"
+    cat "${logfile}" >>"${STAGING_AREA}/main.log"
+    printf "\n\n" >>"${STAGING_AREA}/main.log"
   fi
 
   rm -f "$logfile"
 }
 
-function retv_fatal()
-{
+function retv_fatal() {
   local retv=$1
   local message=$2
-  if [[ "${retv}" == "0" ]]
-  then
+  if [[ "${retv}" == "0" ]]; then
     print_ok "${message}"
   else
     print_fatal "${message}"
@@ -133,16 +127,14 @@ function retv_fatal()
 
 function die() { retv_fatal 1 "FATAL: $1"; }
 
-function err127()
-{
+function err127() {
   which "$1" >/dev/null 2>&1
   retv_fatal "$?" "Command $1 is available"
 }
 
 # }}}
 
-function make_staging_area()
-{
+function make_staging_area() {
   local retv
 
   STAGING_AREA="$(mktemp -d "git.XXXXXXXXXXX")"
@@ -155,39 +147,43 @@ function make_staging_area()
 
 function make_temp() { mktemp --tmpdir="${STAGING_AREA}" "log.XXXXXX"; }
 
-function clean_staging_area()
-{
+function clean_staging_area() {
   [[ -z "${STAGING_AREA}" ]] && return
   [[ -d "${STAGING_AREA}" ]] || return
   rm -rf "${STAGING_AREA}" || die "Failed to cleanup tempdir: ${STAGING_AREA}"
   unset STAGING_AREA
 }
 
-function list_branches()
-{
-  git branch -a --format="%(refname:short)" -r | sed 's,^origin\/,,'|grep -v "^origin$"
+function list_branches() {
+  git branch -a --format="%(refname:short)" -r | sed 's,^origin\/,,' | grep -v "^origin$"
 }
 
-function main_branch()
-{
+function main_branch() {
   local branches=($(list_branches))
 
-  for branch in "${branches[@]}"
-  do
+  for branch in "${branches[@]}"; do
     case "$branch" in
-      main) echo "${branch}" ; return ;;
-      master) echo "${branch}" ; return ;;
-      development) echo "${branch}" ; return ;;
+    main)
+      echo "${branch}"
+      return
+      ;;
+    master)
+      echo "${branch}"
+      return
+      ;;
+    development)
+      echo "${branch}"
+      return
+      ;;
     esac
   done
 }
 
-function update_repo()
-{
+function update_repo() {
   local target="$1"
-  local title="${target//${PROJDIR}\/}"
+  local title="${target//${PROJDIR}\//}"
 
-  print_title "${target//${PROJDIR}\/}"
+  print_title "${target//${PROJDIR}\//}"
 
   pushd "${target}" >/dev/null 2>&1
 
@@ -198,14 +194,12 @@ function update_repo()
 
   stash_count="$(git status -s | awk 'END { print NR }')"
 
-  if [[ "${stash_count}" != "0" ]]
-  then
+  if [[ "${stash_count}" != "0" ]]; then
     git stash >"${logfile}" 2>&1
     test_result_with_log "$?" "  git stash" "${title}" "${logfile}"
   fi
 
-  if [[ "${orgbranch}" != "${mainbranch}" ]]
-  then
+  if [[ "${orgbranch}" != "${mainbranch}" ]]; then
     git pull origin "${orgbranch}" --tags >"${logfile}" 2>&1
     test_result_with_log "$?" "  git pull ${orgbranch}" "${title}" "${logfile}"
 
@@ -219,20 +213,16 @@ function update_repo()
   git fetch -p >"${logfile}" 2>&1
   test_result_with_log "$?" "  git fetch" "${title}" "${logfile}"
 
-  if [[ "${orgbranch}" != "${mainbranch}" ]]
-  then
+  if [[ "${orgbranch}" != "${mainbranch}" ]]; then
     git checkout "${orgbranch}" >"${logfile}" 2>&1
     test_result_with_log "$?" "  git checkout ${orgbranch}" "${title}" "${logfile}"
     behind="$(git rev-list --left-right --count ${mainbranch}...${orgbranch} | awk '$1 != 0 { printf "behind %d commits", $1 }')"
-    if [[ -n "${behind}" ]]
-    then
+    if [[ -n "${behind}" ]]; then
       print_warning "${behind}"
     fi
   fi
 
-
-  if [[ "${stash_count}" != "0" ]]
-  then
+  if [[ "${stash_count}" != "0" ]]; then
     git stash pop >"${logfile}" 2>&1
     test_result_with_log "$?" "  git stash pop" "${title}" "${logfile}"
   fi
@@ -249,13 +239,11 @@ function update_repo()
 
 make_staging_area
 
-find "${PROJDIR}" -type d -name .git -printf "%h\n"|while read -r target
-do
+find "${PROJDIR}" -type d -name .git -printf "%h\n" | while read -r target; do
   update_repo "${target}"
 done
 
-if [[ -f "${STAGING_AREA}/main.log" ]]
-then
+if [[ -f "${STAGING_AREA}/main.log" ]]; then
   cat "${STAGING_AREA}/main.log"
 fi
 

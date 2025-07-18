@@ -14,6 +14,7 @@ import (
 )
 
 func init() {
+	// Set up the logger
 	log.SetFormatter(&log.TextFormatter{
 		FullTimestamp:          true,
 		DisableLevelTruncation: true,
@@ -29,12 +30,16 @@ func init() {
 
 }
 
+// cleanup handles any panic that occurs during execution, logging the error.
+// It is deferred to ensure that it runs even if a panic occurs.
 func cleanup() {
 	if r := recover(); r != nil {
 		log.Errorf("Paniced %s", r)
 	}
 }
 
+// uniqueList returns a slice of unique strings from the provided arguments.
+// It uses a map to track unique items and returns them in a slice.
 func uniqueList(args ...string) []string {
 	retv := []string{}
 	items_map := make(map[string]bool)
@@ -50,6 +55,11 @@ func uniqueList(args ...string) []string {
 	return retv
 }
 
+// PrintHeader formats and prints the header information for the project.
+// It uses color formatting for the names and values, making it visually distinct.
+// The header includes the session name, project directory, description, and project type.
+// It uses the tablewriter package to create a nicely formatted table output.
+// The header is printed to the standard output.
 func PrintHeader(data [][]string) {
 
 	infNameCol := color.New(InfoNameColor)
@@ -67,6 +77,15 @@ func PrintHeader(data [][]string) {
 
 }
 
+// main is the entry point for the proj_info command.
+// It retrieves the project information based on the current tmux session name.
+// The session name is expected to be set in the environment variable SESSIONNAME.
+// If the session name is not set, it will print an error message and exit.
+// It also allows for verbose output and depth control via command line flags.
+// The verbose flag enables detailed logging, and the depth flag controls the maximum depth for searching projects.
+// The project information is printed in a formatted table, including the session name, project directory, description, and type.
+// It also finds all projects in the specified directory and prints their information grouped by chapter.
+// The output is formatted using the tablewriter package for better readability.
 func main() {
 	defer cleanup()
 	var chapters []string

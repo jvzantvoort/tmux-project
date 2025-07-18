@@ -1,3 +1,4 @@
+// proj_descr/main.go
 package main
 
 import (
@@ -8,6 +9,10 @@ import (
 	"github.com/jvzantvoort/tmux-project/utils"
 )
 
+// main is the entry point for the proj_descr command, which prints the project description.
+// It retrieves the project description based on the current tmux session name.
+// The session name is expected to be set in the environment variable SESSIONNAME.
+// If the session name is not set, it will print an error message and exit.
 func main() {
 
 	// Header

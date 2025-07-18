@@ -5,225 +5,88 @@
 
 # tmux-project
 
-**tmux-project** creates, maintains, archives and removes profiles used in
+**tmux-project** creates, maintains, archives, and removes profiles used in
 combination with the tmux command.
 
-This command allows the user to list and use different tmux based profiles.
-Together with bash (or other shell based) profiles you can easily maintain
-multiple sessions.
+This tool allows users to list and use different tmux-based profiles. Together with bash (or other shell-based) profiles, you can easily maintain multiple sessions and project environments.
 
-# Reason
+## Motivation
 
-The reason I'm writing this thing.
+This project was created to help manage multiple ticket-based projects, each with its own repositories and environment. Instead of manually tracking project state, `tmux-project` automates session and environment management, making it easy to resume work on any project.
 
-At the moment I'm working in a project based on tickets. For each ticket I
-re-checkout what ever repositories I need. Seems silly until you work on 4
-projects at one and start to lose sight of things. In my case I wrote a small
-wrapper in my bash profile that allows me to resume working on a project by
-executing:
+## Features
+- Manage tmux and shell profiles for multiple projects
+- Archive and restore project environments
+- List, create, edit, and remove project sessions
+- Integrate with your shell for quick project switching
 
-  resume <projectname>
+# Usage
 
-This solution consists of a few distinct targets:
+## Shell Integration
+To integrate tmux-project into your shell, run:
 
-* HOME/.tmux.d/<project>.rc, the tmux configuration used
-  for this.
-* HOME/.tmux.d/<project>.env, the bash configuration
-  sourced when resuming.
-* PROJECSTDIR the location where projects are checked out.
-
-For the longest time I had only one type of project to work on and the original
-client/organization specific solution I wrote in Python covered this neatly.
-However others recently came. Different ticket name format, different archive,
-etc.. And instead of re-writing my python thing I instead opted for a golang
-based approach. Why?  Because I'm shit at golang, it's the Christmas holiday
-and I have nothing better to do.
-
-
-# Synopsis
-## shell
-
-Provides a way to integrate tmux-project into shell by executing:
-
-  eval "$(tmux-project shell)"
-
-(don't forget the quotes)
-
-
-```
-Usage:
-  tmux-project shell [<shell>] [flags]
-
-Flags:
-  -h, --help   help for shell
-
-Global Flags:
-  -v, --verbose   Verbose logging
+```sh
+eval "$(tmux-project shell)"
 ```
 
+## Project Commands
 
-## project
+### Archive
+Create a TAR archive of a project:
 
-### archive
-
-Creates a TAR archive of a project.
-
-
-```
-Usage:
-  tmux-project project archive <project> [flags]
-
-Flags:
-  -a, --archivename string   Archive file
-  -h, --help                 help for archive
-
-Global Flags:
-  -v, --verbose   Verbose logging
+```sh
+tmux-project project archive <project> [flags]
 ```
 
+### Create
+Create a new project:
 
-### create
-
-Create a new project
-
-
-```
-Usage:
-  tmux-project project create <project> [flags]
-
-Flags:
-  -d, --description string   Description of the project
-  -h, --help                 help for create
-  -t, --type string          Type of project (default "default")
-
-Global Flags:
-  -v, --verbose   Verbose logging
+```sh
+tmux-project project create <project> [flags]
 ```
 
+### Edit
+Edit the config of a project:
 
-### edit
-
-Edit the config of a project
-
-
-```
-Usage:
-  tmux-project project edit <project> [flags]
-
-Flags:
-  -h, --help   help for edit
-
-Global Flags:
-  -v, --verbose   Verbose logging
+```sh
+tmux-project project edit <project> [flags]
 ```
 
+### List
+List the available sessions:
 
-### list
-
-List the available sessions
-
-
-```
-Usage:
-  tmux-project project list [flags]
-
-Flags:
-  -f, --full   Print full
-  -h, --help   help for list
-
-Global Flags:
-  -v, --verbose   Verbose logging
+```sh
+tmux-project project list [flags]
 ```
 
+### List Files
+List files in a project:
 
-### listfiles
-
-
-
-```
-Usage:
-  tmux-project project listfiles <project> [flags]
-
-Flags:
-  -h, --help   help for listfiles
-
-Global Flags:
-  -v, --verbose   Verbose logging
+```sh
+tmux-project project listfiles <project> [flags]
 ```
 
+### Remove
+Remove a project (optionally archive first):
 
-### remove
-
-remove a project
-
-
-```
-Usage:
-  tmux-project project remove <project> [flags]
-
-Flags:
-  -h, --help        help for remove
-  -x, --noarchive   Do not archive before delete (default true)
-  -y, --yes         Assume yes
-
-Global Flags:
-  -v, --verbose   Verbose logging
+```sh
+tmux-project project remove <project> [flags]
 ```
 
+### Resume
+Resume a session:
 
-### resume
-
-resume a session
-
-
-```
-Usage:
-  tmux-project project resume <project> [flags]
-
-Flags:
-  -h, --help   help for resume
-
-Global Flags:
-  -v, --verbose   Verbose logging
+```sh
+tmux-project project resume <project> [flags]
 ```
 
+### Project Types
+Initialize or list project types:
 
-## type
-
-### init
-
-
-
+```sh
+tmux-project type init <projecttype> [flags]
+tmux-project type list [flags]
 ```
-Usage:
-  tmux-project type init <projecttype> [flags]
-
-Flags:
-  -f, --force   Force
-  -h, --help    help for init
-
-Global Flags:
-  -v, --verbose   Verbose logging
-```
-
-
-### list
-
-list project types
-
-
-```
-Usage:
-  tmux-project type list [flags]
-
-Flags:
-  -h, --help   help for list
-
-Global Flags:
-  -v, --verbose   Verbose logging
-```
-
-
 
 # Functionality
 
@@ -231,6 +94,14 @@ Global Flags:
 
 | Target                              | Description                 |
 |:------------------------------------|:----------------------------|
-| ```${HOME}/.tmux.d/<project>.env``` | environment file            |
-| ```${HOME}/.tmux.d/<project>.rc```  | tmux configuration          |
-| ```PROJECTS```                      | location projects are setup |
+| `${HOME}/.tmux.d/<project>.env`     | environment file            |
+| `${HOME}/.tmux.d/<project>.rc`      | tmux configuration          |
+| `PROJECTS`                          | location projects are setup |
+
+# See Also
+- [CHANGELOG.rst](CHANGELOG.rst)
+- [contrib/README.md](contrib/README.md)
+
+---
+
+For more details, see the inline documentation and comments in the source code.

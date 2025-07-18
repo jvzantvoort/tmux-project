@@ -35,6 +35,10 @@ func (ptc *ProjectTypeConfig) Read(reader io.Reader) error {
 
 	err = yaml.Unmarshal(data, &ptc)
 	utils.LogIfError(err)
+	if ptc.Root == "" {
+		ptc.Root = "directory"
+		utils.Debugf("no root defined, using default: %s", ptc.Root)
+	}
 	return err
 }
 
