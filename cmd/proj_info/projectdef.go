@@ -10,19 +10,27 @@ import (
 	"github.com/jvzantvoort/tmux-project/utils"
 )
 
+// ProjectDef represents a project definition with various attributes such as path, name, branch, and status.
+// It includes methods to initialize the project, retrieve git information, and format the project fields for display.
 type ProjectDef struct {
-	Path       string
-	ProjectDir string
-	Name       string
-	AbsPath    string
-	Branch     string
-	Expected   bool
-	Status     map[string]int
-	SubPath    string
-	Chapter    string
-	Info       os.FileInfo
+	Path       string         // Path to the project directory
+	ProjectDir string         // Project directory
+	Name       string         // Project name
+	AbsPath    string         // Absolute path to the project
+	Branch     string         // Current git branch
+	Expected   bool           // Whether the project is expected to be found
+	Status     map[string]int // Git status information
+	SubPath    string         // Sub-path within the project directory
+	Chapter    string         // Chapter or section of the project
+	Info       os.FileInfo    // File information for the project directory
 }
 
+// GetFields returns a slice of strings representing the fields of the project.
+// It includes the project name, branch, and status information formatted as a string.
+// The branch is colored based on its status, with default colors for common branches like "master", "main", and "develop".
+// If the project is not found, an empty string is returned.
+// The status information is formatted as a string showing the counts of different git statuses (e.g., modified, added).
+// This method is useful for displaying project information in a structured format, such as in a table
 func (p ProjectDef) GetFields() []string {
 	retv := []string{}
 	retv = append(retv, p.Name)
@@ -47,6 +55,10 @@ func (p ProjectDef) GetFields() []string {
 	return retv
 }
 
+// GetGitInfo retrieves the git information for the project.
+// It uses the git package to check if the project is a git repository and retrieves the current branch and status.
+// The branch and status are stored in the ProjectDef struct.
+// This method is essential for projects that use git for version control, allowing the command to display the current branch and status.
 func (p *ProjectDef) GetGitInfo() {
 	gitcmnd := git.NewGitCmd(p.Path)
 	if gitcmnd.IsGit() {

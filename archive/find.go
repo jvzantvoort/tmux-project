@@ -1,3 +1,4 @@
+// Package archive provides utilities for archiving and finding files and symlinks within project directories.
 package archive
 
 import (
@@ -8,6 +9,7 @@ import (
 )
 
 // FindFiles walks through the given targets and returns a slice of all found non-directory targets.
+// It also returns a map of symlinks found, mapping the symlink path to its target.
 func FindFiles(targets []string) ([]string, map[string]string, error) {
 	utils.LogStart()
 	defer utils.LogEnd()

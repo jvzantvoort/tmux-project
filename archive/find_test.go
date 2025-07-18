@@ -7,6 +7,7 @@ import (
 	"testing"
 )
 
+// TestFindFiles_Basic tests that FindFiles returns all regular files and no symlinks in a directory.
 func TestFindFiles_Basic(t *testing.T) {
 	dir := t.TempDir()
 	file1 := filepath.Join(dir, "file1.txt")
@@ -31,6 +32,7 @@ func TestFindFiles_Basic(t *testing.T) {
 	}
 }
 
+// TestFindFiles_Symlink tests that FindFiles correctly identifies symlinks and their targets.
 func TestFindFiles_Symlink(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "file.txt")
@@ -54,6 +56,7 @@ func TestFindFiles_Symlink(t *testing.T) {
 	}
 }
 
+// sorted returns a sorted copy of the input string slice (for test comparison).
 func sorted(s []string) []string {
 	ss := append([]string{}, s...)
 	if len(ss) > 1 && ss[0] > ss[1] {

@@ -1,3 +1,4 @@
+// Package archive provides utilities for archiving and finding files and symlinks within project directories.
 package archive
 
 import (
@@ -11,31 +12,31 @@ import (
 	"github.com/jvzantvoort/tmux-project/utils"
 )
 
-// TarArchive encapsulates the tar.gz creation logic
+// TarArchive encapsulates the tar.gz creation logic for a set of files and symlinks.
 type TarArchive struct {
-	OutputFile string
-	Targets    []string
-	Links      map[string]string
+	OutputFile string            // OutputFile is the path to the resulting tar.gz file.
+	Targets    []string          // Targets is a list of files to include in the archive.
+	Links      map[string]string // Links maps symlink names to their targets.
 }
 
-// NewTarArchive creates a new TarArchive
+// NewTarArchive creates a new TarArchive for the given output file.
 func NewTarArchive(OutputFile string) *TarArchive {
 	retv := &TarArchive{OutputFile: OutputFile}
 	retv.Links = make(map[string]string)
 	return retv
 }
 
-// AddFile adds a file to the list of files to be included in the tar.gz archive
+// AddFile adds a file to the list of files to be included in the tar.gz archive.
 func (t *TarArchive) AddFile(filePath string) {
 	t.Targets = append(t.Targets, filePath)
 }
 
-// AddSymlink adds a symbolic link to the tar.gz archive
+// AddSymlink adds a symbolic link to the tar.gz archive.
 func (t *TarArchive) AddSymlink(linkName, target string) {
 	t.Links[linkName] = target
 }
 
-// AddFiles adds a list of files to the tar.gz archive
+// AddFiles adds a list of files and symlinks to the tar.gz archive by scanning the provided paths.
 func (t *TarArchive) AddFiles(paths []string) {
 	targets, links, err := FindFiles(paths)
 	utils.ErrorExit(err)
@@ -48,7 +49,7 @@ func (t *TarArchive) AddFiles(paths []string) {
 	}
 }
 
-// CreateArchive creates the tar.gz archive with the added files
+// CreateArchive creates the tar.gz archive with the added files and symlinks.
 func (t *TarArchive) CreateArchive() error {
 	utils.LogStart()
 	defer utils.LogEnd()
@@ -84,7 +85,7 @@ func (t *TarArchive) CreateArchive() error {
 	return nil
 }
 
-// addFileToTar adds a file to the given tar writer
+// addFileToTar adds a file to the given tar writer.
 func (t *TarArchive) addFileToTar(tarWriter *tar.Writer, filePath string) error {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -124,7 +125,7 @@ func (t *TarArchive) addFileToTar(tarWriter *tar.Writer, filePath string) error 
 	return nil
 }
 
-// addSymlinkToTar adds a symbolic link to the given tar writer
+// addSymlinkToTar adds a symbolic link to the given tar writer.
 func (t *TarArchive) addSymlinkToTar(tarWriter *tar.Writer, linkName, target string) error {
 	// Create a tar header for the symlink
 	header := &tar.Header{

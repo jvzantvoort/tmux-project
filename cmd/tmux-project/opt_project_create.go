@@ -18,6 +18,7 @@ var ProjectCreateCmd = &cobra.Command{
 	Run:   handleProjectCreateCmd,
 }
 
+// handleProjectCreateCmd handles the project create command
 func handleProjectCreateCmd(cmd *cobra.Command, args []string) {
 	if verbose {
 		log.SetLevel(log.DebugLevel)
