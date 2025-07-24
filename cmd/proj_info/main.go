@@ -90,7 +90,7 @@ func main() {
 	defer cleanup()
 	var chapters []string
 	verbose := flag.Bool("v", false, "Verbose")
-	depth := flag.Int("d", 2, "Max depth in search")
+	depth := flag.Int("d", 1, "Max depth in search")
 	flag.Parse()
 
 	if *verbose {
