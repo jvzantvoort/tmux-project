@@ -200,6 +200,12 @@ func (proj *Project) InitializeProject(projtype string, safe bool) error {
 
 	utils.LogVariable("proj.Root", proj.Root)
 
+	if safe && !proj.Exists {
+		if !proj.NameIsValid() {
+			utils.Abort("Name %s is invalid", proj.Name)
+		}
+	}
+
 	if proj.Root != "directory" {
 		// if root is not "directory" the project is a git repository
 		utils.Debugf("project root is not 'directory', cloning from %s", proj.Root)
@@ -209,22 +215,16 @@ func (proj *Project) InitializeProject(projtype string, safe bool) error {
 		if nerr := ngit.Clone(proj.Root, proj.Directory); nerr != nil {
 			return nerr
 		}
-		return proj.Save()
-	}
+	} else {
 
-	if safe && !proj.Exists {
-		if !proj.NameIsValid() {
-			utils.Abort("Name %s is invalid", proj.Name)
+		// Fail if directory already exists
+		if _, err := os.Stat(proj.Directory); !os.IsNotExist(err) {
+			utils.Abort("%s already exists", proj.Directory)
 		}
-	}
 
-	// Fail if directory already exists
-	if _, err := os.Stat(proj.Directory); !os.IsNotExist(err) {
-		utils.Abort("%s already exists", proj.Directory)
-	}
-
-	if err := utils.MkdirAll(proj.Directory); err != nil {
-		utils.Abort("directory cannot be created: %s", proj.Directory)
+		if err := utils.MkdirAll(proj.Directory); err != nil {
+			utils.Abort("directory cannot be created: %s", proj.Directory)
+		}
 	}
 
 	// Write the proj files
