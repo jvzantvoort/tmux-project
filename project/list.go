@@ -38,7 +38,7 @@ func PrintFullList() {
 	active, _ := tmux.ListActive()
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "Active", "Description", "Directory", "Sane"})
+	table.Header([]string{"Name", "Active", "Description", "Directory", "Sane"})
 
 	for _, sessionname := range ListConfigs() {
 		sessp := NewProject(sessionname)
@@ -67,8 +67,6 @@ func PrintFullList() {
 
 	}
 
-	table.SetHeaderLine(true)
-	table.SetBorder(false)
 	table.Render()
 
 }
