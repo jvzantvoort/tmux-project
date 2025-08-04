@@ -65,9 +65,7 @@ func PrintHeader(data [][]string) {
 	infNameCol := color.New(InfoNameColor)
 	infValCol := color.New(InfoValueColor)
 	table := tablewriter.NewWriter(os.Stdout)
-	// table.SetHeader([]string{"Name", "Value"})
-	// table.SetHeaderLine(true)
-	table.SetBorder(true)
+	table.Header([]string{"Name", "Value"})
 	for _, slice := range data {
 		table.Append([]string{infNameCol.Sprint(slice[0]), infValCol.Sprint(slice[1])})
 	}
@@ -123,8 +121,7 @@ func main() {
 	for _, chapter := range chapters {
 		printTitle(chapter)
 		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"Name", "Status", "Branch"})
-		table.SetBorder(false)
+		table.Header([]string{"Name", "Status", "Branch"})
 		for _, proj := range brojects {
 			if chapter == proj.Chapter {
 				table.Append(proj.GetFields())

@@ -31,7 +31,7 @@ func ListProjectTypeConfigs() error {
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "SetupActions", "Targets", "Repos", "ConfigDir", "Pattern"})
+	table.Header([]string{"Name", "SetupActions", "Targets", "Repos", "ConfigDir", "Pattern"})
 
 	for _, item := range ptconfigs {
 		cols := []string{}
@@ -43,8 +43,6 @@ func ListProjectTypeConfigs() error {
 		cols = append(cols, item.Pattern)
 		table.Append(cols)
 	}
-	table.SetHeaderLine(true)
-	table.SetBorder(false)
 	table.Render()
 
 	return nil
