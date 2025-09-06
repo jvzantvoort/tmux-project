@@ -35,14 +35,19 @@ jobs:
         run: |
           go mod download
 
-      - name: Release
-        uses: goreleaser/goreleaser-action@v2
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
         with:
-          version: v1.5.0
-          args: release --rm-dist
+          # either 'goreleaser' (default) or 'goreleaser-pro'
+          distribution: goreleaser
+          # 'latest', 'nightly', or a semver
+          version: "~> v2"
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#
+          # Your GoReleaser Pro key, if you are using the 'goreleaser-pro' distribution
+          # GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
+
 #      - name: Prepare build directory
 #        run: |
 #          mkdir -p build/${{ matrix.goos }}.${{ matrix.goarch }}
