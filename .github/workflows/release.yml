@@ -1,8 +1,13 @@
 name: Release
 
+#on:
+#  release:
+#    types: [published]
+
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - "tmux-project-*"
 
 jobs:
   release:
@@ -11,13 +16,13 @@ jobs:
 
     name: Release tmux-project
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        goos: [linux, darwin]
-        goarch: [386, amd64, arm64]
-        exclude:
-          - goos: darwin
-            goarch: 386
+#    strategy:
+#      matrix:
+#        goos: [linux, darwin]
+#        goarch: [386, amd64, arm64]
+#        exclude:
+#          - goos: darwin
+#            goarch: 386
 
     steps:
       - name: Checkout code
@@ -30,34 +35,42 @@ jobs:
         run: |
           go mod download
 
-      - name: Prepare build directory
-        run: |
-          mkdir -p build/${{ matrix.goos }}.${{ matrix.goarch }}
-
-      - name: Build
-        env:
-          GOOS: ${{ matrix.goos }}
-          GOARCH: ${{ matrix.goarch }}
-        run: |
-          find cmd -maxdepth 1 -mindepth 1 -type d -printf "%f\n" | \
-            while read -r target; do \
-             CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch  }} go build -trimpath -o $GITHUB_WORKSPACE/build/${{ matrix.goos }}.${{ matrix.goarch }} ./cmd/${target}; \
-            done
-          cp tmux-project-update $GITHUB_WORKSPACE/build/${{ matrix.goos }}.${{ matrix.goarch }}/tmux-project-update
-
-      - name: Create package
-        id: package
-        run: |
-          PACKAGE_NAME=tmux-project.${GITHUB_REF#refs/tags/tmux-project-}.${{ matrix.goos }}.${{ matrix.goarch }}.tar.gz
-          tar -czvf $PACKAGE_NAME -C build/${{ matrix.goos }}.${{ matrix.goarch }} .
-          echo ::set-output name=name::${PACKAGE_NAME}
-
-      - name: Upload asset
-        uses: actions/upload-release-asset@v1
+      - name: Release
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          version: v1.5.0
+          args: release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./${{ steps.package.outputs.name }}
-          asset_name: ${{ steps.package.outputs.name }}
-          asset_content_type: application/gzip
+#
+#      - name: Prepare build directory
+#        run: |
+#          mkdir -p build/${{ matrix.goos }}.${{ matrix.goarch }}
+#
+#      - name: Build
+#        env:
+#          GOOS: ${{ matrix.goos }}
+#          GOARCH: ${{ matrix.goarch }}
+#        run: |
+#          find cmd -maxdepth 1 -mindepth 1 -type d -printf "%f\n" | \
+#            while read -r target; do \
+#             CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch  }} go build -trimpath -o $GITHUB_WORKSPACE/build/${{ matrix.goos }}.${{ matrix.goarch }} ./cmd/${target}; \
+#            done
+#          cp tmux-project-update $GITHUB_WORKSPACE/build/${{ matrix.goos }}.${{ matrix.goarch }}/tmux-project-update
+#
+#      - name: Create package
+#        id: package
+#        run: |
+#          PACKAGE_NAME=tmux-project.${GITHUB_REF#refs/tags/tmux-project-}.${{ matrix.goos }}.${{ matrix.goarch }}.tar.gz
+#          tar -czvf $PACKAGE_NAME -C build/${{ matrix.goos }}.${{ matrix.goarch }} .
+#          echo ::set-output name=name::${PACKAGE_NAME}
+#
+#      - name: Upload asset
+#        uses: actions/upload-release-asset@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          upload_url: ${{ github.event.release.upload_url }}
+#          asset_path: ./${{ steps.package.outputs.name }}
+#          asset_name: ${{ steps.package.outputs.name }}
+#          asset_content_type: application/gzip
