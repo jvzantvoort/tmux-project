@@ -15,6 +15,10 @@ before:
     # you may remove this if you don't need go generate
     - go generate ./...
 
+git:
+  tag_sort: -version:refname
+  prerelease_suffix: "-"
+
 builds:
   - main: ./cmd/proj_descr
     id: "proj_descr"
@@ -45,7 +49,7 @@ archives:
   - formats: [tar.gz]
     # this name template makes the OS and Arch compatible with the results of `uname`.
     name_template: >-
-      {{ .ProjectName }}_
+      tmux-project_
       {{- title .Os }}_
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "386" }}i386
