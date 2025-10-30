@@ -310,9 +310,6 @@ var (
 			Foreground(lipgloss.Color("241")).
 			MarginTop(1)
 	
-	errorStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("196")).
-			Bold(true)
 	
 	messageStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("82")).

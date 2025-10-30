@@ -11,7 +11,7 @@ func TestNewQueue(t *testing.T) {
 		t.Fatal("NewQueue returned nil")
 	}
 
-	if queue.Queue != nil && len(queue.Queue) != 0 {
+	if len(queue.Queue) != 0 {
 		t.Errorf("New queue should be empty, got %d items", len(queue.Queue))
 	}
 }
