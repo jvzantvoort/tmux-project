@@ -1,0 +1,19 @@
+Launch an interactive Terminal User Interface (TUI) for managing tmux-project.
+
+The TUI provides a visual interface for:
+  - Browsing and selecting projects
+  - Editing project settings (name, directory, description, type)
+  - Managing global configuration
+  - Creating, archiving, and removing projects
+  - Starting tmux sessions
+
+Navigation:
+  - Arrow keys / j,k: Move up/down
+  - Enter: Select/Edit
+  - Tab: Switch between panels
+  - Esc: Go back
+  - q: Quit
+
+Examples:
+  tmux-project tui          # Launch TUI
+  tmux-project tui -v       # Launch with verbose logging

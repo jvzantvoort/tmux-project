@@ -37,7 +37,10 @@ func (q *Queue) Add(cwd, command string) {
 func (q *Queue) Run() {
 	for _, item := range q.Queue {
 		wg.Add(1)
-		go item.Run()
+		go func(el QueueElement) {
+			defer wg.Done()
+			el.Run()
+		}(item)
 	}
 	wg.Wait()
 }
@@ -48,7 +51,6 @@ func NewQueue() *Queue {
 
 // Run runs an item
 func (e QueueElement) Run() {
-	defer wg.Done() // lower counter
 	defer cleanup() // handle panics
 
 	stdout_list, stderr_list, eerror := Exec(e.Cwd, e.Command)

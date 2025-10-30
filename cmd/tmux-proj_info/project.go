@@ -24,6 +24,12 @@ func DirDepthMap(projdir string) (map[string]int, error) {
 		err := inerr
 		if err != nil {
 			utils.Errorf("this passed an error: %q", err)
+			return err // Return error to stop walking
+		}
+
+		// Check for nil FileInfo
+		if fi == nil {
+			return nil
 		}
 
 		curdepth := strings.Count(path, string(os.PathSeparator)) - reldepth - 1 // -1 to not count the project directory itself
