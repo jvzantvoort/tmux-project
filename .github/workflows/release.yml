@@ -1,48 +1,33 @@
 name: Release
 
-#on:
-#  release:
-#    types: [published]
-
 on:
   push:
+    # run this workflow only when tags that start with tmux-project- are pushed
     tags:
-      - "tmux-project-*"
+      - 'tmux-project-*'
 
 jobs:
   release:
     permissions:
-      contents: write  # to upload release asset (actions/upload-release-asset)
+      contents: write
 
     name: Release tmux-project
     runs-on: ubuntu-latest
-#    strategy:
-#      matrix:
-#        goos: [linux, darwin]
-#        goarch: [386, amd64, arm64]
-#        exclude:
-#          - goos: darwin
-#            goarch: 386
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
+          # ensure tags and full history are available to goreleaser
           fetch-depth: 0
           tags: true
+          # check out the exact ref that triggered the workflow (the tag)
           ref: ${{ github.ref }}
 
-      - name: Extract version from tag
-        id: version
-        run: |
-          # Extract version from tag (tmux-project-X.Y.Z -> vX.Y.Z)
-          TAG_NAME="${GITHUB_REF#refs/tags/}"
-          VERSION="${TAG_NAME#tmux-project-}"
-          echo "version=v${VERSION}" >> $GITHUB_OUTPUT
-          echo "Extracted version: v${VERSION} from tag: ${TAG_NAME}"
-
-      - name: Set up Go
-        uses: actions/setup-go@v2
+      - name: Set up Go (if your build needs it)
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
 
       - name: Download dependencies
         run: |
@@ -51,45 +36,7 @@ jobs:
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
-          # either 'goreleaser' (default) or 'goreleaser-pro'
-          distribution: goreleaser
-          # 'latest', 'nightly', or a semver
-          version: "~> v2"
-          args: release --clean
+          version: latest
+          args: release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GORELEASER_CURRENT_TAG: ${{ steps.version.outputs.version }}
-          # Your GoReleaser Pro key, if you are using the 'goreleaser-pro' distribution
-          # GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
-
-#      - name: Prepare build directory
-#        run: |
-#          mkdir -p build/${{ matrix.goos }}.${{ matrix.goarch }}
-#
-#      - name: Build
-#        env:
-#          GOOS: ${{ matrix.goos }}
-#          GOARCH: ${{ matrix.goarch }}
-#        run: |
-#          find cmd -maxdepth 1 -mindepth 1 -type d -printf "%f\n" | \
-#            while read -r target; do \
-#             CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch  }} go build -trimpath -o $GITHUB_WORKSPACE/build/${{ matrix.goos }}.${{ matrix.goarch }} ./cmd/${target}; \
-#            done
-#          cp tmux-project-update $GITHUB_WORKSPACE/build/${{ matrix.goos }}.${{ matrix.goarch }}/tmux-project-update
-#
-#      - name: Create package
-#        id: package
-#        run: |
-#          PACKAGE_NAME=tmux-project.${GITHUB_REF#refs/tags/tmux-project-}.${{ matrix.goos }}.${{ matrix.goarch }}.tar.gz
-#          tar -czvf $PACKAGE_NAME -C build/${{ matrix.goos }}.${{ matrix.goarch }} .
-#          echo ::set-output name=name::${PACKAGE_NAME}
-#
-#      - name: Upload asset
-#        uses: actions/upload-release-asset@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
-#          upload_url: ${{ github.event.release.upload_url }}
-#          asset_path: ./${{ steps.package.outputs.name }}
-#          asset_name: ${{ steps.package.outputs.name }}
-#          asset_content_type: application/gzip
