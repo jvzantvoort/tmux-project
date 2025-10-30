@@ -49,7 +49,12 @@ func (g GitCmd) exec(args ...string) ([]string, error) {
 	stdout, _ := cmd.StdoutPipe()
 	cmd.Dir = g.cwd
 	err := cmd.Start()
-	utils.ErrorExit(err)
+	if err != nil {
+		utils.Errorf(strings.Join(cmnd, " "))
+		utils.Errorf("  command failed to start, %v", err)
+		utils.Errorf("  cwd: %s", g.cwd)
+		return retv, err
+	}
 	scanner := bufio.NewScanner(stdout)
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {

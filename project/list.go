@@ -18,6 +18,13 @@ func ListConfigs() []string {
 	inputdir := config.SessionDir()
 	targets, err := os.ReadDir(inputdir)
 	if err != nil {
+		// If directory doesn't exist, create it and return empty list
+		if os.IsNotExist(err) {
+			if err := os.MkdirAll(inputdir, 0755); err != nil {
+				utils.Fatalf("failed to create session directory: %s", err)
+			}
+			return retv
+		}
 		utils.Fatalf("%s", err)
 		return retv
 	}
