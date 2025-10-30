@@ -24,10 +24,19 @@ jobs:
           # check out the exact ref that triggered the workflow (the tag)
           ref: ${{ github.ref }}
 
+      - name: Extract version from tag
+        id: version
+        run: |
+          # Extract version from tag (tmux-project-X.Y.Z -> vX.Y.Z)
+          TAG_NAME="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG_NAME#tmux-project-}"
+          echo "version=v${VERSION}" >> $GITHUB_OUTPUT
+          echo "Extracted version: v${VERSION} from tag: ${TAG_NAME}"
+
       - name: Set up Go (if your build needs it)
         uses: actions/setup-go@v4
         with:
-          go-version: '1.21'
+          go-version: '1.24'
 
       - name: Download dependencies
         run: |
