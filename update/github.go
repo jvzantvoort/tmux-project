@@ -37,7 +37,6 @@ func extractFields(release *github.RepositoryRelease) []map[string]string {
 }
 
 func getLatest(user, repo string) ([]map[string]string, error) {
-	retv := []map[string]string{}
 	client := github.NewClient(nil)
 
 	ctx := context.Background()
@@ -46,6 +45,7 @@ func getLatest(user, repo string) ([]map[string]string, error) {
 	// 3. Handle errors
 	if err != nil {
 		log.Fatalf("Failed to get release: %v", err)
+		retv := []map[string]string{}
 		return retv, err
 	}
 
@@ -65,5 +65,5 @@ func getBrowserDownloadURL() (string, error) {
 			return row["BrowserDownloadURL"], nil
 		}
 	}
-	return "", fmt.Errorf("Cannot find download for %s %s", goos, goarch)
+	return "", fmt.Errorf("cannot find download for %s %s", goos, goarch)
 }
