@@ -1,11 +1,14 @@
 package project
 
 import (
+	"errors"
+	"fmt"
 	"go/build"
 	"os"
 	"os/user"
 	"regexp"
 	"strings"
+	"time"
 
 	errno "github.com/jvzantvoort/tmux-project/errors"
 	"github.com/jvzantvoort/tmux-project/git"
@@ -250,5 +253,63 @@ func (proj *Project) InitializeProject(projtype string, safe bool) error {
 
 	queue.Run()
 
+	if !proj.Exists {
+		now := time.Now().Format(time.RFC3339)
+		proj.CreationTime = now
+		proj.LastActivity = now
+	}
+
 	return proj.Save()
+}
+
+// TimeSinceLastActivity calculates the duration between LastActivity and now
+func (proj *Project) TimeSinceLastActivity() (time.Duration, error) {
+	if proj.LastActivity == "" {
+		return 0, errors.New("LastActivity is empty")
+	}
+
+	lastActivity, err := time.Parse(time.RFC3339, proj.LastActivity)
+	if err != nil {
+		return 0, err
+	}
+
+	return time.Since(lastActivity), nil
+}
+
+// FormatDuration converts a duration into a human-readable format
+func FormatDuration(d time.Duration) string {
+	if d < 0 {
+		return "0 seconds"
+	}
+
+	days := int(d.Hours() / 24)
+	hours := int(d.Hours()) % 24
+	minutes := int(d.Minutes()) % 60
+	seconds := int(d.Seconds()) % 60
+
+	if days > 0 {
+		if days == 1 {
+			return "1 day"
+		}
+		return fmt.Sprintf("%d days", days)
+	}
+
+	if hours > 0 {
+		if hours == 1 {
+			return "1 hour"
+		}
+		return fmt.Sprintf("%d hours", hours)
+	}
+
+	if minutes > 0 {
+		if minutes == 1 {
+			return "1 minute"
+		}
+		return fmt.Sprintf("%d minutes", minutes)
+	}
+
+	if seconds == 1 {
+		return "1 second"
+	}
+	return fmt.Sprintf("%d seconds", seconds)
 }

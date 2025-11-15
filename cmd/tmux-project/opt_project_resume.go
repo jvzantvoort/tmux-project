@@ -40,6 +40,9 @@ func handleProjectResumeCmd(cmd *cobra.Command, args []string) {
 	}
 
 	proj := project.NewProject(sessionname)
+	if err := proj.Open(); err == nil {
+		proj.UpdateLastActivity()
+	}
 	configfile := filepath.Join(config.SessionDir(), proj.Name+".rc")
 
 	tmux.Resume(sessionname, configfile)
