@@ -107,11 +107,12 @@ func TestUpdateProjectFromInputs(t *testing.T) {
 		ProjectType: "golang",
 		Description: "original",
 		Directory:   "/original",
+		Status:      "active",
 	}
 	
 	m := &Model{
 		editingProject: proj,
-		textInputs:     make([]textinput.Model, 4),
+		textInputs:     make([]textinput.Model, 5),
 	}
 	
 	// Set mock input values
@@ -119,6 +120,7 @@ func TestUpdateProjectFromInputs(t *testing.T) {
 	m.textInputs[1].SetValue("/new/directory")
 	m.textInputs[2].SetValue("new description")
 	m.textInputs[3].SetValue("python")
+	m.textInputs[4].SetValue("archived")
 	
 	// Call the function
 	m.updateProjectFromInputs()
@@ -135,5 +137,8 @@ func TestUpdateProjectFromInputs(t *testing.T) {
 	}
 	if proj.ProjectType != "python" {
 		t.Errorf("ProjectType not updated: got %q, want %q", proj.ProjectType, "python")
+	}
+	if proj.Status != "archived" {
+		t.Errorf("Status not updated: got %q, want %q", proj.Status, "archived")
 	}
 }
