@@ -23,24 +23,44 @@ builds:
   - main: ./cmd/proj_descr
     id: "proj_descr"
     binary: proj_descr
+    ldflags:
+      - -s -w
+      - -X github.com/jvzantvoort/tmux-project/version.Version={{.Version}}
+      - -X github.com/jvzantvoort/tmux-project/version.Commit={{.Commit}}
+      - -X github.com/jvzantvoort/tmux-project/version.BuildTime={{.Date}}
     goos:
       - linux
       - darwin
   - main: ./cmd/proj_info
     id: "proj_info"
     binary: proj_info
+    ldflags:
+      - -s -w
+      - -X github.com/jvzantvoort/tmux-project/version.Version={{.Version}}
+      - -X github.com/jvzantvoort/tmux-project/version.Commit={{.Commit}}
+      - -X github.com/jvzantvoort/tmux-project/version.BuildTime={{.Date}}
     goos:
       - linux
       - darwin
   - main: ./cmd/resume
     id: "resume"
     binary: resume
+    ldflags:
+      - -s -w
+      - -X github.com/jvzantvoort/tmux-project/version.Version={{.Version}}
+      - -X github.com/jvzantvoort/tmux-project/version.Commit={{.Commit}}
+      - -X github.com/jvzantvoort/tmux-project/version.BuildTime={{.Date}}
     goos:
       - linux
       - darwin
   - main: ./cmd/tmux-project
     id: "tmux-project"
     binary: tmux-project
+    ldflags:
+      - -s -w
+      - -X github.com/jvzantvoort/tmux-project/version.Version={{.Version}}
+      - -X github.com/jvzantvoort/tmux-project/version.Commit={{.Commit}}
+      - -X github.com/jvzantvoort/tmux-project/version.BuildTime={{.Date}}
     goos:
       - linux
       - darwin
