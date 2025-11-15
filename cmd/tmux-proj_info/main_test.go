@@ -223,5 +223,3 @@ func TestNewProjectDef_SamePath(t *testing.T) {
 		t.Errorf("ProjectDir should be /tmp/project, got %s", pd.ProjectDir)
 	}
 }
-
-

@@ -14,13 +14,13 @@ import (
 func TestTUIEditPersistence(t *testing.T) {
 	// Create a unique test project name
 	testName := "test-tui-persist"
-	
+
 	// Ensure cleanup
 	defer func() {
 		configFile := project.NewProject(testName).ProjectConfigFile()
 		os.Remove(configFile)
 	}()
-	
+
 	// Step 1: Create initial project
 	proj := &project.Project{
 		Name:        testName,
@@ -28,45 +28,45 @@ func TestTUIEditPersistence(t *testing.T) {
 		Description: "Original description",
 		Directory:   "/tmp/original-dir",
 	}
-	
+
 	if err := proj.Save(); err != nil {
 		t.Fatalf("Failed to create initial project: %v", err)
 	}
-	
+
 	// Step 2: Load the project (simulating TUI loading)
 	loadedProj := project.NewProject(testName)
 	if err := loadedProj.Open(); err != nil {
 		t.Fatalf("Failed to load project: %v", err)
 	}
-	
+
 	// Verify initial values
 	if loadedProj.Description != "Original description" {
-		t.Errorf("Initial description mismatch: got %q, want %q", 
+		t.Errorf("Initial description mismatch: got %q, want %q",
 			loadedProj.Description, "Original description")
 	}
-	
+
 	// Step 3: Modify values (simulating updateProjectFromInputs())
 	loadedProj.Description = "Updated via TUI"
 	loadedProj.Directory = "/tmp/updated-dir"
 	loadedProj.ProjectType = "python"
-	
+
 	// Step 4: Save (simulating 's' key press)
 	if err := loadedProj.Save(); err != nil {
 		t.Fatalf("Failed to save project: %v", err)
 	}
-	
+
 	// Step 5: Verify file was written correctly
 	configFile := loadedProj.ProjectConfigFile()
 	rawData, err := os.ReadFile(configFile)
 	if err != nil {
 		t.Fatalf("Failed to read config file: %v", err)
 	}
-	
+
 	var fileData map[string]interface{}
 	if err := json.Unmarshal(rawData, &fileData); err != nil {
 		t.Fatalf("Failed to parse config file: %v", err)
 	}
-	
+
 	// Verify JSON content
 	if desc, ok := fileData["description"].(string); !ok || desc != "Updated via TUI" {
 		t.Errorf("File description mismatch: got %v, want %q", fileData["description"], "Updated via TUI")
@@ -77,24 +77,24 @@ func TestTUIEditPersistence(t *testing.T) {
 	if ptype, ok := fileData["type"].(string); !ok || ptype != "python" {
 		t.Errorf("File type mismatch: got %v, want %q", fileData["type"], "python")
 	}
-	
+
 	// Step 6: Load again to verify persistence
 	verifyProj := project.NewProject(testName)
 	if err := verifyProj.Open(); err != nil {
 		t.Fatalf("Failed to re-load project: %v", err)
 	}
-	
+
 	// Verify all changes persisted
 	if verifyProj.Description != "Updated via TUI" {
-		t.Errorf("Description not persisted: got %q, want %q", 
+		t.Errorf("Description not persisted: got %q, want %q",
 			verifyProj.Description, "Updated via TUI")
 	}
 	if verifyProj.Directory != "/tmp/updated-dir" {
-		t.Errorf("Directory not persisted: got %q, want %q", 
+		t.Errorf("Directory not persisted: got %q, want %q",
 			verifyProj.Directory, "/tmp/updated-dir")
 	}
 	if verifyProj.ProjectType != "python" {
-		t.Errorf("ProjectType not persisted: got %q, want %q", 
+		t.Errorf("ProjectType not persisted: got %q, want %q",
 			verifyProj.ProjectType, "python")
 	}
 }
@@ -109,22 +109,22 @@ func TestUpdateProjectFromInputs(t *testing.T) {
 		Directory:   "/original",
 		Status:      "active",
 	}
-	
+
 	m := &Model{
 		editingProject: proj,
 		textInputs:     make([]textinput.Model, 5),
 	}
-	
+
 	// Set mock input values
 	m.textInputs[0].SetValue("new-name")
 	m.textInputs[1].SetValue("/new/directory")
 	m.textInputs[2].SetValue("new description")
 	m.textInputs[3].SetValue("python")
 	m.textInputs[4].SetValue("archived")
-	
+
 	// Call the function
 	m.updateProjectFromInputs()
-	
+
 	// Verify updates
 	if proj.Name != "new-name" {
 		t.Errorf("Name not updated: got %q, want %q", proj.Name, "new-name")

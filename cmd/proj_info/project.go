@@ -1,12 +1,12 @@
 package main
 
 import (
-//	"io/fs"
+	//	"io/fs"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
-	"sort"
 
 	"github.com/jvzantvoort/tmux-project/utils"
 )
@@ -43,7 +43,6 @@ func DirDepthMap(projdir string) (map[string]int, error) {
 	}
 	return retv, nil
 }
-
 
 // walkAllProjects walks through the project directory and returns a list of all projects found.
 // It limits the depth of the search to avoid going too deep into subdirectories.
