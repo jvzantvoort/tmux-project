@@ -32,7 +32,7 @@ jobs:
 
       - name: Build
         run: |
-          ./build.sh ${{ matrix.goos }} ${{ matrix.goarch  }} $GITHUB_WORKSPACE/build
+          ./build.sh buildr ${{ matrix.goos }} ${{ matrix.goarch  }} $GITHUB_WORKSPACE/build
 
       - name: Create package
         id: package
