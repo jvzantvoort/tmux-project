@@ -1,3 +1,6 @@
+// Package version provides version information for the tmux-project application.
+// Version information can be set at build time using ldflags or will be derived
+// from build metadata.
 package version
 
 import (

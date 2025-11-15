@@ -1,3 +1,6 @@
+// Package project provides core functionality for managing tmux-based projects.
+// It handles project creation, configuration, archiving, and lifecycle management
+// including integration with git repositories and tmux sessions.
 package project
 
 import (

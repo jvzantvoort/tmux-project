@@ -1,3 +1,5 @@
+// Package git provides utilities for interacting with git repositories,
+// including cloning, checking out branches, and managing repository state.
 package git
 
 import (

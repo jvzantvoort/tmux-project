@@ -1,3 +1,5 @@
+// Package utils provides common utility functions for the tmux-project application,
+// including logging helpers, file operations, and command execution utilities.
 package utils
 
 import (
@@ -8,17 +10,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// FunctionName returns the name of the function that called it.
-// func FunctionName(indent ...int) string {
-// 	pc, _, _, _ := runtime.Caller(1)
-// 	elements := strings.Split(runtime.FuncForPC(pc).Name(), ".")
-// 	retv := elements[len(elements)-1]
-// 	if len(indent) != 0 {
-// 		retv = fmt.Sprintf("%s%s", strings.Repeat(" ", indent[0]), retv)
-// 	}
-// 	return retv
-// }
-
+// LogIfError logs an error message if the provided message is not nil.
+// It includes the calling function name in the log message.
 func LogIfError(msg interface{}) {
 	if msg == nil {
 		return
@@ -28,7 +21,7 @@ func LogIfError(msg interface{}) {
 	log.Errorf("%s: return not nil: %s", elements[len(elements)-1], msg)
 }
 
-// LogStart logs the start of a function
+// LogStart logs the start of a function execution with the function name
 func LogStart() {
 	pc, _, _, _ := runtime.Caller(1)
 	elements := strings.Split(runtime.FuncForPC(pc).Name(), ".")
@@ -36,13 +29,14 @@ func LogStart() {
 
 }
 
-// LogEnd logs the end of a function
+// LogEnd logs the end of a function execution with the function name
 func LogEnd() {
 	pc, _, _, _ := runtime.Caller(1)
 	elements := strings.Split(runtime.FuncForPC(pc).Name(), ".")
 	log.Debugf("%s: end", elements[len(elements)-1])
 }
 
+// LogArgument logs a function argument with its name, type, and value
 func LogArgument(name, input interface{}) {
 
 	pc, _, _, _ := runtime.Caller(1)
@@ -53,6 +47,7 @@ func LogArgument(name, input interface{}) {
 
 }
 
+// LogVariable logs a variable with its name, type, and value
 func LogVariable(name, input interface{}) {
 
 	pc, _, _, _ := runtime.Caller(1)
@@ -63,7 +58,7 @@ func LogVariable(name, input interface{}) {
 
 }
 
-// Debugf logs a debug message with the name of the function that called it
+// Debugf logs a debug message prefixed with the calling function name
 func Debugf(format string, args ...interface{}) {
 
 	pc, _, _, _ := runtime.Caller(1)
@@ -73,7 +68,7 @@ func Debugf(format string, args ...interface{}) {
 
 }
 
-// Infof logs an info message with the name of the function that called it
+// Infof logs an info message prefixed with the calling function name
 func Infof(format string, args ...interface{}) {
 
 	pc, _, _, _ := runtime.Caller(1)
@@ -83,7 +78,7 @@ func Infof(format string, args ...interface{}) {
 
 }
 
-// Errorf logs an error message with the name of the function that called it
+// Errorf logs an error message prefixed with the calling function name
 func Errorf(format string, args ...interface{}) {
 
 	pc, _, _, _ := runtime.Caller(1)
@@ -93,7 +88,7 @@ func Errorf(format string, args ...interface{}) {
 
 }
 
-// Warningf logs an warning message with the name of the function that called it
+// Warningf logs a warning message prefixed with the calling function name
 func Warningf(format string, args ...interface{}) {
 
 	pc, _, _, _ := runtime.Caller(1)
@@ -103,7 +98,7 @@ func Warningf(format string, args ...interface{}) {
 
 }
 
-// Fatalf logs a fatal error message with the name of the function that called it
+// Fatalf logs a fatal error message prefixed with the calling function name and exits
 func Fatalf(format string, args ...interface{}) {
 
 	pc, _, _, _ := runtime.Caller(1)

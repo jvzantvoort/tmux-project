@@ -16,7 +16,7 @@ const (
 	CBORDER        string = "+"
 )
 
-// ErrorExit prints the msg with the prefix 'Error:' and exits with error code 1. If the msg is nil, it does nothing.
+// ErrorExit prints an error message and exits with code 1 if msg is not nil
 func ErrorExit(msg interface{}) {
 	if msg != nil {
 		fmt.Fprintln(os.Stderr, "Error:", msg)
@@ -24,6 +24,7 @@ func ErrorExit(msg interface{}) {
 	}
 }
 
+// Abort prints a formatted error message in a box and exits with code 1
 func Abort(format string, input ...interface{}) {
 	msg := fmt.Sprintf(format, input...)
 

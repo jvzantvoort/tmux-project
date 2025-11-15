@@ -13,8 +13,8 @@ import (
 	"github.com/jvzantvoort/tmux-project/utils"
 )
 
-// Write json output to an [io.Writer] compatible handle. It returns nil or the
-// error of [json.MarshalIndent]
+// Write serializes the project to JSON format and writes it to the provided io.Writer.
+// It returns nil on success or an error from json.MarshalIndent.
 func (proj Project) Write(writer io.Writer) error {
 	utils.LogStart()
 	defer utils.LogEnd()
@@ -29,7 +29,7 @@ func (proj Project) Write(writer io.Writer) error {
 	return err
 }
 
-// Read session content from a [io.Reader] object.
+// Read deserializes project data from an io.Reader and populates the project struct.
 func (proj *Project) Read(reader io.Reader) error {
 	utils.LogStart()
 	defer utils.LogEnd()
@@ -45,10 +45,13 @@ func (proj *Project) Read(reader io.Reader) error {
 	return nil
 }
 
+// ProjectConfigFile returns the full path to the project's configuration file.
 func (proj Project) ProjectConfigFile() string {
 	return filepath.Join(config.SessionDir(), proj.Name+".json")
 }
 
+// Open reads and loads an existing project configuration from disk.
+// Returns ErrProjectNotExist if the project file doesn't exist.
 func (proj *Project) Open() error {
 	utils.LogStart()
 	defer utils.LogEnd()
@@ -71,7 +74,7 @@ func (proj *Project) Open() error {
 
 }
 
-// Write session configuration to a projectfile
+// Save writes the project configuration to disk in the session directory.
 func (proj Project) Save() error {
 	utils.LogStart()
 	defer utils.LogEnd()
@@ -93,7 +96,7 @@ func (proj Project) Save() error {
 	return proj.Write(filehandle)
 }
 
-// UpdateLastActivity updates the LastActivity timestamp and saves the project
+// UpdateLastActivity updates the LastActivity timestamp to the current time and saves the project.
 func (proj *Project) UpdateLastActivity() error {
 	utils.LogStart()
 	defer utils.LogEnd()
@@ -101,5 +104,3 @@ func (proj *Project) UpdateLastActivity() error {
 	proj.LastActivity = time.Now().Format(time.RFC3339)
 	return proj.Save()
 }
-
-// vim: noexpandtab filetype=go

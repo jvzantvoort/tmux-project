@@ -1,3 +1,6 @@
+// Package tmux provides utilities for managing tmux sessions and integrating
+// with the tmux terminal multiplexer. It handles session creation, attachment,
+// and listing active sessions.
 package tmux
 
 import (
@@ -9,6 +12,7 @@ import (
 	"github.com/jvzantvoort/tmux-project/utils"
 )
 
+// New creates a new tmux session with the specified name and configuration file
 func New(name, configfile string) {
 	command := []string{"-f", configfile, "new", "-s", name}
 
@@ -19,6 +23,7 @@ func New(name, configfile string) {
 	utils.ErrorExit(cmd.Run())
 }
 
+// Attach attaches to an existing tmux session with the specified name and configuration
 func Attach(name, configfile string) {
 	command := []string{"-f", configfile, "attach", "-d", "-t", name}
 
@@ -29,6 +34,7 @@ func Attach(name, configfile string) {
 	utils.ErrorExit(cmd.Run())
 }
 
+// Resume attaches to an existing tmux session if it exists, otherwise creates a new one
 func Resume(name, configfile string) {
 	active, err := ListActive()
 	utils.ErrorExit(err)
@@ -42,6 +48,7 @@ func Resume(name, configfile string) {
 	New(name, configfile)
 }
 
+// ListActive returns a list of currently active tmux session names
 func ListActive() ([]string, error) {
 	command := fmt.Sprintf("%s ls -F \"#{session_name}\"", utils.Which("tmux"))
 	cwd, _ := os.UserHomeDir()

@@ -18,7 +18,7 @@ func cleanup() {
 	}
 }
 
-// QueueElement represents an item in the queue
+// QueueElement represents a git repository clone operation with destination and branch
 type QueueElement struct {
 	Url         string
 	Basedir     string
@@ -26,12 +26,12 @@ type QueueElement struct {
 	Branch      string
 }
 
-// Queue represents a queue of items
+// Queue manages concurrent git repository clone operations
 type Queue struct {
 	Queue []QueueElement
 }
 
-// Add adds an item to the queue
+// Add adds a repository clone operation to the queue
 func (q *Queue) Add(url, basedir, destination, branch string) {
 	q.Queue = append(q.Queue, QueueElement{
 		Url:         url,
@@ -41,7 +41,7 @@ func (q *Queue) Add(url, basedir, destination, branch string) {
 	})
 }
 
-// Run runs the queue, waiting for all items to finish
+// Run executes all queued git operations concurrently
 func (q *Queue) Run() {
 	for _, item := range q.Queue {
 		wg.Add(1)
@@ -50,15 +50,15 @@ func (q *Queue) Run() {
 	wg.Wait()
 }
 
-// NewQueue creates a new queue
+// NewQueue creates a new empty git operation queue
 func NewQueue() *Queue {
 	return &Queue{}
 }
 
-// Run runs an item
+// Run executes a single git clone and checkout operation
 func (e QueueElement) Run() {
-	defer wg.Done() // lower counter
-	defer cleanup() // handle panics
+	defer wg.Done()
+	defer cleanup()
 
 	obj := NewGitCmd(e.Basedir)
 

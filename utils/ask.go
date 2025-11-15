@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// Ask prompts the user with a question and returns their input as a string
 func Ask(question string) string {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Printf("%s: ", question)
