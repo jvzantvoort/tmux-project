@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/jvzantvoort/tmux-project/messages"
+	"github.com/jvzantvoort/tmux-project/version"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -18,9 +19,10 @@ var (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   messages.GetUse("root"),
-	Short: messages.GetShort("root"),
-	Long:  messages.GetLong("root"),
+	Use:     messages.GetUse("root"),
+	Short:   messages.GetShort("root"),
+	Long:    messages.GetLong("root"),
+	Version: version.GetVersion().Short(),
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

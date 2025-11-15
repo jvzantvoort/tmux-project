@@ -54,6 +54,7 @@ C_PACKAGESPATH="${C_SCRIPTDIR}/pkg"
 
 C_VERSION="$(git describe --tags --abbrev=0 2>/dev/null)"
 C_REVISION=$(git rev-parse --short HEAD)
+C_BUILDTIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 C_URL="$(git config --get remote.origin.url)"
 C_REPONAME="$(basename "${C_URL}" .git)"
 
@@ -70,8 +71,9 @@ readonly C_BUILDDIR
 
 
 LDFLAGS=""
-[[ -n "${C_VERSION}"  ]] && LDFLAGS="${LDFLAGS} -X main.version=${C_VERSION}"
-[[ -n "${C_REVISION}" ]] && LDFLAGS="${LDFLAGS} -X main.revision=${C_REVISION}"
+[[ -n "${C_VERSION}"  ]] && LDFLAGS="${LDFLAGS} -X github.com/jvzantvoort/tmux-project/version.Version=${C_VERSION}"
+[[ -n "${C_REVISION}" ]] && LDFLAGS="${LDFLAGS} -X github.com/jvzantvoort/tmux-project/version.Commit=${C_REVISION}"
+[[ -n "${C_BUILDTIME}" ]] && LDFLAGS="${LDFLAGS} -X github.com/jvzantvoort/tmux-project/version.BuildTime=${C_BUILDTIME}"
 LDFLAGS="${LDFLAGS} -w -s"
 
 # }}}
