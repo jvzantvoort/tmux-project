@@ -129,12 +129,19 @@ func main() {
 	proj_obj := project.NewProject(sessionname)
 	err = proj_obj.RefreshStruct()
 	utils.ErrorExit(err)
+	lastActivityStr := "undef"
+
+	if at, ok := proj_obj.TimeSinceLastActivity(); ok == nil {
+		lastActivityStr = project.FormatDuration(at)
+		lastActivityStr += " ago"
+	}
 
 	header := [][]string{
 		{"Sessionname", proj_obj.Name},
 		{"Projectdir", proj_obj.Directory},
 		{"Description", proj_obj.Description},
 		{"Type", proj_obj.ProjectType},
+		{"Access", lastActivityStr},
 	}
 	PrintHeader(header)
 	brojects := findAllProjects(proj_obj.Directory, *depth)

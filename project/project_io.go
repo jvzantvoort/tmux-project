@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/jvzantvoort/tmux-project/config"
 	errno "github.com/jvzantvoort/tmux-project/errors"
@@ -90,6 +91,15 @@ func (proj Project) Save() error {
 	}
 	defer filehandle.Close()
 	return proj.Write(filehandle)
+}
+
+// UpdateLastActivity updates the LastActivity timestamp and saves the project
+func (proj *Project) UpdateLastActivity() error {
+	utils.LogStart()
+	defer utils.LogEnd()
+
+	proj.LastActivity = time.Now().Format(time.RFC3339)
+	return proj.Save()
 }
 
 // vim: noexpandtab filetype=go

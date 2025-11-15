@@ -22,6 +22,8 @@ type Project struct {
 	Description    string   `json:"description"`
 	Directory      string   `json:"directory"`
 	Status         string   `json:"status"`
+	CreationTime   string   `json:"creationtime"`
+	LastActivity   string   `json:"lastactivity"`
 	SetupActions   []string `json:"setupactions"`
 	Repos          []Repo   `json:"repos"`
 	Targets        []Target `json:"targets"`
