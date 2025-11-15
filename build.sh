@@ -389,6 +389,36 @@ function do_build()
   action_dependencies
   action_build "$(go env GOOS)" "$(go env GOARCH)"
 }
+function do_buildr() {
+  shift
+  local goos="$1"; shift
+  local goarch="$1"; shift
+  local outputdir="$1"; shift
+  local dest
+  local exitcode
+  printf "goos: %s\n" "${goos}"
+  printf "goarch: %s\n" "${goarch}"
+  printf "outputdir: %s\n" "${outputdir}"
+
+  exitcode=0
+
+  while read -r target
+  do
+    dest="${outputdir}/${goos}.${goarch}"
+
+    CGO_ENABLED=0 \
+    GOOS=${goos} GOARCH=${arch} \
+      go  build -ldflags "${LDFLAGS}" \
+      -trimpath \
+      -o "${dest}/${target}" "./cmd/${target}"
+    retv="$?"
+    test_result "$retv" "    ${target}"
+    [[ "${retv}" == "0" ]] || exitcode=$((exitcode+1))
+  done < <(list_binaries)
+  test_fatal "${exitcode}" "build results"
+
+}
+
 function do_install() {
   print_title "install locally"
   action_install "$(go env GOOS)" "$(go env GOARCH)"
@@ -413,6 +443,7 @@ case "$1" in
   fmt)     do_fmt          ;;
   tags)    do_tags         ;;
   build)   do_build        ;;
+  buildr)  do_buildr "$@"      ;;
   update)  do_dependencies ;;
   install) do_install      ;;
   package) do_package      ;;

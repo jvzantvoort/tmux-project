@@ -30,20 +30,9 @@ jobs:
         run: |
           go mod download
 
-      - name: Prepare build directory
-        run: |
-          mkdir -p build/${{ matrix.goos }}.${{ matrix.goarch }}
-
       - name: Build
-        env:
-          GOOS: ${{ matrix.goos }}
-          GOARCH: ${{ matrix.goarch }}
         run: |
-          find cmd -maxdepth 1 -mindepth 1 -type d -printf "%f\n" | \
-            while read -r target; do \
-             CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch  }} go build -trimpath -o $GITHUB_WORKSPACE/build/${{ matrix.goos }}.${{ matrix.goarch }} ./cmd/${target}; \
-            done
-          cp tmux-project-update $GITHUB_WORKSPACE/build/${{ matrix.goos }}.${{ matrix.goarch }}/tmux-project-update
+          ./build.sh ${{ matrix.goos }} ${{ matrix.goarch  }} $GITHUB_WORKSPACE/build
 
       - name: Create package
         id: package
