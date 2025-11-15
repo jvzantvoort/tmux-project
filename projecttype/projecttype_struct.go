@@ -1,20 +1,23 @@
+// Package projecttype handles project type templates and configurations.
+// It provides functionality for creating, loading, and managing reusable
+// project templates with pre-defined structures and settings.
 package projecttype
 
-// Target defines a structure of a file
+// Target defines a file template that will be created for a project
 type Target struct {
 	Name        string `yaml:"name"`
 	Destination string `yaml:"destination"`
 	Mode        string `yaml:"mode"`
 }
 
-// Repo defines the struct of a (git) repository
+// Repo defines a git repository to be cloned as part of project initialization
 type Repo struct {
 	Url         string `yaml:"url"`
 	Destination string `yaml:"destination"`
 	Branch      string `yaml:"branch"`
 }
 
-// ProjectTypeConfig defines a structure of a project type
+// ProjectTypeConfig represents a reusable project template configuration
 type ProjectTypeConfig struct {
 	ProjectType    string   `yaml:"type"`
 	Description    string   `yaml:"description"`

@@ -6,6 +6,7 @@ import (
 	"os/exec"
 )
 
+// Edit opens the specified files in the user's preferred editor
 func Edit(args ...string) {
 	editor := Which(Editor)
 	cmd := exec.Command(editor, args...)

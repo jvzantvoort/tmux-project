@@ -1,3 +1,5 @@
+// Package main provides the command-line interface for tmux-project.
+// It uses the Cobra library to implement subcommands for managing tmux-based projects.
 package main
 
 import (
@@ -40,18 +42,14 @@ func init() {
 
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Verbose logging")
 
-	// Setup logging
 	log.SetFormatter(&log.TextFormatter{
 		FullTimestamp:          true,
 		DisableLevelTruncation: true,
 		TimestampFormat:        "2006-01-02 15:04:05",
 	})
 
-	// Output to stdout instead of the default stderr
-	// Can be any io.Writer, see below for File example
 	log.SetOutput(os.Stdout)
 
-	// Only log the warning severity or above.
 	log.SetLevel(log.InfoLevel)
 
 }

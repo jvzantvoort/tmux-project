@@ -19,21 +19,23 @@ func cleanup() {
 	}
 }
 
+// QueueElement represents a single command to be executed with its working directory
 type QueueElement struct {
 	Cwd     string
 	Command string
 }
 
+// Queue manages a collection of commands to be executed concurrently
 type Queue struct {
 	Queue []QueueElement
 }
 
-// Add adds an item to the queue
+// Add adds a command to the execution queue
 func (q *Queue) Add(cwd, command string) {
 	q.Queue = append(q.Queue, QueueElement{Cwd: cwd, Command: command})
 }
 
-// Run runs all items in the queue
+// Run executes all queued commands concurrently using goroutines
 func (q *Queue) Run() {
 	for _, item := range q.Queue {
 		wg.Add(1)
@@ -45,13 +47,14 @@ func (q *Queue) Run() {
 	wg.Wait()
 }
 
+// NewQueue creates and returns a new empty Queue
 func NewQueue() *Queue {
 	return &Queue{}
 }
 
-// Run runs an item
+// Run executes a single queue element command
 func (e QueueElement) Run() {
-	defer cleanup() // handle panics
+	defer cleanup()
 
 	stdout_list, stderr_list, eerror := Exec(e.Cwd, e.Command)
 	for _, stdout_line := range stdout_list {
@@ -65,7 +68,7 @@ func (e QueueElement) Run() {
 	}
 }
 
-// Exec executes a command
+// Exec executes a command in the specified working directory and returns stdout, stderr, and any error
 func Exec(cwd, args string) ([]string, []string, error) {
 	commandlist := []string{}
 	stdout_list := []string{}
@@ -112,7 +115,8 @@ func Exec(cwd, args string) ([]string, []string, error) {
 	return stdout_list, stderr_list, eerror
 }
 
-// ExecSilent execute a command but don't care too much about the result.
+// ExecSilent executes a command silently without extensive error handling,
+// useful for commands where failure is acceptable
 func ExecSilent(cwd, args string) ([]string, []string, error) {
 	commandlist := []string{}
 	stdout_list := []string{}

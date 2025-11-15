@@ -8,7 +8,8 @@ import (
 	"github.com/jvzantvoort/tmux-project/messages"
 )
 
-// SetupSessionDir setup the ~/.tmux.d directory
+// SetupSessionDir initializes the ~/.tmux.d directory with default configuration files.
+// If noexec is true, it only prints what would be created without actually creating files.
 func SetupSessionDir(noexec bool) error {
 	LogStart()
 	defer LogEnd()
