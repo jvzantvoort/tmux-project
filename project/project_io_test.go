@@ -120,7 +120,7 @@ func TestProject_SaveAndOpen(t *testing.T) {
 func TestProject_SaveTruncates(t *testing.T) {
 	// This tests the bug fix: Save() should truncate the file
 	// We'll test at the Write level since Save uses SessionDir which is hard to mock
-	
+
 	// Create a long project
 	long := Project{
 		Name:        "truncate-test",
@@ -128,14 +128,14 @@ func TestProject_SaveTruncates(t *testing.T) {
 		Description: "A very long description that takes up a lot of space in the JSON file",
 		ProjectType: "golang",
 	}
-	
+
 	var buf1 bytes.Buffer
 	err := long.Write(&buf1)
 	if err != nil {
 		t.Fatalf("First write failed: %v", err)
 	}
 	size1 := buf1.Len()
-	
+
 	// Create a short project with same name
 	short := Project{
 		Name:        "truncate-test",
@@ -143,28 +143,28 @@ func TestProject_SaveTruncates(t *testing.T) {
 		Description: "Short",
 		ProjectType: "go",
 	}
-	
+
 	var buf2 bytes.Buffer
 	err = short.Write(&buf2)
 	if err != nil {
 		t.Fatalf("Second write failed: %v", err)
 	}
 	size2 := buf2.Len()
-	
+
 	// Short version should produce less content
 	if size2 >= size1 {
 		t.Errorf("Short version not smaller: size1=%d, size2=%d", size1, size2)
 	}
-	
+
 	// Simulate file overwrite bug: write short content over long content without truncate
 	tmpFile := filepath.Join(t.TempDir(), "test.json")
-	
+
 	// Write long content first
 	err = os.WriteFile(tmpFile, buf1.Bytes(), 0644)
 	if err != nil {
 		t.Fatalf("WriteFile failed: %v", err)
 	}
-	
+
 	// Open with O_WRONLY (the bug) - simulates old behavior
 	fh, err := os.OpenFile(tmpFile, os.O_WRONLY, 0644)
 	if err != nil {
@@ -175,7 +175,7 @@ func TestProject_SaveTruncates(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Write failed: %v", err)
 	}
-	
+
 	// Read back - should have corruption
 	corruptedContent, _ := os.ReadFile(tmpFile)
 	var decoded Project
@@ -185,7 +185,7 @@ func TestProject_SaveTruncates(t *testing.T) {
 		// This is actually OK for the test
 		t.Log("Corruption test didn't reproduce bug (file might be same size)")
 	}
-	
+
 	// Now test with O_TRUNC (the fix)
 	fh2, err := os.OpenFile(tmpFile, os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
@@ -196,14 +196,14 @@ func TestProject_SaveTruncates(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Write with trunc failed: %v", err)
 	}
-	
+
 	// Read back - should be valid
 	fixedContent, _ := os.ReadFile(tmpFile)
 	err = json.Unmarshal(fixedContent, &decoded)
 	if err != nil {
 		t.Fatalf("File still corrupted with O_TRUNC: %v\n%s", err, string(fixedContent))
 	}
-	
+
 	// Verify it's the short version
 	if decoded.Description != "Short" {
 		t.Errorf("Wrong content: got %s, want Short", decoded.Description)

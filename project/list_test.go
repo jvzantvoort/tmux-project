@@ -91,7 +91,7 @@ func TestListConfigsOrdering(t *testing.T) {
 		if config == "" {
 			t.Error("Config name should not be empty")
 		}
-		
+
 		// Should be a valid filename (no path separators)
 		if filepath.Base(config) != config {
 			t.Errorf("Config should be a base name, not a path: %s", config)

@@ -19,8 +19,8 @@ func TestModel_Init(t *testing.T) {
 		t.Errorf("Initial selectedIndex should be 0, got %d", m.selectedIndex)
 	}
 
-	if len(m.textInputs) != 4 {
-		t.Errorf("Should have 4 text inputs, got %d", len(m.textInputs))
+	if len(m.textInputs) != 5 {
+		t.Errorf("Should have 5 text inputs, got %d", len(m.textInputs))
 	}
 
 	if m.isEditing {
@@ -37,6 +37,7 @@ func TestModel_TextInputsInitialized(t *testing.T) {
 		"Project directory",
 		"Description",
 		"Project type",
+		"Status",
 	}
 
 	for i, input := range m.textInputs {
@@ -56,6 +57,7 @@ func TestModel_LoadProjectToInputs(t *testing.T) {
 		Directory:   "/tmp/test",
 		Description: "Test description",
 		ProjectType: "golang",
+		Status:      "active",
 	}
 
 	m.editingProject = proj
@@ -73,6 +75,9 @@ func TestModel_LoadProjectToInputs(t *testing.T) {
 	if m.textInputs[3].Value() != "golang" {
 		t.Errorf("Type input mismatch: got %s, want golang", m.textInputs[3].Value())
 	}
+	if m.textInputs[4].Value() != "active" {
+		t.Errorf("Status input mismatch: got %s, want active", m.textInputs[4].Value())
+	}
 }
 
 // TestModel_UpdateProjectFromInputs verifies inputs update project
@@ -86,6 +91,7 @@ func TestModel_UpdateProjectFromInputs(t *testing.T) {
 	m.textInputs[1].SetValue("/tmp/new")
 	m.textInputs[2].SetValue("New description")
 	m.textInputs[3].SetValue("python")
+	m.textInputs[4].SetValue("archived")
 
 	m.updateProjectFromInputs()
 
@@ -101,6 +107,9 @@ func TestModel_UpdateProjectFromInputs(t *testing.T) {
 	if proj.ProjectType != "python" {
 		t.Errorf("Type not updated: got %s, want python", proj.ProjectType)
 	}
+	if proj.Status != "archived" {
+		t.Errorf("Status not updated: got %s, want archived", proj.Status)
+	}
 }
 
 // TestModel_RoundTripProjectData verifies data integrity through load/update cycle
@@ -112,6 +121,7 @@ func TestModel_RoundTripProjectData(t *testing.T) {
 		Directory:   "/home/user/roundtrip",
 		Description: "Round trip test",
 		ProjectType: "javascript",
+		Status:      "active",
 	}
 
 	// Load to inputs
@@ -135,6 +145,9 @@ func TestModel_RoundTripProjectData(t *testing.T) {
 	}
 	if updated.ProjectType != original.ProjectType {
 		t.Errorf("Type mismatch: got %s, want %s", updated.ProjectType, original.ProjectType)
+	}
+	if updated.Status != original.Status {
+		t.Errorf("Status mismatch: got %s, want %s", updated.Status, original.Status)
 	}
 }
 

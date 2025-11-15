@@ -57,29 +57,29 @@ func needsUpdate(currentVersion, latestVersion string) bool {
 	// Normalize versions by removing "v" prefix if present
 	current := strings.TrimPrefix(currentVersion, "v")
 	latest := strings.TrimPrefix(latestVersion, "v")
-	
+
 	return current != latest
 }
 
 func runUpdate(cmd *cobra.Command, args []string) error {
 	currentVersion := version.GetVersion()
-	
+
 	fmt.Printf("Current version: %s\n", currentVersion.Short())
-	
+
 	// Check latest version
 	latestVersion, err := getLatestVersion()
 	if err != nil {
 		return fmt.Errorf("failed to check for updates: %w", err)
 	}
-	
+
 	fmt.Printf("Latest version:  %s\n", latestVersion)
-	
+
 	// Check if update is needed
 	if !forceUpdate && !needsUpdate(currentVersion.Short(), latestVersion) {
 		fmt.Println("\nAlready running the latest version!")
 		return nil
 	}
-	
+
 	if !forceUpdate {
 		fmt.Println("\nNew version available!")
 	}
