@@ -52,7 +52,7 @@ func (g GitCmd) exec(args ...string) ([]string, error) {
 	cmd.Dir = g.cwd
 	err := cmd.Start()
 	if err != nil {
-		utils.Errorf(strings.Join(cmnd, " "))
+		utils.Errorf("%s", strings.Join(cmnd, " "))
 		utils.Errorf("  command failed to start, %v", err)
 		utils.Errorf("  cwd: %s", g.cwd)
 		return retv, err
@@ -65,7 +65,7 @@ func (g GitCmd) exec(args ...string) ([]string, error) {
 	}
 	eerror := cmd.Wait()
 	if eerror != nil {
-		utils.Errorf(strings.Join(cmnd, " "))
+		utils.Errorf("%s", strings.Join(cmnd, " "))
 		utils.Errorf("  command failed, %v", eerror)
 		utils.Errorf("  cwd: %s", g.cwd)
 	}
