@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"os"
 
 	"github.com/jvzantvoort/tmux-project/messages"
@@ -40,7 +41,7 @@ func handleTypeInitCmd(cmd *cobra.Command, args []string) {
 		}
 	}
 	ptc, err := projecttype.New(ProjectType)
-	if err != nil {
+	if err != nil && !errors.Is(err, projecttype.ErrProjectNotExists) {
 		utils.Abort("Error: %s", err)
 	}
 	err = ptc.Setup()
