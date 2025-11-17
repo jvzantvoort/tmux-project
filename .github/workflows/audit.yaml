@@ -25,7 +25,6 @@ jobs:
     - name: Build
       run: |
         CGO_ENABLED=0 GOOS="linux" GOARCH="amd64" go build -v -o build/tmux-project ./cmd/tmux-project
-        CGO_ENABLED=0 GOOS="linux" GOARCH="amd64" go build -v -o build/proj_descr ./cmd/proj_descr
         CGO_ENABLED=0 GOOS="linux" GOARCH="amd64" go build -v -o build/proj_info ./cmd/proj_info
         CGO_ENABLED=0 GOOS="linux" GOARCH="amd64" go build -v -o build/resume ./cmd/resume
 
