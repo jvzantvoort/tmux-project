@@ -24,13 +24,13 @@ const (
 
 // Status options for dropdown
 var statusOptions = []string{
-	"active",
+	"in progress",
+	"to do",
+	"in review",
+	"completed",
 	"inactive",
 	"archived",
-	"dead",
-	"cold",
-	"frozen",
-	"paused",
+	"parked",
 }
 
 // Model represents the main TUI state
