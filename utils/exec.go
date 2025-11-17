@@ -95,7 +95,7 @@ func Exec(cwd, args string) ([]string, []string, error) {
 	stdout_scan.Split(bufio.ScanLines)
 	for stdout_scan.Scan() {
 		msg := stdout_scan.Text()
-		Debugf(msg)
+		Debugf("%s", msg)
 		stdout_list = append(stdout_list, msg)
 	}
 
@@ -103,7 +103,7 @@ func Exec(cwd, args string) ([]string, []string, error) {
 	stderr_scan.Split(bufio.ScanLines)
 	for stderr_scan.Scan() {
 		msg := stderr_scan.Text()
-		Errorf(msg)
+		Errorf("%s", msg)
 		stderr_list = append(stderr_list, msg)
 	}
 
