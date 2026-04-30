@@ -8,6 +8,7 @@ import (
 	"github.com/jvzantvoort/tmux-project/config"
 	"github.com/jvzantvoort/tmux-project/project"
 	"github.com/jvzantvoort/tmux-project/tmux"
+	"github.com/jvzantvoort/tmux-project/utils"
 )
 
 func main() {
@@ -23,7 +24,9 @@ func main() {
 
 	proj := project.NewProject(sessionname)
 	if err := proj.Open(); err == nil {
-		proj.UpdateLastActivity()
+		if err := proj.UpdateLastActivity(); err != nil {
+			utils.Errorf("failed to update last activity: %s", err)
+		}
 	}
 	configfile := filepath.Join(config.SessionDir(), proj.Name+".rc")
 

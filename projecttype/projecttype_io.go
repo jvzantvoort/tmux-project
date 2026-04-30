@@ -15,7 +15,7 @@ import (
 func (ptc ProjectTypeConfig) Content(target string) (string, error) {
 	ipath := filepath.Join(ptc.ConfigDir, target)
 
-	content, err := os.ReadFile(ipath)
+	content, err := os.ReadFile(ipath) // #nosec G304 - controlled config path
 	if err != nil {
 		return "", err
 	}
@@ -71,7 +71,7 @@ func (ptc *ProjectTypeConfig) Open() error {
 		return fmt.Errorf("file not found")
 	}
 
-	filehandle, err := os.Open(configfile)
+	filehandle, err := os.Open(configfile) // #nosec G304 - controlled config path
 	if err != nil {
 		utils.Errorf("cannot open project type file for reading: %s", err)
 		return fmt.Errorf("read error")
@@ -94,12 +94,16 @@ func (ptc ProjectTypeConfig) Save() error {
 	configfile := ptc.ConfigFile
 	utils.Debugf("project type file: %s", configfile)
 
-	filehandle, err := os.OpenFile(configfile, os.O_CREATE|os.O_WRONLY, 0644)
+	filehandle, err := os.OpenFile(configfile, os.O_CREATE|os.O_WRONLY, 0600) // #nosec G304 - controlled config path
 	if err != nil {
 		utils.Errorf("cannot open project type file for writing: %s", err)
 		return err
 	}
-	defer filehandle.Close()
+	defer func() {
+		if cerr := filehandle.Close(); cerr != nil {
+			utils.Errorf("failed to close file: %s", cerr)
+		}
+	}()
 	return ptc.Write(filehandle)
 }
 

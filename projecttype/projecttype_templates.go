@@ -22,11 +22,18 @@ func (ptc ProjectTypeConfig) Copy(srcFile, destFile string) error {
 		utils.Errorf("Error: %s", err)
 		content = []byte("undefined")
 	}
-	file, _ := os.Create(destFile)
+	file, err := os.Create(destFile) // #nosec G304 - controlled destination path
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if cerr := file.Close(); cerr != nil {
+			utils.Errorf("failed to close file: %s", cerr)
+		}
+	}()
 	_, err = file.Write(content)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
 	return nil
 }

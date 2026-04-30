@@ -110,7 +110,7 @@ func (g GitCmd) Branch() (string, error) {
 	if len(retv) == 0 {
 		return "", err
 	}
-	return string(retv[0]), err
+	return retv[0], err
 }
 
 func (g *GitCmd) Clone(url, destination string) error {

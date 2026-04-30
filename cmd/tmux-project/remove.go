@@ -6,19 +6,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func ProjectRemove(projectname string, interactive bool) error {
+func ProjectRemove(projectname string, _ bool) error {
 	utils.LogStart()
 	defer utils.LogEnd()
 
 	proj := project.NewProject(projectname)
 	cobra.CheckErr(proj.RefreshStruct())
-	var err error = nil
 	// err := proj.RemoveProject()
-	if err != nil {
-		utils.Fatalf("Encountered error: %q", err)
-	} else {
-		utils.Infof("RemoveProject completed")
-
-	}
+	utils.Infof("RemoveProject completed")
 	return nil
 }

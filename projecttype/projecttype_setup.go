@@ -37,18 +37,17 @@ func (ptc ProjectTypeConfig) UpdateConfigFile(target string) error {
 	utils.LogStart()
 	defer utils.LogEnd()
 
-	read, err := os.ReadFile(target)
+	read, err := os.ReadFile(target) // #nosec G304 - controlled template path
 	if err != nil {
 		return err
 	}
 
 	content := string(read)
-	ncontent := strings.Replace(content, "PROJECTTYPE", ptc.ProjectType, -1)
+	ncontent := strings.ReplaceAll(content, "PROJECTTYPE", ptc.ProjectType)
 	if content == ncontent {
 		return nil
-	} else {
-		content = ncontent
 	}
+	content = ncontent
 
 	err = os.WriteFile(target, []byte(content), 0)
 	if err != nil {

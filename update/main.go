@@ -30,7 +30,11 @@ func getLatestVersion() (string, error) {
 		log.Errorf("failed to fetch release info: %v", err)
 		return "", fmt.Errorf("failed to fetch release info: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			log.Errorf("failed to close response body: %v", err)
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		log.Errorf("GitHub API returned status: %d", resp.StatusCode)

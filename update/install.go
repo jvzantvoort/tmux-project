@@ -60,16 +60,24 @@ func Install(url string) error {
 		log.Errorf("failed to create temp directory: %v", err)
 		return fmt.Errorf("failed to create temp directory: %w", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			log.Errorf("failed to remove temp dir: %v", err)
+		}
+	}()
 	log.Debugf("tmpDir: %s", tmpDir)
 
 	log.Infof("downloading from %s", url)
-	resp, err := http.Get(url)
+	resp, err := http.Get(url) // #nosec G107 - URL is from trusted GitHub API
 	if err != nil {
 		log.Errorf("failed to download: %v", err)
 		return fmt.Errorf("failed to download: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			log.Errorf("failed to close response body: %v", err)
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		log.Errorf("download failed with status: %d", resp.StatusCode)
@@ -77,7 +85,7 @@ func Install(url string) error {
 	}
 
 	archivePath := filepath.Join(tmpDir, "download.tar.gz")
-	out, err := os.Create(archivePath)
+	out, err := os.Create(archivePath) // #nosec G304 - path is within controlled temp dir
 	if err != nil {
 		log.Errorf("failed to create temp file: %v", err)
 		return fmt.Errorf("failed to create temp file: %w", err)
@@ -86,7 +94,9 @@ func Install(url string) error {
 	log.Debugf("archivePath: %s", archivePath)
 
 	_, err = io.Copy(out, resp.Body)
-	out.Close()
+	if cerr := out.Close(); cerr != nil {
+		log.Errorf("failed to close output file: %v", cerr)
+	}
 	if err != nil {
 		log.Errorf("failed to save download: %v", err)
 		return fmt.Errorf("failed to save download: %w", err)
@@ -112,19 +122,32 @@ func unpackTarGz(archivePath, destDir string) error {
 	utils.LogStart()
 	defer utils.LogEnd()
 
-	file, err := os.Open(archivePath)
+	cleanDestDir, err := filepath.Abs(destDir)
+	if err != nil {
+		return fmt.Errorf("failed to resolve destination directory: %w", err)
+	}
+
+	file, err := os.Open(archivePath) // #nosec G304 - path is within controlled temp dir
 	if err != nil {
 		utils.Errorf("error %s", err)
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		if cerr := file.Close(); cerr != nil {
+			log.Errorf("failed to close file: %v", cerr)
+		}
+	}()
 
 	gzr, err := gzip.NewReader(file)
 	if err != nil {
 		utils.Errorf("error %s", err)
 		return err
 	}
-	defer gzr.Close()
+	defer func() {
+		if cerr := gzr.Close(); cerr != nil {
+			log.Errorf("failed to close gzip reader: %v", cerr)
+		}
+	}()
 
 	tr := tar.NewReader(gzr)
 
@@ -137,31 +160,41 @@ func unpackTarGz(archivePath, destDir string) error {
 			return err
 		}
 
-		target := filepath.Join(destDir, header.Name)
+		cleanName := filepath.Clean(header.Name)
+		if filepath.IsAbs(cleanName) {
+			return fmt.Errorf("invalid archive entry path: %s", header.Name)
+		}
+
+		target := filepath.Join(cleanDestDir, cleanName)
+		cleanTarget := filepath.Clean(target)
+		destPrefix := cleanDestDir + string(os.PathSeparator)
+		if cleanTarget != cleanDestDir && !strings.HasPrefix(cleanTarget, destPrefix) {
+			return fmt.Errorf("invalid archive entry path: %s", header.Name)
+		}
 
 		switch header.Typeflag {
 		case tar.TypeDir:
-			if err := os.MkdirAll(target, 0755); err != nil {
+			if err := os.MkdirAll(cleanTarget, 0750); err != nil {
 				return err
 			}
 		case tar.TypeReg:
-			if err := os.MkdirAll(filepath.Dir(target), 0755); err != nil {
+			if err := os.MkdirAll(filepath.Dir(cleanTarget), 0750); err != nil {
 				return err
 			}
-			log.Infof("extracting %s", target)
-			outFile, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
+			log.Infof("extracting %s", cleanTarget)
+			outFile, err := os.OpenFile(cleanTarget, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode)) // #nosec G304 - validated path within destination dir
 			if err != nil {
 				utils.Errorf("error %s", err)
-
 				return err
 			}
-			if _, err := io.Copy(outFile, tr); err != nil {
-				outFile.Close()
-				utils.Errorf("error %s", err)
-
-				return err
+			_, copyErr := io.Copy(outFile, tr) // #nosec G110 - controlled archive source
+			if closeErr := outFile.Close(); closeErr != nil {
+				utils.Errorf("failed to close output file: %s", closeErr)
 			}
-			outFile.Close()
+			if copyErr != nil {
+				utils.Errorf("error %s", copyErr)
+				return copyErr
+			}
 		}
 	}
 
@@ -203,7 +236,7 @@ func safeInstallBinary(srcPath, destPath string) error {
 		return err
 	}
 	if destPath == thisExec {
-		destPath = destPath + ".new"
+		destPath += ".new"
 		log.Infof("updating the running executable via temporary file %s", destPath)
 		updatingSelf = true
 	}
@@ -213,7 +246,7 @@ func safeInstallBinary(srcPath, destPath string) error {
 		return fmt.Errorf("failed to stat %s: %w", srcPath, err)
 	}
 
-	data, err := os.ReadFile(srcPath)
+	data, err := os.ReadFile(srcPath) // #nosec G304 - controlled source path
 	if err != nil {
 		return fmt.Errorf("failed to read %s: %w", srcPath, err)
 	}

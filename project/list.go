@@ -21,7 +21,7 @@ func ListConfigs() []string {
 	if err != nil {
 		// If directory doesn't exist, create it and return empty list
 		if os.IsNotExist(err) {
-			if err := os.MkdirAll(inputdir, 0755); err != nil {
+			if err := os.MkdirAll(inputdir, 0750); err != nil {
 				utils.Fatalf("failed to create session directory: %s", err)
 			}
 			return retv
@@ -89,12 +89,12 @@ func indexOf(target string, list []string) int {
 	return -1 // not found
 }
 
-func resortSlice(PrimaryColumn, SecondaryColumn int, rows [][]string) [][]string {
+func resortSlice(primaryColumn, secondaryColumn int, rows [][]string) [][]string {
 	sort.Slice(rows, func(i, j int) bool {
-		name1 := rows[i][PrimaryColumn]
-		name2 := rows[j][PrimaryColumn]
-		type1 := rows[i][SecondaryColumn]
-		type2 := rows[j][SecondaryColumn]
+		name1 := rows[i][primaryColumn]
+		name2 := rows[j][primaryColumn]
+		type1 := rows[i][secondaryColumn]
+		type2 := rows[j][secondaryColumn]
 
 		if type1 != type2 {
 			return type1 < type2
@@ -131,8 +131,8 @@ func PrintFullList() {
 
 	outputtable := tablewriter.NewWriter(os.Stdout)
 	outputtable.Header(legend)
-	outputtable.Bulk(rows)
-	outputtable.Render()
+	_ = outputtable.Bulk(rows)
+	_ = outputtable.Render()
 
 }
 
@@ -148,8 +148,8 @@ func PrintSanityList() {
 
 	outputtable := tablewriter.NewWriter(os.Stdout)
 	outputtable.Header(legend)
-	outputtable.Bulk(rows)
-	outputtable.Render()
+	_ = outputtable.Bulk(rows)
+	_ = outputtable.Render()
 }
 
 // PrintShortList prints the list of sessions
