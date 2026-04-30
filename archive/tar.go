@@ -58,15 +58,27 @@ func (t *TarArchive) CreateArchive() error {
 	if err != nil {
 		return fmt.Errorf("error creating output file: %w", err)
 	}
-	defer outFile.Close()
+	defer func() {
+		if cerr := outFile.Close(); cerr != nil {
+			utils.Errorf("failed to close output file: %s", cerr)
+		}
+	}()
 
 	// Create a new gzip writer
 	gzipWriter := gzip.NewWriter(outFile)
-	defer gzipWriter.Close()
+	defer func() {
+		if cerr := gzipWriter.Close(); cerr != nil {
+			utils.Errorf("failed to close gzip writer: %s", cerr)
+		}
+	}()
 
 	// Create a new tar writer
 	tarWriter := tar.NewWriter(gzipWriter)
-	defer tarWriter.Close()
+	defer func() {
+		if cerr := tarWriter.Close(); cerr != nil {
+			utils.Errorf("failed to close tar writer: %s", cerr)
+		}
+	}()
 
 	// Add files to the tar archive
 	for _, file := range t.Targets {

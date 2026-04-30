@@ -67,10 +67,10 @@ func PrintHeader(data [][]string) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.Header([]string{"Name", "Value"})
 	for _, slice := range data {
-		table.Append([]string{infNameCol.Sprint(slice[0]), infValCol.Sprint(slice[1])})
+		_ = table.Append([]string{infNameCol.Sprint(slice[0]), infValCol.Sprint(slice[1])})
 	}
 	fmt.Printf("\n")
-	table.Render()
+	_ = table.Render()
 	fmt.Printf("\n")
 
 }
@@ -131,10 +131,10 @@ func main() {
 		table.Header([]string{"Name", "Status", "Branch"})
 		for _, proj := range brojects {
 			if chapter == proj.Chapter {
-				table.Append(proj.GetFields())
+				_ = table.Append(proj.GetFields())
 			}
 		}
-		table.Render()
+		_ = table.Render()
 	}
 	fmt.Printf("\n")
 }

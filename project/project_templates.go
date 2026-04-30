@@ -53,7 +53,7 @@ func (proj Project) LoadFile(target string) (string, error) {
 	utils.LogStart()
 	defer utils.LogEnd()
 
-	content, err := os.ReadFile(target)
+	content, err := os.ReadFile(target) // #nosec G304 - controlled template path
 	if err != nil {
 		return "", err
 	}

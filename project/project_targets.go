@@ -34,7 +34,7 @@ func (proj Project) ProcessTarget(element *Target) error {
 	dest_file := proj.CalcDestination(element.Destination)
 	content := proj.Parse(element.Content)
 
-	filehandle, err := os.Create(dest_file)
+	filehandle, err := os.Create(dest_file) // #nosec G304 - controlled destination path
 	if err != nil {
 		return fmt.Errorf("failed to create file %s: %w", dest_file, err)
 	}

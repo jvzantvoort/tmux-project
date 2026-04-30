@@ -41,9 +41,9 @@ func ListProjectTypeConfigs() error {
 		cols = append(cols, fmt.Sprintf("%d", len(item.Repos)))
 		cols = append(cols, item.ConfigDir)
 		cols = append(cols, item.Pattern)
-		table.Append(cols)
+		_ = table.Append(cols)
 	}
-	table.Render()
+	_ = table.Render()
 
 	return nil
 

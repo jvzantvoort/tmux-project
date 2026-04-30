@@ -53,20 +53,24 @@ func Copy(srcFile, destFile string, mode fs.FileMode) error {
 	// Create the directory if it doesn't exist
 	destDir := filepath.Dir(destFile)
 	if _, err := os.Stat(destDir); os.IsNotExist(err) {
-		if err := os.MkdirAll(destDir, os.ModePerm); err != nil {
+		if err := os.MkdirAll(destDir, 0750); err != nil {
 			return fmt.Errorf("error creating directory: %s", err)
 		}
 	}
 
 	content := GetConfig(srcFile)
 
-	filehandle, err := os.OpenFile(destFile, os.O_CREATE|os.O_WRONLY, mode)
+	filehandle, err := os.OpenFile(destFile, os.O_CREATE|os.O_WRONLY, mode) // #nosec G304 - controlled path
 	if err != nil {
 		log.Errorf("cannot open %s file for writing: %s", destFile, err)
 		return err
 	}
+	defer func() {
+		if cerr := filehandle.Close(); cerr != nil {
+			log.Errorf("error closing file: %s", cerr)
+		}
+	}()
 	_, err = filehandle.WriteString(content)
-	filehandle.Close()
 	return err
 
 }

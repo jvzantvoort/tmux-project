@@ -143,7 +143,7 @@ func (proj *Project) RefreshStruct(args ...string) error {
 	// try to load the configfile
 	err := proj.Open()
 	if err == nil {
-		utils.Debugf("succesfully read configfile")
+		utils.Debugf("successfully read configfile")
 	} else {
 
 		// cannot find or open the project

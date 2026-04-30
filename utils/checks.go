@@ -47,19 +47,19 @@ func Abort(format string, input ...interface{}) {
 }
 
 func box_width() int {
-	return int(CONSOLE_WIDTH - (CONSOLE_INDENT * 2))
+	return CONSOLE_WIDTH - (CONSOLE_INDENT * 2)
 }
 
 func box_widthu() uint {
-	return uint(box_width())
+	return uint(box_width()) // #nosec G115 - box_width is always positive
 }
 
 func box_indent() int {
-	return int(CONSOLE_INDENT)
+	return CONSOLE_INDENT
 }
 
 func inner_box_width() int {
-	return int(box_width() - (box_indent() * 2))
+	return box_width() - (box_indent() * 2)
 }
 
 func get_inner_string(instr string) string {
@@ -74,7 +74,7 @@ func box_header() string {
 	width := box_width() - (len(CBORDER) * 2)
 
 	retv := ""
-	retv += strings.Repeat(" ", int(box_indent()))
+	retv += strings.Repeat(" ", box_indent())
 	retv += CBORDER
 	retv += strings.Repeat("-", width)
 	retv += CBORDER
@@ -86,7 +86,7 @@ func box_footer() string {
 	width := box_width() - (len(CBORDER) * 2)
 	retv := ""
 	retv += center_text("") + "\n"
-	retv += strings.Repeat(" ", int(box_indent()))
+	retv += strings.Repeat(" ", box_indent())
 	retv += CBORDER
 	retv += strings.Repeat("-", width)
 	retv += CBORDER

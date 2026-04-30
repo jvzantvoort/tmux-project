@@ -64,7 +64,7 @@ func (proj *Project) Open() error {
 		return errno.ErrProjectNotExist
 	}
 
-	filehandle, err := os.Open(configfile)
+	filehandle, err := os.Open(configfile) // #nosec G304 - controlled config file path
 	if err != nil {
 		utils.Errorf("cannot open project file for reading: %s", err)
 		return err
@@ -87,12 +87,16 @@ func (proj Project) Save() error {
 	configfile := proj.ProjectConfigFile()
 	utils.Debugf("project file: %s", configfile)
 
-	filehandle, err := os.OpenFile(configfile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	filehandle, err := os.OpenFile(configfile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
 	if err != nil {
 		utils.Errorf("cannot open project file for writing: %s", err)
 		return err
 	}
-	defer filehandle.Close()
+	defer func() {
+		if cerr := filehandle.Close(); cerr != nil {
+			utils.Errorf("failed to close file: %s", cerr)
+		}
+	}()
 	return proj.Write(filehandle)
 }
 
