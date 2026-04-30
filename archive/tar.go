@@ -14,14 +14,14 @@ import (
 
 // TarArchive encapsulates the tar.gz creation logic for a set of files and symlinks.
 type TarArchive struct {
-	OutputFile string            // OutputFile is the path to the resulting tar.gz file.
-	Targets    []string          // Targets is a list of files to include in the archive.
 	Links      map[string]string // Links maps symlink names to their targets.
+	Targets    []string          // Targets is a list of files to include in the archive.
+	OutputFile string            // OutputFile is the path to the resulting tar.gz file.
 }
 
 // NewTarArchive creates a new TarArchive for the given output file.
-func NewTarArchive(OutputFile string) *TarArchive {
-	retv := &TarArchive{OutputFile: OutputFile}
+func NewTarArchive(outputFile string) *TarArchive {
+	retv := &TarArchive{OutputFile: outputFile}
 	retv.Links = make(map[string]string)
 	return retv
 }
@@ -99,11 +99,15 @@ func (t *TarArchive) CreateArchive() error {
 
 // addFileToTar adds a file to the given tar writer.
 func (t *TarArchive) addFileToTar(tarWriter *tar.Writer, filePath string) error {
-	file, err := os.Open(filePath)
+	file, err := os.Open(filePath) // #nosec G304 - controlled path from caller
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		if cerr := file.Close(); cerr != nil {
+			utils.Errorf("failed to close file: %s", cerr)
+		}
+	}()
 
 	// Get file info
 	info, err := file.Stat()

@@ -160,16 +160,27 @@ func unpackTarGz(archivePath, destDir string) error {
 			return err
 		}
 
+		// Prevent Zip Slip vulnerability: validate archive entry path
 		cleanName := filepath.Clean(header.Name)
+
+		// Reject absolute paths
 		if filepath.IsAbs(cleanName) {
-			return fmt.Errorf("invalid archive entry path: %s", header.Name)
+			return fmt.Errorf("invalid archive entry path (absolute): %s", header.Name)
 		}
 
+		// Reject paths with .. traversal
+		if strings.Contains(cleanName, "..") {
+			return fmt.Errorf("invalid archive entry path (traversal): %s", header.Name)
+		}
+
+		// Construct and validate target path stays within destination
 		target := filepath.Join(cleanDestDir, cleanName)
 		cleanTarget := filepath.Clean(target)
 		destPrefix := cleanDestDir + string(os.PathSeparator)
+
+		// Ensure target is within destination directory
 		if cleanTarget != cleanDestDir && !strings.HasPrefix(cleanTarget, destPrefix) {
-			return fmt.Errorf("invalid archive entry path: %s", header.Name)
+			return fmt.Errorf("invalid archive entry path (outside dest): %s", header.Name)
 		}
 
 		switch header.Typeflag {
@@ -182,7 +193,7 @@ func unpackTarGz(archivePath, destDir string) error {
 				return err
 			}
 			log.Infof("extracting %s", cleanTarget)
-			outFile, err := os.OpenFile(cleanTarget, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode)) // #nosec G304 - validated path within destination dir
+			outFile, err := os.OpenFile(cleanTarget, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode&0777)) // #nosec G304,G115 - validated path, safe mode mask
 			if err != nil {
 				utils.Errorf("error %s", err)
 				return err
@@ -195,6 +206,9 @@ func unpackTarGz(archivePath, destDir string) error {
 				utils.Errorf("error %s", copyErr)
 				return copyErr
 			}
+		default:
+			// Ignore symlinks, devices, and other special file types for security
+			log.Debugf("skipping unsupported file type %v for %s", header.Typeflag, header.Name)
 		}
 	}
 

@@ -117,6 +117,7 @@ func main() {
 	PrintHeader(header)
 	brojects := findAllProjects(proj_obj.Directory, *depth)
 
+	chapters = make([]string, 0, len(brojects))
 	for _, proj := range brojects {
 		chapters = append(chapters, proj.Chapter)
 	}

@@ -13,16 +13,16 @@ import (
 // ProjectDef represents a project definition with various attributes such as path, name, branch, and status.
 // It includes methods to initialize the project, retrieve git information, and format the project fields for display.
 type ProjectDef struct {
+	Status     map[string]int // Git status information
+	Info       os.FileInfo    // File information for the project directory
 	Path       string         // Path to the project directory
 	ProjectDir string         // Project directory
 	Name       string         // Project name
 	AbsPath    string         // Absolute path to the project
 	Branch     string         // Current git branch
-	Expected   bool           // Whether the project is expected to be found
-	Status     map[string]int // Git status information
 	SubPath    string         // Sub-path within the project directory
 	Chapter    string         // Chapter or section of the project
-	Info       os.FileInfo    // File information for the project directory
+	Expected   bool           // Whether the project is expected to be found
 }
 
 // GetFields returns a slice of strings representing the fields of the project.

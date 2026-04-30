@@ -18,8 +18,8 @@ import (
 // GitCmd object for git
 type GitCmd struct {
 	path    []string
-	cwd     string
 	command string
+	cwd     string
 }
 
 // which finds the path to the provided command

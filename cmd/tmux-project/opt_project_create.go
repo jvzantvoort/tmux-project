@@ -24,13 +24,14 @@ func handleProjectCreateCmd(cmd *cobra.Command, args []string) {
 		log.SetLevel(log.DebugLevel)
 	}
 	log.Debugf("%s: start", cmd.Use)
-	defer log.Debugf("%s: end", cmd.Use)
 
 	if len(args) != 1 {
 		log.Error("No project provided")
 		cobra.CheckErr(cmd.Help())
+		log.Debugf("%s: end", cmd.Use)
 		os.Exit(1)
 	}
+	defer log.Debugf("%s: end", cmd.Use)
 	ProjectName := args[0]
 	ProjectType := GetString(*cmd, "type")
 	project_description := GetString(*cmd, "description")
