@@ -122,6 +122,11 @@ func unpackTarGz(archivePath, destDir string) error {
 	utils.LogStart()
 	defer utils.LogEnd()
 
+	cleanDestDir, err := filepath.Abs(destDir)
+	if err != nil {
+		return fmt.Errorf("failed to resolve destination directory: %w", err)
+	}
+
 	file, err := os.Open(archivePath) // #nosec G304 - path is within controlled temp dir
 	if err != nil {
 		utils.Errorf("error %s", err)
@@ -155,19 +160,29 @@ func unpackTarGz(archivePath, destDir string) error {
 			return err
 		}
 
-		target := filepath.Join(destDir, filepath.Clean(header.Name)) // #nosec G305 - cleaned path
+		cleanName := filepath.Clean(header.Name)
+		if filepath.IsAbs(cleanName) {
+			return fmt.Errorf("invalid archive entry path: %s", header.Name)
+		}
+
+		target := filepath.Join(cleanDestDir, cleanName)
+		cleanTarget := filepath.Clean(target)
+		destPrefix := cleanDestDir + string(os.PathSeparator)
+		if cleanTarget != cleanDestDir && !strings.HasPrefix(cleanTarget, destPrefix) {
+			return fmt.Errorf("invalid archive entry path: %s", header.Name)
+		}
 
 		switch header.Typeflag {
 		case tar.TypeDir:
-			if err := os.MkdirAll(target, 0750); err != nil {
+			if err := os.MkdirAll(cleanTarget, 0750); err != nil {
 				return err
 			}
 		case tar.TypeReg:
-			if err := os.MkdirAll(filepath.Dir(target), 0750); err != nil {
+			if err := os.MkdirAll(filepath.Dir(cleanTarget), 0750); err != nil {
 				return err
 			}
-			log.Infof("extracting %s", target)
-			outFile, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode)) // #nosec G304 - cleaned path
+			log.Infof("extracting %s", cleanTarget)
+			outFile, err := os.OpenFile(cleanTarget, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode)) // #nosec G304 - validated path within destination dir
 			if err != nil {
 				utils.Errorf("error %s", err)
 				return err
