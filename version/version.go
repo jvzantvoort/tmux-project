@@ -20,10 +20,10 @@ var (
 
 // Info represents version information about the application
 type Info struct {
+	BuildDate time.Time
 	Version   string
 	Commit    string
 	BuildTime string
-	BuildDate time.Time
 }
 
 // GetVersion returns the version information

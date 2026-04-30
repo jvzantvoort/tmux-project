@@ -36,18 +36,18 @@ var statusOptions = []string{
 // Model represents the main TUI state
 type Model struct {
 	projects         []project.Project
+	textInputs       []textinput.Model
+	editingProject   *project.Project
+	message          string
+	err              error
 	selectedIndex    int
 	viewMode         ViewMode
 	width            int
 	height           int
-	err              error
-	editingProject   *project.Project
 	editField        int
-	message          string
-	textInputs       []textinput.Model
+	dropdownSelected int
 	isEditing        bool
 	dropdownOpen     bool
-	dropdownSelected int
 }
 
 // NewModel creates a new TUI model
@@ -464,11 +464,12 @@ func (m Model) viewProjectEdit() string {
 	}
 
 	editHelp := ""
-	if m.dropdownOpen {
+	switch {
+	case m.dropdownOpen:
 		editHelp = "↑/k: up • ↓/j: down • Enter: select • Esc: cancel"
-	} else if m.isEditing {
+	case m.isEditing:
 		editHelp = "Enter: save field • Esc: cancel edit"
-	} else {
+	default:
 		editHelp = "↑/k: up • ↓/j: down • Enter: edit field • s: save project • Esc: back"
 	}
 
@@ -516,11 +517,12 @@ func (m Model) viewHelp() string {
 // RunTUIApp starts the TUI application
 func RunTUIApp() {
 	utils.LogStart()
-	defer utils.LogEnd()
 
 	p := tea.NewProgram(NewModel(), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
+		utils.LogEnd()
 		fmt.Printf("Error running TUI: %v\n", err)
 		os.Exit(1)
 	}
+	utils.LogEnd()
 }

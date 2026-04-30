@@ -182,7 +182,7 @@ func unpackTarGz(archivePath, destDir string) error {
 				return err
 			}
 			log.Infof("extracting %s", cleanTarget)
-			outFile, err := os.OpenFile(cleanTarget, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode)) // #nosec G304 - validated path within destination dir
+			outFile, err := os.OpenFile(cleanTarget, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode&0777)) // #nosec G304,G115 - validated path, safe mode mask
 			if err != nil {
 				utils.Errorf("error %s", err)
 				return err

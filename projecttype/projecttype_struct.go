@@ -19,13 +19,13 @@ type Repo struct {
 
 // ProjectTypeConfig represents a reusable project template configuration
 type ProjectTypeConfig struct {
+	SetupActions   []string `yaml:"setupactions"`
+	Repos          []Repo   `yaml:"repos"`
+	Targets        []Target `yaml:"targets"`
 	ProjectType    string   `yaml:"type"`
 	Description    string   `yaml:"description"`
 	Directory      string   `yaml:"directory"`
 	Pattern        string   `yaml:"pattern"`
-	SetupActions   []string `yaml:"setupactions"`
-	Repos          []Repo   `yaml:"repos"`
-	Targets        []Target `yaml:"targets"`
 	ProjectTypeDir string   `yaml:"-"`
 	ConfigFile     string   `yaml:"-"`
 	ConfigDir      string   `yaml:"-"`

@@ -80,8 +80,6 @@ func walkAllProjects(projdir string, maxDepth int) ([]string, error) {
 }
 
 func findAllProjects(projdir string, depth int) []ProjectDef {
-	var data []ProjectDef
-	var retv []ProjectDef
 	utils.LogStart()
 	defer utils.LogEnd()
 
@@ -89,11 +87,13 @@ func findAllProjects(projdir string, depth int) []ProjectDef {
 
 	dirnames, _ := walkAllProjects(projdir, depth)
 
+	data := make([]ProjectDef, 0, len(dirnames))
 	for _, dirname := range dirnames {
 		repos := NewProjectDef(projdir, dirname)
 		data = append(data, *repos)
 	}
 
+	retv := make([]ProjectDef, 0, len(data))
 	for _, obj := range data {
 		wg.Add(1)
 

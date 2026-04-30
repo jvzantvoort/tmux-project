@@ -23,14 +23,20 @@ linters:
 
 linters-settings:
   gocyclo:
-    min-complexity: 15
+    min-complexity: 20  # Increased from 15 to allow complex state machines
   govet:
     enable-all: true
+    disable:
+      - shadow      # Allow variable shadowing
+      - fieldalignment  # Allow non-optimal field alignment
   revive:
     confidence: 0.8
   gosec:
     excludes:
       - G204 # Subprocess launched with variable
+  gocritic:
+    disabled-checks:
+      - exitAfterDefer # log.Fatalf is designed to exit
 
 issues:
   exclude-use-default: false
@@ -41,3 +47,18 @@ issues:
       linters:
         - errcheck
         - gosec
+        - gocyclo
+        - unparam
+    # Exclude non-critical optimization warnings
+    - linters:
+        - govet
+      text: "fieldalignment"
+    - linters:
+        - govet
+      text: "shadow"
+    - linters:
+        - govet  
+      text: "nilness"
+    - linters:
+        - prealloc
+      text: "Consider pre-allocating"

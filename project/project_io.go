@@ -87,7 +87,7 @@ func (proj Project) Save() error {
 	configfile := proj.ProjectConfigFile()
 	utils.Debugf("project file: %s", configfile)
 
-	filehandle, err := os.OpenFile(configfile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
+	filehandle, err := os.OpenFile(configfile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600) // #nosec G304 - controlled config path
 	if err != nil {
 		utils.Errorf("cannot open project file for writing: %s", err)
 		return err

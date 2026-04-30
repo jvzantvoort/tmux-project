@@ -24,21 +24,21 @@ func handleTypeInitCmd(cmd *cobra.Command, args []string) {
 		log.SetLevel(log.DebugLevel)
 	}
 	log.Debugf("%s: start", cmd.Use)
-	defer log.Debugf("%s: end", cmd.Use)
 
 	if len(args) != 1 {
 		log.Error("No project type provided")
 		cobra.CheckErr(cmd.Help())
+		log.Debugf("%s: end", cmd.Use)
 		os.Exit(1)
 	}
+	defer log.Debugf("%s: end", cmd.Use)
 	ProjectType := args[0]
 
 	Force, _ := cmd.Flags().GetBool("force")
 
-	if ProjectType == "default" {
-		if !Force {
-			log.Fatalf("Cannot overwrite default")
-		}
+	if ProjectType == "default" && !Force {
+		log.Debugf("%s: end", cmd.Use)
+		log.Fatalf("Cannot overwrite default")
 	}
 	ptc, err := projecttype.New(ProjectType)
 	if err != nil && !errors.Is(err, projecttype.ErrProjectNotExists) {

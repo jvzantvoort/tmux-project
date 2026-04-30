@@ -17,6 +17,9 @@ type Repo struct {
 
 // Project defines a structure of a project
 type Project struct {
+	SetupActions   []string `json:"setupactions"`
+	Repos          []Repo   `json:"repos"`
+	Targets        []Target `json:"targets"`
 	Name           string   `json:"name"`
 	ProjectType    string   `json:"type"`
 	Description    string   `json:"description"`
@@ -24,9 +27,6 @@ type Project struct {
 	Status         string   `json:"status"`
 	CreationTime   string   `json:"creationtime"`
 	LastActivity   string   `json:"lastactivity"`
-	SetupActions   []string `json:"setupactions"`
-	Repos          []Repo   `json:"repos"`
-	Targets        []Target `json:"targets"`
 	Root           string   `json:"root"` // Root type of the project directory or git url
 	HomeDir        string   `json:"-"`
 	ProjectTypeDir string   `json:"-"` // Directory where project type files are located
