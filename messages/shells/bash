@@ -1,14 +1,29 @@
 #!/bin/bash
 
-if [[ -n "$TMUX" ]]
-then
+if [[ -n "$TMUX" ]]; then
+
   SESSIONNAME="$(tmux display-message -p '#S'  2>/dev/null)"
-  export SESSIONNAME
+  HISTFILE="${HOME}/.bash_history_${SESSIONNAME}"
+
+  export SESSIONNAME HISTFILE
+
+  if [[ -r "$HOME/.tmux.d/${SESSIONNAME}.json" ]]; then
+    if command -v jq &> /dev/null; then
+      #shellcheck disable=SC2002
+      SESSIONTYPE="$(cat "$HOME/.tmux.d/${SESSIONNAME}.json" | jq -r .type)"
+    fi
+  fi
 
   #shellcheck disable=SC1090
-  if [ -f "$HOME/.tmux.d/${SESSIONNAME}.env" ]
-  then
-    source  "$HOME/.tmux.d/${SESSIONNAME}.env"
+  if [[ -f "$HOME/.tmux.d/${SESSIONNAME}.env" ]]; then
+    source "$HOME/.tmux.d/${SESSIONNAME}.env"
+  fi
+
+  #shellcheck disable=SC1090
+  if [[ -n "${SESSIONTYPE}" ]]; then
+    if [[ -f "$HOME/.tmux.d/${SESSIONTYPE}.shared" ]]; then
+      source "$HOME/.tmux.d/${SESSIONTYPE}.shared"
+    fi
   fi
 
   # if "${PROJDIR}/.pcd.rc" exists its contenst is read as semicolon delimited
@@ -28,8 +43,7 @@ then
   function pcd()
   {
     # empty
-    if [[ -z "$1" ]]
-    then
+    if [[ -z "$1" ]]; then
       cd "${PROJDIR}"
       return
     fi
@@ -37,11 +51,9 @@ then
     __name="$1"
 
     # check for a config file and an entry
-    if [[ -f "${PROJDIR}/.pcd.rc" ]]
-    then
+    if [[ -f "${PROJDIR}/.pcd.rc" ]]; then
       dst="$(awk -v pat="${__name}" -F";" '$1 == pat { print $2 }' "${PROJDIR}/.pcd.rc" | sed "s,PROJDIR,${PROJDIR},")"
-      if [[ -n "${dst}" ]]
-      then
+      if [[ -n "${dst}" ]]; then
         cd "${dst}"
         return
       fi
@@ -64,6 +76,7 @@ then
       opts+=" $(awk -F';' '{print $1}' "$PROJDIR/.pcd.rc")"
     fi
 
+    #shellcheck disable=SC2207
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
   }
 
