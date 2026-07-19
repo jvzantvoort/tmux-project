@@ -3,16 +3,15 @@ name: Release
 on:
   release:
     types: [published]
-  push:
-    tags:
-      - 'v*'
-
 permissions:
   contents: write
   packages: write
 
 jobs:
   release:
+    permissions:
+      contents: write  # to upload release asset (actions/upload-release-asset)
+
     name: Release tmux-project
     runs-on: ubuntu-latest
     strategy:
@@ -38,7 +37,14 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
+      - name: Prepare build directory
+        run: |
+          mkdir -p build/${{ matrix.goos }}.${{ matrix.goarch }}
+
       - name: Build
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
         run: |
           ./build.sh buildr ${{ matrix.goos }} ${{ matrix.goarch }} $GITHUB_WORKSPACE/build
 

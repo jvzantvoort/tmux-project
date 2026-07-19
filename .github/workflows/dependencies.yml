@@ -35,7 +35,7 @@ jobs:
           title: 'chore: update Go dependencies'
           body: |
             Automated dependency update
-            
+
             - Updates all Go dependencies to their latest versions
             - Runs `go get -u ./...` and `go mod tidy`
           branch: deps/go-dependencies

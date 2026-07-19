@@ -1,64 +1,66 @@
+version: "2"
 run:
-  timeout: 5m
   tests: true
-
 linters:
   enable:
-    - errcheck
-    - gosimple
-    - govet
-    - ineffassign
-    - staticcheck
-    - unused
-    - gofmt
-    - goimports
+    - gocritic
+    - gocyclo
+    - gosec
     - misspell
     - revive
     - unconvert
     - unparam
-    - gocritic
-    - gocyclo
-    - gosec
-    - prealloc
-
-linters-settings:
-  gocyclo:
-    min-complexity: 20  # Increased from 15 to allow complex state machines
-  govet:
-    enable-all: true
-    disable:
-      - shadow      # Allow variable shadowing
-      - fieldalignment  # Allow non-optimal field alignment
-  revive:
-    confidence: 0.8
-  gosec:
-    excludes:
-      - G204 # Subprocess launched with variable
-  gocritic:
-    disabled-checks:
-      - exitAfterDefer # log.Fatalf is designed to exit
-
+  settings:
+    gocritic:
+      disabled-checks:
+        - exitAfterDefer
+    gocyclo:
+      min-complexity: 20
+    gosec:
+      excludes:
+        - G204
+    govet:
+      disable:
+        - shadow
+        - fieldalignment
+      enable-all: true
+    revive:
+      confidence: 0.8
+  exclusions:
+    generated: lax
+    rules:
+      - linters:
+          - errcheck
+          - gocyclo
+          - gosec
+          - unparam
+        path: _test\.go
+      - linters:
+          - govet
+        text: fieldalignment
+      - linters:
+          - govet
+        text: shadow
+      - linters:
+          - govet
+        text: nilness
+      - linters:
+          - prealloc
+        text: Consider pre-allocating
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 issues:
-  exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - errcheck
-        - gosec
-        - gocyclo
-        - unparam
-    # Exclude non-critical optimization warnings
-    - linters:
-        - govet
-      text: "fieldalignment"
-    - linters:
-        - govet
-      text: "shadow"
-    - linters:
-        - govet  
-      text: "nilness"
-    - linters:
-        - prealloc
-      text: "Consider pre-allocating"
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
