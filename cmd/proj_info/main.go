@@ -55,6 +55,32 @@ func uniqueList(args ...string) []string {
 	return retv
 }
 
+// HiddenChapter is the chapter name that suppresses its projects from output entirely.
+const HiddenChapter = "hidden"
+
+// RestChapter is always listed last, after every other chapter.
+const RestChapter = "rest"
+
+// orderChapters sorts chapters alphabetically, but always places
+// RestChapter last regardless of where it falls alphabetically.
+func orderChapters(chapters []string) []string {
+	sort.Strings(chapters)
+
+	retv := make([]string, 0, len(chapters))
+	hasRest := false
+	for _, chapter := range chapters {
+		if chapter == RestChapter {
+			hasRest = true
+			continue
+		}
+		retv = append(retv, chapter)
+	}
+	if hasRest {
+		retv = append(retv, RestChapter)
+	}
+	return retv
+}
+
 // PrintHeader formats and prints the header information for the project.
 // It uses color formatting for the names and values, making it visually distinct.
 // The header includes the session name, project directory, description, and project type.
@@ -115,7 +141,20 @@ func main() {
 		{"Access", lastActivityStr},
 	}
 	PrintHeader(header)
-	brojects := findAllProjects(proj_obj.Directory, *depth)
+
+	chapterRules, err := proj_obj.LoadChapters()
+	utils.ErrorExit(err)
+
+	brojects := findAllProjects(proj_obj.Directory, *depth, chapterRules)
+
+	visible := make([]ProjectDef, 0, len(brojects))
+	for _, proj := range brojects {
+		if proj.Chapter == HiddenChapter {
+			continue
+		}
+		visible = append(visible, proj)
+	}
+	brojects = visible
 
 	chapters = make([]string, 0, len(brojects))
 	for _, proj := range brojects {
@@ -123,6 +162,7 @@ func main() {
 	}
 
 	chapters = uniqueList(chapters...)
+	chapters = orderChapters(chapters)
 
 	sort.Slice(brojects, func(i, j int) bool { return brojects[i].Name < brojects[j].Name })
 

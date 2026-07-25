@@ -12,7 +12,7 @@ import (
 func (ptc *ProjectTypeConfig) Setup() error {
 
 	// write basic files
-	targets := []string{"config.yml", "default.rc", "default.env"}
+	targets := []string{"config.yml", "default.rc", "default.env", "default.chapters.yml"}
 
 	if err := utils.MkdirAll(ptc.ProjectTypeDir); err != nil {
 		return err

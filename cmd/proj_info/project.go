@@ -8,6 +8,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/jvzantvoort/tmux-project/project"
 	"github.com/jvzantvoort/tmux-project/utils"
 )
 
@@ -79,7 +80,7 @@ func walkAllProjects(projdir string, maxDepth int) ([]string, error) {
 	return retv, err
 }
 
-func findAllProjects(projdir string, depth int) []ProjectDef {
+func findAllProjects(projdir string, depth int, chapters project.Chapters) []ProjectDef {
 	utils.LogStart()
 	defer utils.LogEnd()
 
@@ -99,7 +100,7 @@ func findAllProjects(projdir string, depth int) []ProjectDef {
 
 		go func(obj ProjectDef) {
 			defer wg.Done()
-			obj.Init()
+			obj.Init(chapters)
 			retv = append(retv, obj)
 		}(obj)
 
