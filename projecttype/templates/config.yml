@@ -17,3 +17,6 @@ targets:
   - name: default.rc
     destination: "{{.Name}}.rc"
     mode: 644
+  - name: default.chapters.yml
+    destination: "{{.Name}}.chapters.yml"
+    mode: 644

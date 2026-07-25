@@ -7,6 +7,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/jvzantvoort/tmux-project/git"
+	"github.com/jvzantvoort/tmux-project/project"
 	"github.com/jvzantvoort/tmux-project/utils"
 )
 
@@ -76,7 +77,7 @@ func NewProjectDef(projdir, dirname string) *ProjectDef {
 	return retv
 }
 
-func (pd *ProjectDef) Init() {
+func (pd *ProjectDef) Init(chapters project.Chapters) {
 	utils.LogStart()
 	defer utils.LogEnd()
 
@@ -85,10 +86,8 @@ func (pd *ProjectDef) Init() {
 	pd.Info, _ = os.Lstat(pd.Path)
 	if pd.ProjectDir == pd.Path {
 		pd.Name = "."
-		pd.Chapter = "root"
 	} else {
 		pd.Name = pd.Path[len(pd.ProjectDir)+1:]
-		pd.Chapter = "rest"
 	}
-
+	pd.Chapter = chapters.Classify(pd.Name)
 }

@@ -1,0 +1,17 @@
+# Chapter classification for proj_info.
+#
+# Each rule maps a glob pattern, relative to the project root, to a
+# chapter name. Rules are evaluated top to bottom; the first match wins.
+# "*" matches within one path segment only, it does not cross "/".
+#
+# The project root itself is always chapter "root". Anything that does
+# not match any rule below falls into chapter "rest", which proj_info
+# always lists last. Projects classified as chapter "hidden" are
+# suppressed from proj_info's output entirely.
+#
+# - path: "work/*"
+#   chapter: work
+# - path: "vendor/*"
+#   chapter: vendor
+# - path: "scratch/*"
+#   chapter: hidden
