@@ -1,17 +1,22 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"os"
 	"sort"
+	"time"
 
+	"github.com/charmbracelet/x/term"
 	"github.com/fatih/color"
 	"github.com/jvzantvoort/tmux-project/project"
 	"github.com/jvzantvoort/tmux-project/utils"
 	"github.com/olekukonko/tablewriter"
 	log "github.com/sirupsen/logrus"
 )
+
+var reader = bufio.NewReader(os.Stdin)
 
 func init() {
 	// Set up the logger
@@ -28,6 +33,21 @@ func init() {
 	// Only log the warning severity or above.
 	log.SetLevel(log.InfoLevel)
 
+}
+
+func readKey(input chan rune) {
+	fd := os.Stdin.Fd()
+	oldState, err := term.MakeRaw(fd)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer term.Restore(fd, oldState)
+
+	char, _, err := reader.ReadRune()
+	if err != nil {
+		log.Fatal(err)
+	}
+	input <- char
 }
 
 // cleanup handles any panic that occurs during execution, logging the error.
@@ -113,7 +133,11 @@ func PrintHeader(data [][]string) {
 func main() {
 	defer cleanup()
 	var chapters []string
+
+	input := make(chan rune, 1)
+
 	verbose := flag.Bool("v", false, "Verbose")
+	short := flag.Bool("s", false, "Short overview")
 	depth := flag.Int("d", 1, "Max depth in search")
 	flag.Parse()
 
@@ -133,49 +157,72 @@ func main() {
 		lastActivityStr += " ago"
 	}
 
-	header := [][]string{
-		{"Sessionname", proj_obj.Name},
-		{"Projectdir", proj_obj.Directory},
-		{"Description", proj_obj.Description},
-		{"Type", proj_obj.ProjectType},
-		{"Access", lastActivityStr},
-	}
-	PrintHeader(header)
+	if *short {
 
-	chapterRules, err := proj_obj.LoadChapters()
-	utils.ErrorExit(err)
-
-	brojects := findAllProjects(proj_obj.Directory, *depth, chapterRules)
-
-	visible := make([]ProjectDef, 0, len(brojects))
-	for _, proj := range brojects {
-		if proj.Chapter == HiddenChapter {
-			continue
+		header := [][]string{
+			{"Sessionname", proj_obj.Name},
+			{"Projectdir", proj_obj.Directory},
+			{"Description", proj_obj.Description},
+			{"Type", proj_obj.ProjectType},
 		}
-		visible = append(visible, proj)
-	}
-	brojects = visible
+		PrintHeader(header)
 
-	chapters = make([]string, 0, len(brojects))
-	for _, proj := range brojects {
-		chapters = append(chapters, proj.Chapter)
-	}
+		go readKey(input)
+		select {
+		case i := <-input:
+			log.Debugf("input code %v", i)
+			return
+		case <-time.After(10000 * time.Millisecond):
+			log.Debug("time out")
+			return
+		}
 
-	chapters = uniqueList(chapters...)
-	chapters = orderChapters(chapters)
+	} else {
+		header := [][]string{
+			{"Sessionname", proj_obj.Name},
+			{"Projectdir", proj_obj.Directory},
+			{"Description", proj_obj.Description},
+			{"Type", proj_obj.ProjectType},
+			{"Access", lastActivityStr},
+		}
+		PrintHeader(header)
 
-	sort.Slice(brojects, func(i, j int) bool { return brojects[i].Name < brojects[j].Name })
+		chapterRules, err := proj_obj.LoadChapters()
+		utils.ErrorExit(err)
 
-	for _, chapter := range chapters {
-		printTitle(chapter)
-		table := tablewriter.NewWriter(os.Stdout)
-		table.Header([]string{"Name", "Status", "Branch"})
+		brojects := findAllProjects(proj_obj.Directory, *depth, chapterRules)
+
+		visible := make([]ProjectDef, 0, len(brojects))
 		for _, proj := range brojects {
-			if chapter == proj.Chapter {
-				_ = table.Append(proj.GetFields())
+			if proj.Chapter == HiddenChapter {
+				continue
 			}
+			visible = append(visible, proj)
 		}
-		_ = table.Render()
+		brojects = visible
+
+		chapters = make([]string, 0, len(brojects))
+		for _, proj := range brojects {
+			chapters = append(chapters, proj.Chapter)
+		}
+
+		chapters = uniqueList(chapters...)
+		chapters = orderChapters(chapters)
+
+		sort.Slice(brojects, func(i, j int) bool { return brojects[i].Name < brojects[j].Name })
+
+		for _, chapter := range chapters {
+			printTitle(chapter)
+			table := tablewriter.NewWriter(os.Stdout)
+			table.Header([]string{"Name", "Status", "Branch"})
+			for _, proj := range brojects {
+				if chapter == proj.Chapter {
+					_ = table.Append(proj.GetFields())
+				}
+			}
+			_ = table.Render()
+		}
+		fmt.Printf("\n")
 	}
-	fmt.Printf("\n")
+
 }
