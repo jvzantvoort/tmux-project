@@ -10,7 +10,7 @@ require (
 	github.com/fatih/color v1.19.0
 	github.com/google/go-github/v62 v62.0.0
 	github.com/mitchellh/go-wordwrap v1.0.1
-	github.com/olekukonko/tablewriter v1.1.4
+	github.com/olekukonko/tablewriter v1.1.5
 	github.com/sirupsen/logrus v1.10.2
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.12.1
