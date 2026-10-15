@@ -1,0 +1,14 @@
+# markdownlint-cli2 configuration, also used by the lint workflow
+config:
+  # the changelog repeats "Bug Fixes" etc. under every release
+  MD024:
+    siblings_only: true
+  # tables and code blocks may be wider than the text
+  MD013:
+    tables: false
+    code_blocks: false
+  # README starts with badges above the title
+  MD041: false
+ignores:
+  - "vendor/**"
+  - "build/**"

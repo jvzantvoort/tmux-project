@@ -1,0 +1,2 @@
+Initialize a project type in ~/.tmux-project/<projecttype> with a config.yml
+and default templates. An existing project type is only overwritten with --force.
