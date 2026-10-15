@@ -125,12 +125,12 @@ func TestUpdateProjectFromInputs(t *testing.T) {
 	// Call the function
 	m.updateProjectFromInputs()
 
-	// Verify updates
-	if proj.Name != "new-name" {
-		t.Errorf("Name not updated: got %q, want %q", proj.Name, "new-name")
+	// Verify updates; name and directory are read-only in the TUI
+	if proj.Name != "test" {
+		t.Errorf("Name changed: got %q, want %q", proj.Name, "test")
 	}
-	if proj.Directory != "/new/directory" {
-		t.Errorf("Directory not updated: got %q, want %q", proj.Directory, "/new/directory")
+	if proj.Directory != "/original" {
+		t.Errorf("Directory changed: got %q, want %q", proj.Directory, "/original")
 	}
 	if proj.Description != "new description" {
 		t.Errorf("Description not updated: got %q, want %q", proj.Description, "new description")

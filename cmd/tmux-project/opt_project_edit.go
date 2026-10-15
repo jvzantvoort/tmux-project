@@ -36,11 +36,12 @@ func handleProjectEditCmd(cmd *cobra.Command, args []string) {
 	ProjectName := args[0]
 
 	proj := project.NewProject(ProjectName)
-	opts := []string{"-O"}
-	opts = append(opts, filepath.Join(config.SessionDir(), proj.Name+".rc"))
-	opts = append(opts, filepath.Join(config.SessionDir(), proj.Name+".env"))
+	cobra.CheckErr(utils.CheckPathName("project", proj.Name))
 
-	utils.Edit(opts...)
+	cobra.CheckErr(utils.Edit(
+		filepath.Join(config.SessionDir(), proj.Name+".rc"),
+		filepath.Join(config.SessionDir(), proj.Name+".env"),
+	))
 
 }
 

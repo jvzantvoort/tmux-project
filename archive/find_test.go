@@ -64,3 +64,16 @@ func sorted(s []string) []string {
 	}
 	return ss
 }
+
+func TestEntryName(t *testing.T) {
+	tests := map[string]string{
+		"/home/user/proj/file": "home/user/proj/file",
+		"relative/file":        "relative/file",
+		"//double":             "double",
+	}
+	for input, want := range tests {
+		if got := entryName(input); got != want {
+			t.Errorf("entryName(%q) = %q, want %q", input, got, want)
+		}
+	}
+}
