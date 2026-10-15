@@ -29,6 +29,9 @@ jobs:
       - name: Run go vet
         run: go vet ./...
 
+      - name: Run staticcheck
+        run: go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./...
+
       - name: Run tests
         run: go test -race ./...
 
@@ -59,6 +62,9 @@ jobs:
           go-version-file: 'go.mod'
           cache: true
 
+      - name: Show Go version
+        run: go version
+
       - name: Download dependencies
         run: go mod download
 
@@ -66,40 +72,26 @@ jobs:
         run: |
           mkdir -p build/${{ matrix.goos }}.${{ matrix.goarch }}
 
+      # build.sh sets GOOS and GOARCH itself
       - name: Build
-        env:
-          GOOS: ${{ matrix.goos }}
-          GOARCH: ${{ matrix.goarch }}
         run: |
-          ./build.sh buildr ${{ matrix.goos }} ${{ matrix.goarch }} $GITHUB_WORKSPACE/build
+          ./build.sh buildr ${{ matrix.goos }} ${{ matrix.goarch }} "$GITHUB_WORKSPACE/build"
 
       - name: Verify binary platforms
-        run: |
-          # every binary must be built for the platform its package is named after
-          fail=0
-          for binary in build/${{ matrix.goos }}.${{ matrix.goarch }}/*; do
-            goos="$(go version -m "${binary}" | awk '$1 == "build" && $2 ~ /^GOOS=/ { sub(/^GOOS=/, "", $2); print $2 }')"
-            goarch="$(go version -m "${binary}" | awk '$1 == "build" && $2 ~ /^GOARCH=/ { sub(/^GOARCH=/, "", $2); print $2 }')"
-            echo "${binary}: ${goos}/${goarch}"
-            if [[ "${goos}" != "${{ matrix.goos }}" || "${goarch}" != "${{ matrix.goarch }}" ]]; then
-              echo "::error file=${binary}::built for ${goos}/${goarch}, expected ${{ matrix.goos }}/${{ matrix.goarch }}"
-              fail=1
-            fi
-          done
-          exit "${fail}"
+        run: ./scripts/verify-binaries.sh ${{ matrix.goos }} ${{ matrix.goarch }} build/${{ matrix.goos }}.${{ matrix.goarch }}
 
       - name: Create package
         id: package
         run: |
-          VERSION=${GITHUB_REF#refs/tags/}
-          PACKAGE_NAME=tmux-project.${VERSION#tmux-project-}.${{ matrix.goos }}.${{ matrix.goarch }}.tar.gz
-          tar -czvf $PACKAGE_NAME -C build/${{ matrix.goos }}.${{ matrix.goarch }} .
-          echo "name=${PACKAGE_NAME}" >> $GITHUB_OUTPUT
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          VERSION="${GITHUB_REF#refs/tags/}"
+          PACKAGE_NAME="tmux-project.${VERSION#tmux-project-}.${{ matrix.goos }}.${{ matrix.goarch }}.tar.gz"
+          tar -czvf "${PACKAGE_NAME}" -C build/${{ matrix.goos }}.${{ matrix.goarch }} .
+          echo "name=${PACKAGE_NAME}" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
       - name: Generate checksum
         run: |
-          sha256sum ${{ steps.package.outputs.name }} > ${{ steps.package.outputs.name }}.sha256
+          sha256sum "${{ steps.package.outputs.name }}" > "${{ steps.package.outputs.name }}.sha256"
 
       - name: Upload release assets
         uses: softprops/action-gh-release@v3

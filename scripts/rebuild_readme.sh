@@ -1,12 +1,10 @@
 #!/bin/bash
 C_SCRIPTPATH="$(readlink -f "$0")"
 C_SCRIPTNAME="$(basename "$C_SCRIPTPATH" .sh)"
-C_SCRIPTDIR="$(dirname "${C_SCRIPTPATH}")"
 C_TOPDIR="$(git rev-parse --show-toplevel)"
 
 readonly C_SCRIPTPATH
 readonly C_SCRIPTNAME
-readonly C_SCRIPTDIR
 readonly C_TOPDIR
 
 C_HEADER="$(cat <<-ENDHEADER
