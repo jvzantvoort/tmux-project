@@ -3,13 +3,15 @@ package update
 import (
 	"archive/tar"
 	"compress/gzip"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/jvzantvoort/tmux-project/utils"
 	log "github.com/sirupsen/logrus"
@@ -44,20 +46,60 @@ func ThisExecutablePath() (string, error) {
 	return execPath, nil
 }
 
-func Install(url string) error {
+// downloadTimeout limits downloading a release archive or checksum
+const downloadTimeout = 5 * time.Minute
+
+// download saves url to path and returns the sha256 of its content
+func download(url, path string) (string, error) {
+	client := &http.Client{Timeout: downloadTimeout}
+	resp, err := client.Get(url) // #nosec G107 - URL is from the GitHub API
+	if err != nil {
+		return "", fmt.Errorf("failed to download %s: %w", url, err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("download of %s failed with status: %d", url, resp.StatusCode)
+	}
+
+	out, err := os.Create(path) // #nosec G304 - path is within controlled temp dir
+	if err != nil {
+		return "", fmt.Errorf("failed to create %s: %w", path, err)
+	}
+
+	hash := sha256.New()
+	_, err = io.Copy(io.MultiWriter(out, hash), resp.Body)
+	if cerr := out.Close(); err == nil {
+		err = cerr
+	}
+	if err != nil {
+		return "", fmt.Errorf("failed to save %s: %w", path, err)
+	}
+	return hex.EncodeToString(hash.Sum(nil)), nil
+}
+
+// parseChecksum returns the hash from sha256sum output
+func parseChecksum(content string) (string, error) {
+	fields := strings.Fields(content)
+	if len(fields) == 0 {
+		return "", fmt.Errorf("empty checksum file")
+	}
+	sum := strings.ToLower(fields[0])
+	if _, err := hex.DecodeString(sum); err != nil || len(sum) != sha256.Size*2 {
+		return "", fmt.Errorf("invalid checksum %q", fields[0])
+	}
+	return sum, nil
+}
+
+// Install downloads the release archive from url, verifies it against the
+// sha256sum file at checksumURL and installs the binaries it contains into
+// installDir.
+func Install(url, checksumURL, installDir string) error {
 	utils.LogStart()
 	defer utils.LogEnd()
 
-	execPath, err := ThisExecutablePath()
-	if err != nil {
-
-		return err
-	}
-	installDir := filepath.Dir(execPath)
-
 	tmpDir, err := os.MkdirTemp("", "tmux-project-update-*")
 	if err != nil {
-		log.Errorf("failed to create temp directory: %v", err)
 		return fmt.Errorf("failed to create temp directory: %w", err)
 	}
 	defer func() {
@@ -67,50 +109,38 @@ func Install(url string) error {
 	}()
 	log.Debugf("tmpDir: %s", tmpDir)
 
+	checksumPath := filepath.Join(tmpDir, "download.tar.gz.sha256")
+	if _, err := download(checksumURL, checksumPath); err != nil {
+		return err
+	}
+	content, err := os.ReadFile(checksumPath) // #nosec G304 - path is within controlled temp dir
+	if err != nil {
+		return err
+	}
+	want, err := parseChecksum(string(content))
+	if err != nil {
+		return err
+	}
+
 	log.Infof("downloading from %s", url)
-	resp, err := http.Get(url) // #nosec G107 - URL is from trusted GitHub API
-	if err != nil {
-		log.Errorf("failed to download: %v", err)
-		return fmt.Errorf("failed to download: %w", err)
-	}
-	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			log.Errorf("failed to close response body: %v", err)
-		}
-	}()
-
-	if resp.StatusCode != http.StatusOK {
-		log.Errorf("download failed with status: %d", resp.StatusCode)
-		return fmt.Errorf("download failed with status: %d", resp.StatusCode)
-	}
-
 	archivePath := filepath.Join(tmpDir, "download.tar.gz")
-	out, err := os.Create(archivePath) // #nosec G304 - path is within controlled temp dir
+	got, err := download(url, archivePath)
 	if err != nil {
-		log.Errorf("failed to create temp file: %v", err)
-		return fmt.Errorf("failed to create temp file: %w", err)
+		return err
 	}
-
-	log.Debugf("archivePath: %s", archivePath)
-
-	_, err = io.Copy(out, resp.Body)
-	if cerr := out.Close(); cerr != nil {
-		log.Errorf("failed to close output file: %v", cerr)
+	if got != want {
+		return fmt.Errorf("checksum mismatch for %s: got %s, want %s", url, got, want)
 	}
-	if err != nil {
-		log.Errorf("failed to save download: %v", err)
-		return fmt.Errorf("failed to save download: %w", err)
-	}
+	log.Infof("checksum verified")
 
+	unpackDir := filepath.Join(tmpDir, "unpacked")
 	log.Infof("unpacking archive")
-	if err := unpackTarGz(archivePath, tmpDir); err != nil {
-		log.Errorf("failed to unpack archive: %v", err)
+	if err := unpackTarGz(archivePath, unpackDir); err != nil {
 		return fmt.Errorf("failed to unpack archive: %w", err)
 	}
 
 	log.Infof("installing binaries to %s", installDir)
-	if err := installBinaries(tmpDir, installDir); err != nil {
-		log.Errorf("failed to install binaries: %v", err)
+	if err := installBinaries(unpackDir, installDir); err != nil {
 		return fmt.Errorf("failed to install binaries: %w", err)
 	}
 
@@ -215,45 +245,13 @@ func unpackTarGz(archivePath, destDir string) error {
 	return nil
 }
 
-func selfUpdate(newBinaryPath string) error {
-	exePath, err := ThisExecutablePath()
-	if err != nil {
-		return fmt.Errorf("cannot get executable path: %w", err)
-	}
-
-	updateScript := fmt.Sprintf(`
-        sleep 1
-        mv %s %s
-        chmod +x %s
-        %s &
-    `, newBinaryPath, exePath, exePath, exePath)
-
-	cmd := exec.Command("sh", "-c", updateScript)
-	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("failed to start update script: %w", err)
-	}
-
-	os.Exit(0) // exit current process to allow replacement
-	return nil
-}
-
-func safeInstallBinary(srcPath, destPath string) error {
+// installBinary copies srcPath to destPath. The new file is written next
+// to destPath and renamed over it, so a running binary, including this one,
+// is replaced atomically.
+func installBinary(srcPath, destPath string) error {
 	utils.LogStart()
 	defer utils.LogEnd()
 	log.Debugf("installing binary from %s to %s", srcPath, destPath)
-	updatingSelf := false
-	srcPath, _ = ResolvePath(srcPath)
-	destPath, _ = ResolvePath(destPath)
-
-	thisExec, err := ThisExecutablePath()
-	if err != nil {
-		return err
-	}
-	if destPath == thisExec {
-		destPath += ".new"
-		log.Infof("updating the running executable via temporary file %s", destPath)
-		updatingSelf = true
-	}
 
 	info, err := os.Stat(srcPath)
 	if err != nil {
@@ -265,14 +263,13 @@ func safeInstallBinary(srcPath, destPath string) error {
 		return fmt.Errorf("failed to read %s: %w", srcPath, err)
 	}
 
-	if err := os.WriteFile(destPath, data, info.Mode()); err != nil {
-		return fmt.Errorf("failed to write %s: %w", destPath, err)
+	tmpPath := destPath + ".new"
+	if err := os.WriteFile(tmpPath, data, info.Mode().Perm()); err != nil { // #nosec G703 - destination is the install directory
+		return fmt.Errorf("failed to write %s: %w", tmpPath, err)
 	}
-
-	if updatingSelf {
-		if err := selfUpdate(destPath); err != nil {
-			return fmt.Errorf("failed to self-update: %w", err)
-		}
+	if err := os.Rename(tmpPath, destPath); err != nil {
+		_ = os.Remove(tmpPath)
+		return fmt.Errorf("failed to replace %s: %w", destPath, err)
 	}
 	return nil
 }
@@ -305,12 +302,11 @@ func installBinaries(srcDir, destDir string) error {
 
 	for _, binary := range binaries {
 		filename := filepath.Base(binary)
-		srcPath := filepath.Join(srcDir, filename)
 		destPath := filepath.Join(destDir, filename)
 
 		log.Infof("installing %s", filename)
 
-		err := safeInstallBinary(srcPath, destPath)
+		err := installBinary(binary, destPath)
 		if err != nil {
 			return err
 		}

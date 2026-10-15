@@ -1,9 +1,12 @@
 package utils
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestExec(t *testing.T) {
@@ -179,50 +182,98 @@ func TestQueueAdd(t *testing.T) {
 }
 
 func TestQueueRun(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping queue run test in short mode")
-	}
-
 	queue := NewQueue()
 	tempDir := t.TempDir()
 
 	queue.Add(tempDir, "echo test1")
 	queue.Add(tempDir, "echo test2")
 
-	// Should not panic
-	defer func() {
-		if r := recover(); r != nil {
-			t.Errorf("Queue.Run should not panic: %v", r)
-		}
-	}()
+	if err := queue.Run(); err != nil {
+		t.Errorf("Queue.Run() error = %v", err)
+	}
+}
 
-	queue.Run()
+func TestQueueRunInOrder(t *testing.T) {
+	queue := NewQueue()
+	tempDir := t.TempDir()
+
+	// each step depends on the previous one
+	queue.Add(tempDir, "mkdir step1")
+	queue.Add(tempDir, "mkdir step1/step2")
+	queue.Add(tempDir, "echo done > step1/step2/result")
+
+	if err := queue.Run(); err != nil {
+		t.Fatalf("Queue.Run() error = %v", err)
+	}
+
+	content, err := os.ReadFile(filepath.Join(tempDir, "step1", "step2", "result"))
+	if err != nil {
+		t.Fatalf("result file missing: %v", err)
+	}
+	if strings.TrimSpace(string(content)) != "done" {
+		t.Errorf("result = %q, want %q", content, "done")
+	}
 }
 
 func TestQueueRunWithFailure(t *testing.T) {
-	t.Skip("Queue.Run with failure calls ErrorExit which terminates the program")
+	queue := NewQueue()
+	tempDir := t.TempDir()
+
+	queue.Add(tempDir, "false")
+	queue.Add(tempDir, "touch should-not-exist")
+
+	if err := queue.Run(); err == nil {
+		t.Fatal("Queue.Run() expected an error")
+	}
+
+	if _, err := os.Stat(filepath.Join(tempDir, "should-not-exist")); !os.IsNotExist(err) {
+		t.Error("Queue.Run() ran an action after a failed one")
+	}
 }
 
 func TestQueueElementRun(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping element run test in short mode")
-	}
-
 	tempDir := t.TempDir()
 
 	element := QueueElement{
 		Cwd:     tempDir,
-		Command: "echo test",
+		Command: "echo 'quoted argument' | tr a-z A-Z",
 	}
 
-	// Should not panic for successful command
-	defer func() {
-		if r := recover(); r != nil {
-			t.Errorf("QueueElement.Run should not panic for successful command: %v", r)
+	if err := element.Run(); err != nil {
+		t.Errorf("QueueElement.Run() error = %v", err)
+	}
+}
+
+func TestExecShell(t *testing.T) {
+	stdout, _, err := ExecShell(t.TempDir(), "echo 'hello   world' && echo second")
+	if err != nil {
+		t.Fatalf("ExecShell() error = %v", err)
+	}
+	want := []string{"hello   world", "second"}
+	if strings.Join(stdout, "|") != strings.Join(want, "|") {
+		t.Errorf("ExecShell() stdout = %q, want %q", stdout, want)
+	}
+}
+
+func TestExecLargeStderr(t *testing.T) {
+	// more stderr output than a pipe buffer holds, written before stdout
+	done := make(chan error, 1)
+	go func() {
+		_, stderr, err := ExecSilent(t.TempDir(), "sh -c head${IFS}-c${IFS}300000${IFS}/dev/zero>&2;echo${IFS}ok")
+		if err == nil && len(stderr) == 0 {
+			err = fmt.Errorf("no stderr captured")
 		}
+		done <- err
 	}()
 
-	element.Run()
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Errorf("ExecSilent() error = %v", err)
+		}
+	case <-time.After(10 * time.Second):
+		t.Fatal("ExecSilent() blocked on a large stderr stream")
+	}
 }
 
 func TestExecCommandParsing(t *testing.T) {

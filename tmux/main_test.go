@@ -2,6 +2,7 @@ package tmux
 
 import (
 	"os"
+	"reflect"
 	"testing"
 )
 
@@ -99,5 +100,71 @@ func TestListActiveNoDuplicates(t *testing.T) {
 			t.Errorf("Duplicate session found: %s", session)
 		}
 		seen[session] = true
+	}
+}
+
+func TestSessionName(t *testing.T) {
+	tests := map[string]string{
+		"plain":    "plain",
+		"foo.bar":  "foo_bar",
+		"a:b.c":    "a_b_c",
+		"JIRA-123": "JIRA-123",
+	}
+	for input, want := range tests {
+		if got := SessionName(input); got != want {
+			t.Errorf("SessionName(%q) = %q, want %q", input, got, want)
+		}
+	}
+}
+
+func TestResumeCommands(t *testing.T) {
+	tests := []struct {
+		name       string
+		exists     bool
+		insideTmux bool
+		directory  string
+		want       [][]string
+	}{
+		{
+			name: "outside tmux, new session",
+			want: [][]string{{"-f", "p.rc", "new-session", "-s", "p", "-c", "/work/p"}},
+		},
+		{
+			name:   "outside tmux, existing session",
+			exists: true,
+			want:   [][]string{{"-f", "p.rc", "attach-session", "-d", "-t", "=p"}},
+		},
+		{
+			name:       "inside tmux, new session",
+			insideTmux: true,
+			want: [][]string{
+				{"-f", "p.rc", "new-session", "-d", "-s", "p", "-c", "/work/p"},
+				{"switch-client", "-t", "=p"},
+			},
+		},
+		{
+			name:       "inside tmux, existing session",
+			exists:     true,
+			insideTmux: true,
+			want:       [][]string{{"switch-client", "-t", "=p"}},
+		},
+		{
+			name:      "unknown project has no start directory",
+			directory: "-",
+			want:      [][]string{{"-f", "p.rc", "new-session", "-s", "p"}},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			directory := "/work/p"
+			if tt.directory == "-" {
+				directory = ""
+			}
+			got := resumeCommands("p", "p.rc", directory, tt.exists, tt.insideTmux)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("resumeCommands() = %q, want %q", got, tt.want)
+			}
+		})
 	}
 }

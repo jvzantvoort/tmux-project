@@ -1,6 +1,9 @@
 package git
 
 import (
+	"os"
+	"os/exec"
+	"path/filepath"
 	"testing"
 )
 
@@ -98,27 +101,66 @@ func TestQueueRun(t *testing.T) {
 	queue := NewQueue()
 
 	// Add items with invalid URLs that will fail
-	queue.Add("https://invalid-url.com/repo1.git", t.TempDir(), "repo1", "main")
+	queue.Add("https://invalid-url.invalid/repo1.git", t.TempDir(), "repo1", "main")
 
-	// Run should not panic even if items fail
-	defer func() {
-		if r := recover(); r != nil {
-			t.Logf("Queue.Run panicked (expected for invalid repos): %v", r)
-		}
-	}()
-
-	queue.Run()
+	if err := queue.Run(); err == nil {
+		t.Error("Queue.Run() expected an error for an invalid repository")
+	}
 }
 
 func TestQueueEmpty(t *testing.T) {
 	queue := NewQueue()
 
-	// Running an empty queue should not panic
-	defer func() {
-		if r := recover(); r != nil {
-			t.Errorf("Empty queue run should not panic: %v", r)
-		}
-	}()
+	if err := queue.Run(); err != nil {
+		t.Errorf("Queue.Run() on empty queue error = %v", err)
+	}
+}
 
-	queue.Run()
+// gitRun runs git in dir for test setup
+func gitRun(t *testing.T, dir string, args ...string) {
+	t.Helper()
+	cmd := exec.Command("git", args...)
+	cmd.Dir = dir
+	cmd.Env = append(os.Environ(),
+		"GIT_AUTHOR_NAME=test", "GIT_AUTHOR_EMAIL=test@example.com",
+		"GIT_COMMITTER_NAME=test", "GIT_COMMITTER_EMAIL=test@example.com",
+		"GIT_CONFIG_GLOBAL=/dev/null", "GIT_CONFIG_NOSYSTEM=1")
+	if out, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("git %v: %v\n%s", args, err, out)
+	}
+}
+
+func TestQueueRunChecksOutBranchInClone(t *testing.T) {
+	if _, err := exec.LookPath("git"); err != nil {
+		t.Skip("git not available")
+	}
+
+	// source repository with a "feature" branch next to the default one
+	source := filepath.Join(t.TempDir(), "source")
+	if err := os.MkdirAll(source, 0750); err != nil {
+		t.Fatal(err)
+	}
+	gitRun(t, source, "init", "-q", "-b", "main")
+	gitRun(t, source, "commit", "-q", "--allow-empty", "-m", "initial")
+	gitRun(t, source, "branch", "feature")
+
+	projdir := t.TempDir()
+
+	queue := NewQueue()
+	queue.Add(source, projdir, "with-branch", "feature")
+	queue.Add(source, projdir, "without-branch", "")
+
+	if err := queue.Run(); err != nil {
+		t.Fatalf("Queue.Run() error = %v", err)
+	}
+
+	for dest, want := range map[string]string{"with-branch": "feature", "without-branch": "main"} {
+		branch, err := NewGitCmd(filepath.Join(projdir, dest)).Branch()
+		if err != nil {
+			t.Fatalf("Branch() of %s error = %v", dest, err)
+		}
+		if branch != want {
+			t.Errorf("%s is on branch %q, want %q", dest, branch, want)
+		}
+	}
 }

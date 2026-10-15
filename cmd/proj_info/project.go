@@ -21,7 +21,7 @@ func DirDepthMap(projdir string) (map[string]int, error) {
 	reldepth := strings.Count(projdir, string(os.PathSeparator))
 	utils.Debugf("relative depth %d", reldepth)
 
-	err := filepath.Walk(projdir, func(path string, fi os.FileInfo, inerr error) error {
+	err := filepath.Walk(projdir, func(path string, fi os.FileInfo, inerr error) error { // #nosec G703 - walks the configured project directory
 		err := inerr
 		if err != nil {
 			utils.Errorf("this passed an error: %q", err)

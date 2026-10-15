@@ -2,22 +2,11 @@ package utils
 
 import (
 	"bufio"
+	"bytes"
+	"fmt"
 	"os/exec"
 	"strings"
-
-	"fmt"
-	"sync"
 )
-
-var (
-	wg sync.WaitGroup
-)
-
-func cleanup() {
-	if r := recover(); r != nil {
-		Errorf("Paniced %s", r)
-	}
-}
 
 // QueueElement represents a single command to be executed with its working directory
 type QueueElement struct {
@@ -25,7 +14,7 @@ type QueueElement struct {
 	Command string
 }
 
-// Queue manages a collection of commands to be executed concurrently
+// Queue manages an ordered list of commands to be executed
 type Queue struct {
 	Queue []QueueElement
 }
@@ -35,16 +24,16 @@ func (q *Queue) Add(cwd, command string) {
 	q.Queue = append(q.Queue, QueueElement{Cwd: cwd, Command: command})
 }
 
-// Run executes all queued commands concurrently using goroutines
-func (q *Queue) Run() {
+// Run executes the queued commands one after another, in the order they
+// were added. It stops at the first command that fails and returns its
+// error, as later commands may depend on earlier ones.
+func (q *Queue) Run() error {
 	for _, item := range q.Queue {
-		wg.Add(1)
-		go func(el QueueElement) {
-			defer wg.Done()
-			el.Run()
-		}(item)
+		if err := item.Run(); err != nil {
+			return err
+		}
 	}
-	wg.Wait()
+	return nil
 }
 
 // NewQueue creates and returns a new empty Queue
@@ -52,11 +41,9 @@ func NewQueue() *Queue {
 	return &Queue{}
 }
 
-// Run executes a single queue element command
-func (e QueueElement) Run() {
-	defer cleanup()
-
-	stdout_list, stderr_list, eerror := Exec(e.Cwd, e.Command)
+// Run executes a single queue element command through the shell
+func (e QueueElement) Run() error {
+	stdout_list, stderr_list, eerror := ExecShell(e.Cwd, e.Command)
 	for _, stdout_line := range stdout_list {
 		Infof("<stdout> %s", stdout_line)
 	}
@@ -64,100 +51,84 @@ func (e QueueElement) Run() {
 		Errorf("<stderr> %s", stderr_line)
 	}
 	if eerror != nil {
-		panic(fmt.Sprintf("Action \"%s\" failed", e.Command))
+		return fmt.Errorf("action %q failed: %w", e.Command, eerror)
 	}
+	return nil
 }
 
-// Exec executes a command in the specified working directory and returns stdout, stderr, and any error
-func Exec(cwd, args string) ([]string, []string, error) {
-	commandlist := []string{}
-	stdout_list := []string{}
-	stderr_list := []string{}
-	cmndargs := strings.Split(args, " ")
-	cmnd := cmndargs[0]
-	cmndargs = cmndargs[1:]
-	commandlist = append(commandlist, cmndargs...)
-	command := exec.Command(cmnd, commandlist...)
-	Debugf("command: %s %s", cmnd, strings.Join(commandlist, " "))
-	Debugf("         cwd: %s", cwd)
+// splitLines splits command output into lines
+func splitLines(data []byte) []string {
+	retv := []string{}
+	scanner := bufio.NewScanner(bytes.NewReader(data))
+	scanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
+	for scanner.Scan() {
+		retv = append(retv, scanner.Text())
+	}
+	return retv
+}
+
+// run executes command in cwd and returns its stdout and stderr lines.
+// Both streams are collected at the same time, so a command writing a lot
+// to one stream cannot block on the other.
+func run(cwd string, command *exec.Cmd) ([]string, []string, error) {
+	var stdout, stderr bytes.Buffer
+
 	command.Dir = cwd
+	command.Stdout = &stdout
+	command.Stderr = &stderr
 
-	stdout, err := command.StdoutPipe()
-	ErrorExit(err)
+	err := command.Run()
+	return splitLines(stdout.Bytes()), splitLines(stderr.Bytes()), err
+}
 
-	stderr, err := command.StderrPipe()
-	ErrorExit(err)
+// Exec executes a command in the specified working directory and returns stdout, stderr, and any error.
+// The command is split on whitespace; no shell quoting is applied.
+func Exec(cwd, args string) ([]string, []string, error) {
+	cmndargs := strings.Fields(args)
+	if len(cmndargs) == 0 {
+		return []string{}, []string{}, fmt.Errorf("empty command")
+	}
+	Debugf("command: %s", strings.Join(cmndargs, " "))
+	Debugf("         cwd: %s", cwd)
 
-	err = command.Start()
-	ErrorExit(err)
-
-	stdout_scan := bufio.NewScanner(stdout)
-	stdout_scan.Split(bufio.ScanLines)
-	for stdout_scan.Scan() {
-		msg := stdout_scan.Text()
+	stdout_list, stderr_list, eerror := run(cwd, exec.Command(cmndargs[0], cmndargs[1:]...)) // #nosec G204 - commands come from the user's own configuration
+	for _, msg := range stdout_list {
 		Debugf("%s", msg)
-		stdout_list = append(stdout_list, msg)
 	}
-
-	stderr_scan := bufio.NewScanner(stderr)
-	stderr_scan.Split(bufio.ScanLines)
-	for stderr_scan.Scan() {
-		msg := stderr_scan.Text()
+	for _, msg := range stderr_list {
 		Errorf("%s", msg)
-		stderr_list = append(stderr_list, msg)
 	}
-
-	eerror := command.Wait()
 	if eerror != nil {
-		Errorf("command failed, %v", err)
+		Errorf("command failed, %v", eerror)
 	}
-
 	return stdout_list, stderr_list, eerror
+}
+
+// ExecShell executes command with "sh -c" in the specified working
+// directory, so quoting, pipes and && work as they do in a shell.
+func ExecShell(cwd, command string) ([]string, []string, error) {
+	Debugf("command: sh -c %q", command)
+	Debugf("         cwd: %s", cwd)
+	return run(cwd, exec.Command("sh", "-c", command)) // #nosec G204 - commands come from the user's own configuration
 }
 
 // ExecSilent executes a command silently without extensive error handling,
 // useful for commands where failure is acceptable
 func ExecSilent(cwd, args string) ([]string, []string, error) {
-	commandlist := []string{}
-	stdout_list := []string{}
-	stderr_list := []string{}
-
-	cmndargs := strings.Split(args, " ")
-
-	cmnd := cmndargs[0]
-	cmndargs = cmndargs[1:]
-	commandlist = append(commandlist, cmndargs...)
-	command := exec.Command(cmnd, commandlist...)
-	command.Dir = cwd
-
-	stdout, _ := command.StdoutPipe()
-	stderr, _ := command.StderrPipe()
-
-	err := command.Start()
-	if err != nil {
-		return stdout_list, stderr_list, err
+	cmndargs := strings.Fields(args)
+	if len(cmndargs) == 0 {
+		return []string{}, []string{}, fmt.Errorf("empty command")
 	}
 
-	stdout_scan := bufio.NewScanner(stdout)
-	stdout_scan.Split(bufio.ScanLines)
-	for stdout_scan.Scan() {
-		msg := stdout_scan.Text()
+	stdout_list, stderr_list, eerror := run(cwd, exec.Command(cmndargs[0], cmndargs[1:]...)) // #nosec G204 - commands come from the user's own configuration
+	for _, msg := range stdout_list {
 		Debugf("stdout: %s", msg)
-		stdout_list = append(stdout_list, msg)
 	}
-
-	stderr_scan := bufio.NewScanner(stderr)
-	stderr_scan.Split(bufio.ScanLines)
-	for stderr_scan.Scan() {
-		msg := stderr_scan.Text()
+	for _, msg := range stderr_list {
 		Debugf("stderr: %s", msg)
-		stderr_list = append(stderr_list, msg)
 	}
-
-	eerror := command.Wait()
 	if eerror != nil {
-		Debugf("Error: command failed, %v", err)
+		Debugf("Error: command failed, %v", eerror)
 	}
-
 	return stdout_list, stderr_list, eerror
 }

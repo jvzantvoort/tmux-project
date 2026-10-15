@@ -60,7 +60,7 @@ func GenerateListOfMaps() []map[string]string {
 		dict["Directory"] = sessp.Directory
 		dict["Status"] = sessp.Status
 
-		if utils.StringInSlice(sessionname, active) {
+		if utils.StringInSlice(tmux.SessionName(sessionname), active) {
 			dict["Active"] = "yes"
 		} else {
 			dict["Active"] = ""

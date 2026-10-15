@@ -49,7 +49,7 @@ func (ptc ProjectTypeConfig) UpdateConfigFile(target string) error {
 	}
 	content = ncontent
 
-	err = os.WriteFile(target, []byte(content), 0)
+	err = os.WriteFile(target, []byte(content), 0) // #nosec G703 - project type name is checked by CheckPathName
 	if err != nil {
 		return err
 	}

@@ -17,8 +17,16 @@ tmux-project project create <project-name> [flags]
 ```
 
 Flags:
-- `-t, --type <type>`: Specify the project type (required for new projects)
+- `-t, --type <type>`: Specify the project type (default: `default`)
 - `-d, --description <desc>`: Project description
+
+The project name is also the tmux session name and the base name of the
+files in `~/.tmux.d`, so it must not contain `/`, `\`, `.`, `:` or
+whitespace, and must not start with `-`. It must also match the `pattern` of
+the project type.
+
+The setup actions of the project type run one after another, in the project
+directory, through `sh -c`; creation stops at the first action that fails.
 
 ### Resume a Project
 Resume working on an existing project:
@@ -35,9 +43,9 @@ resume <project-name>
 
 This command:
 - Loads the project configuration
-- Sets up the environment variables
-- Starts or attaches to the tmux session
-- Changes to the project directory
+- Attaches to the tmux session, or creates it in the project directory
+- Inside tmux, switches the current client to the session instead of
+  nesting tmux
 
 ### Edit Project Configuration
 Edit a project's configuration file:
