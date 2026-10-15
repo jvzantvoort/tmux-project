@@ -111,10 +111,32 @@ func TestProject_RoundTrip(t *testing.T) {
 }
 
 func TestProject_SaveAndOpen(t *testing.T) {
-	// This test is skipped because config.SessionDir() uses user.Current()
-	// which cannot be easily mocked. The Save/Open functionality is tested
-	// indirectly through Write/Read tests and manual testing.
-	t.Skip("Save/Open requires mocking config.SessionDir() which uses user.Current()")
+	t.Setenv("HOME", t.TempDir())
+
+	original := Project{
+		Name:        "save-open-test",
+		Directory:   "/tmp/save-open-test",
+		Description: "round trip through the session directory",
+		ProjectType: "default",
+	}
+	if err := original.Save(); err != nil {
+		t.Fatalf("Save() error = %v", err)
+	}
+
+	loaded := NewProject("save-open-test")
+	if err := loaded.Open(); err != nil {
+		t.Fatalf("Open() error = %v", err)
+	}
+	if loaded.Directory != original.Directory || loaded.Description != original.Description {
+		t.Errorf("Open() = %+v, want %+v", loaded, original)
+	}
+
+	if err := NewProject("does-not-exist").Open(); err == nil {
+		t.Error("Open() of a missing project expected an error")
+	}
+	if err := NewProject("../escape").Open(); err == nil {
+		t.Error("Open() of a name with a path separator expected an error")
+	}
 }
 
 func TestProject_SaveTruncates(t *testing.T) {

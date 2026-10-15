@@ -1,86 +1,44 @@
 package config
 
 import (
-	"os"
-	"os/user"
-	"path"
+	"path/filepath"
 	"testing"
 )
 
 func TestHome(t *testing.T) {
-	usr, err := user.Current()
-	if err != nil {
-		t.Fatalf("Failed to get current user: %v", err)
-	}
+	home := t.TempDir()
+	t.Setenv("HOME", home)
 
-	home := Home()
-	if home != usr.HomeDir {
-		t.Errorf("Home() = %s, want %s", home, usr.HomeDir)
+	if got := Home(); got != home {
+		t.Errorf("Home() = %s, want %s", got, home)
 	}
 }
 
 func TestConfigDir(t *testing.T) {
-	usr, _ := user.Current()
-	expected := path.Join(usr.HomeDir, ".tmux-project")
+	home := t.TempDir()
+	t.Setenv("HOME", home)
 
-	configDir := ConfigDir()
-	if configDir != expected {
-		t.Errorf("ConfigDir() = %s, want %s", configDir, expected)
+	want := filepath.Join(home, ".tmux-project")
+	if got := ConfigDir(); got != want {
+		t.Errorf("ConfigDir() = %s, want %s", got, want)
 	}
 }
 
 func TestSessionDir(t *testing.T) {
-	usr, _ := user.Current()
-	expected := path.Join(usr.HomeDir, ".tmux.d")
+	home := t.TempDir()
+	t.Setenv("HOME", home)
 
-	sessionDir := SessionDir()
-	if sessionDir != expected {
-		t.Errorf("SessionDir() = %s, want %s", sessionDir, expected)
+	want := filepath.Join(home, ".tmux.d")
+	if got := SessionDir(); got != want {
+		t.Errorf("SessionDir() = %s, want %s", got, want)
 	}
 }
 
-func TestConfigDirIntegration(t *testing.T) {
-	// Test that ConfigDir is a subdirectory of Home
-	home := Home()
-	configDir := ConfigDir()
+func TestHomeFallback(t *testing.T) {
+	// without $HOME the home directory comes from the user database
+	t.Setenv("HOME", "")
 
-	if len(configDir) <= len(home) {
-		t.Errorf("ConfigDir should be longer than Home")
-	}
-
-	if configDir[:len(home)] != home {
-		t.Errorf("ConfigDir should start with Home path")
-	}
-}
-
-func TestSessionDirIntegration(t *testing.T) {
-	// Test that SessionDir is a subdirectory of Home
-	home := Home()
-	sessionDir := SessionDir()
-
-	if len(sessionDir) <= len(home) {
-		t.Errorf("SessionDir should be longer than Home")
-	}
-
-	if sessionDir[:len(home)] != home {
-		t.Errorf("SessionDir should start with Home path")
-	}
-}
-
-func TestConfigDirEnvOverride(t *testing.T) {
-	// Save original HOME
-	originalHome := os.Getenv("HOME")
-	defer os.Setenv("HOME", originalHome)
-
-	// Test with custom HOME
-	testHome := "/tmp/test-home"
-	os.Setenv("HOME", testHome)
-
-	// Note: This test may not work as expected since Home() uses user.Current()
-	// which may not respect the HOME environment variable on all systems
-	// This is more of a documentation test
-	configDir := ConfigDir()
-	if configDir == "" {
-		t.Error("ConfigDir should not be empty")
+	if got := Home(); got == "" {
+		t.Error("Home() returned an empty string without $HOME")
 	}
 }
