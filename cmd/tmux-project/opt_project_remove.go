@@ -32,19 +32,19 @@ func handleProjectRemoveCmd(cmd *cobra.Command, args []string) {
 	ProjectName := args[0]
 
 	swArchive, _ := cmd.Flags().GetBool("archive")
-	swInteractive, _ := cmd.Flags().GetBool("yes")
+	swAssumeYes, _ := cmd.Flags().GetBool("yes")
 
-	if swArchive {
-		err := CreateArchive(ProjectName, "")
-		cobra.CheckErr(err)
-	}
-	err := ProjectRemove(ProjectName, swInteractive)
+	err := ProjectRemove(ProjectName, swArchive, swAssumeYes)
 	cobra.CheckErr(err)
 
 }
 
 func init() {
 	ProjectCmd.AddCommand(ProjectRemoveCmd)
+	ProjectRemoveCmd.Flags().BoolP("archive", "a", false, "Archive the project before removal")
+	ProjectRemoveCmd.Flags().BoolP("yes", "y", false, "Do not ask for confirmation")
+
+	// --noarchive never had an effect; not archiving is the default now
 	ProjectRemoveCmd.Flags().BoolP("noarchive", "x", true, "Do not archive before delete")
-	ProjectRemoveCmd.Flags().BoolP("yes", "y", false, "Assume yes")
+	cobra.CheckErr(ProjectRemoveCmd.Flags().MarkDeprecated("noarchive", "not archiving is the default, use --archive to archive"))
 }

@@ -67,8 +67,13 @@ Remove a project (with optional archiving):
 tmux-project project remove <project-name> [flags]
 ```
 
+Removes the project directory, its target files and its session files in
+`~/.tmux.d`. The paths are listed and you are asked to confirm first. A
+project whose tmux session is still running is not removed.
+
 Flags:
-- `--archive`: Archive the project before removal
+- `-a, --archive`: Archive the project to `<directory>.tar.gz` before removal
+- `-y, --yes`: Do not ask for confirmation
 
 ### List Project Files
 List all files in a project directory:

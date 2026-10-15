@@ -1,1 +1,7 @@
-remove a project
+Remove a project: its project directory, its target files and its
+session files in ~/.tmux.d.
+
+The paths to be removed are listed first and you are asked to confirm,
+unless --yes is given. Use --archive to create <directory>.tar.gz before
+anything is removed. A project whose tmux session is still running is
+not removed.

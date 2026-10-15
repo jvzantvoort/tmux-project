@@ -362,7 +362,7 @@ do_buildr() {
         dest="${outputdir}/${goos}.${goarch}"
 
         CGO_ENABLED=0 \
-            GOOS=${goos} GOARCH=${arch} \
+            GOOS=${goos} GOARCH=${goarch} \
             go build -ldflags "${LDFLAGS}" \
             -trimpath \
             -o "${dest}/${target}" "./cmd/${target}"
