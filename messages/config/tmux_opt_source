@@ -36,27 +36,25 @@ function have_themepack()
 #                                    Main                                      #
 #------------------------------------------------------------------------------#
 
-THEME=$1; shift
-
-have_themepack || exit 1
-
-if [[ "${THEME}" = "--help" ]]
+if [[ "$1" = "--help" || $# -eq 0 ]]
 then
-  echo "${C_SCRIPTPATH} <theme name>"
+  echo "${C_SCRIPTPATH} <theme> [<fallback theme> ...]"
   echo ""
-  echo "To use put the follown in your tmux configuration:"
+  echo "Sources the first readable theme, relative to ${C_SCRIPTDIR}."
+  echo "To use put the following in your tmux configuration:"
   echo ""
   echo "run-shell \"bash ~/.tmux.d/${C_SCRIPTNAME} tmux-themepack/powerline/block/gray.tmuxtheme\""
   echo ""
   exit 0
 fi
 
-source_if_exists "${THEME}" && exit 0
+have_themepack || exit 1
 
+# the requested theme, then the fallbacks in the order given
 for theme in "$@"
 do
   source_if_exists "${theme}" && exit 0
-done < <(find ~/.tmux.d/tmux-themepack/powerline/default/ -name '*.tmuxtheme')
+done
 
 source_if_exists "default.tmuxtheme"
 

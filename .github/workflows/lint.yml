@@ -25,9 +25,21 @@ jobs:
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v9
         with:
-          version: latest
-          args: --timeout=5m --issues-exit-code=0
-        continue-on-error: true
+          version: v2.12.2
+          args: --timeout=5m
+
+  shellcheck:
+    name: shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Run shellcheck
+        run: |
+          shellcheck --version
+          shellcheck build.sh tmux-project-update contrib/update_all \
+            scripts/*.sh messages/shells/bash messages/config/tmux_opt_source
 
   markdown-lint:
     name: markdown-lint

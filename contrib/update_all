@@ -105,10 +105,12 @@ function test_result_with_log() {
   else
     print_nok "${message}"
 
-    printf "\n# repo: %s\n" "${extra}" >>"${STAGING_AREA}/main.log"
-    printf "\n%s\n" "${message}" >>"${STAGING_AREA}/main.log"
-    cat "${logfile}" >>"${STAGING_AREA}/main.log"
-    printf "\n\n" >>"${STAGING_AREA}/main.log"
+    {
+      printf "\n# repo: %s\n" "${extra}"
+      printf "\n%s\n" "${message}"
+      cat "${logfile}"
+      printf "\n\n"
+    } >>"${STAGING_AREA}/main.log"
   fi
 
   rm -f "$logfile"
@@ -159,7 +161,8 @@ function list_branches() {
 }
 
 function main_branch() {
-  local branches=($(list_branches))
+  local branches
+  mapfile -t branches < <(list_branches)
 
   for branch in "${branches[@]}"; do
     case "$branch" in
@@ -185,7 +188,11 @@ function update_repo() {
 
   print_title "${target//${PROJDIR}\//}"
 
-  pushd "${target}" >/dev/null 2>&1
+  # never run the git commands below in the wrong directory
+  if ! pushd "${target}" >/dev/null 2>&1; then
+    print_nok "  cannot change to ${target}"
+    return 1
+  fi
 
   logfile="$(make_temp)"
   mainbranch="$(main_branch)"
@@ -216,7 +223,7 @@ function update_repo() {
   if [[ "${orgbranch}" != "${mainbranch}" ]]; then
     git checkout "${orgbranch}" >"${logfile}" 2>&1
     test_result_with_log "$?" "  git checkout ${orgbranch}" "${title}" "${logfile}"
-    behind="$(git rev-list --left-right --count ${mainbranch}...${orgbranch} | awk '$1 != 0 { printf "behind %d commits", $1 }')"
+    behind="$(git rev-list --left-right --count "${mainbranch}...${orgbranch}" | awk '$1 != 0 { printf "behind %d commits", $1 }')"
     if [[ -n "${behind}" ]]; then
       print_warning "${behind}"
     fi
@@ -226,7 +233,7 @@ function update_repo() {
     git stash pop >"${logfile}" 2>&1
     test_result_with_log "$?" "  git stash pop" "${title}" "${logfile}"
   fi
-  popd >/dev/null 2>&1
+  popd >/dev/null 2>&1 || return 1
 
 }
 
