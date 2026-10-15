@@ -36,13 +36,13 @@ func handleTypeInitCmd(cmd *cobra.Command, args []string) {
 
 	Force, _ := cmd.Flags().GetBool("force")
 
-	if ProjectType == "default" && !Force {
-		log.Debugf("%s: end", cmd.Use)
-		log.Fatalf("Cannot overwrite default")
-	}
 	ptc, err := projecttype.New(ProjectType)
 	if err != nil && !errors.Is(err, projecttype.ErrProjectNotExists) {
 		utils.Abort("Error: %s", err)
+	}
+	// init writes config.yml and the templates, replacing any changes
+	if err == nil && !Force {
+		log.Fatalf("project type %s already exists, use --force to overwrite its configuration", ProjectType)
 	}
 	err = ptc.Setup()
 	if err != nil {
@@ -53,5 +53,5 @@ func handleTypeInitCmd(cmd *cobra.Command, args []string) {
 
 func init() {
 	TypeCmd.AddCommand(TypeInitCmd)
-	TypeInitCmd.Flags().BoolP("force", "f", false, "Force")
+	TypeInitCmd.Flags().BoolP("force", "f", false, "Overwrite an existing project type")
 }
