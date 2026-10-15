@@ -13,19 +13,29 @@
 package config
 
 import (
+	"os"
 	"os/user"
-	"path"
+	"path/filepath"
 )
 
+// Home returns the home directory of the user. $HOME takes precedence, as
+// it does for os.UserHomeDir, so tests and wrappers can relocate it.
 func Home() string {
-	usr, _ := user.Current()
-	return usr.HomeDir
+	if home, err := os.UserHomeDir(); err == nil {
+		return home
+	}
+	if usr, err := user.Current(); err == nil {
+		return usr.HomeDir
+	}
+	return ""
 }
 
+// ConfigDir returns the directory holding the project type configurations
 func ConfigDir() string {
-	return path.Join(Home(), ".tmux-project")
+	return filepath.Join(Home(), ".tmux-project")
 }
 
+// SessionDir returns the directory holding the project and tmux files
 func SessionDir() string {
-	return path.Join(Home(), ".tmux.d")
+	return filepath.Join(Home(), ".tmux.d")
 }

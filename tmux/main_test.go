@@ -38,41 +38,6 @@ func TestListActiveFormat(t *testing.T) {
 	}
 }
 
-// TestNew and TestAttach are difficult to test without actually running tmux
-// These are integration tests that would require a running tmux server
-
-func TestNewWithInvalidConfig(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration test in short mode")
-	}
-
-	// This test documents expected behavior
-	// New() will call utils.ErrorExit on failure, which exits the program
-	// In a real scenario, this would need to be refactored to return errors
-	t.Log("New() and Attach() call utils.ErrorExit on failure")
-}
-
-func TestAttachWithInvalidConfig(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration test in short mode")
-	}
-
-	t.Log("Attach() calls utils.ErrorExit on failure")
-}
-
-func TestResumeLogic(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration test in short mode")
-	}
-
-	// Resume logic:
-	// 1. Get list of active sessions
-	// 2. If session exists in active list, attach
-	// 3. Otherwise, create new session
-
-	t.Log("Resume() combines ListActive(), Attach(), and New()")
-}
-
 func TestListActiveEmpty(t *testing.T) {
 	// When no sessions are running, should return empty slice
 	sessions, err := ListActive()
