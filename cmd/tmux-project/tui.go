@@ -33,6 +33,14 @@ var statusOptions = []string{
 	"parked",
 }
 
+// readOnlyFields are the edit fields that cannot be changed in the TUI:
+// renaming a project or moving its directory also involves the session
+// files and the PROJDIR setting in its .env file.
+var readOnlyFields = map[int]string{
+	0: "the name cannot be changed here, it also names the session files",
+	1: "the directory cannot be changed here, PROJDIR in the .env file would not follow",
+}
+
 // Model represents the main TUI state
 type Model struct {
 	projects         []project.Project
@@ -213,16 +221,6 @@ func (m Model) handleProjectListKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.loadProjectToInputs()
 		}
 
-	case "n":
-		// Create new project
-		m.message = "Create new project (not yet implemented)"
-
-	case "d":
-		// Delete/archive project
-		if len(m.projects) > 0 {
-			m.message = "Archive project (not yet implemented)"
-		}
-
 	case "r":
 		// Refresh project list
 		m.projects = loadProjects()
@@ -272,6 +270,8 @@ func (m Model) handleProjectEditKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 						break
 					}
 				}
+			} else if reason, ok := readOnlyFields[m.editField]; ok {
+				m.message = reason
 			} else {
 				m.isEditing = true
 				m.textInputs[m.editField].Focus()
@@ -311,8 +311,7 @@ func (m *Model) updateProjectFromInputs() {
 	if m.editingProject == nil {
 		return
 	}
-	m.editingProject.Name = m.textInputs[0].Value()
-	m.editingProject.Directory = m.textInputs[1].Value()
+	// Name and Directory are read-only, see readOnlyFields
 	m.editingProject.Description = m.textInputs[2].Value()
 	m.editingProject.ProjectType = m.textInputs[3].Value()
 	m.editingProject.Status = m.textInputs[4].Value()
@@ -427,7 +426,11 @@ func (m Model) viewProjectEdit() string {
 			labelStyle = selectedStyle
 		}
 
-		label := labelStyle.Render(fmt.Sprintf("%s %-15s:", cursor, labels[i]))
+		labelText := labels[i]
+		if _, ok := readOnlyFields[i]; ok {
+			labelText += " (ro)"
+		}
+		label := labelStyle.Render(fmt.Sprintf("%s %-15s:", cursor, labelText))
 
 		if m.isEditing && i == m.editField {
 			s += label + " " + m.textInputs[i].View() + "\n"
@@ -497,8 +500,6 @@ func (m Model) viewHelp() string {
 	s += normalStyle.Render("Project List View:") + "\n"
 	s += normalStyle.Render("  ↑/k, ↓/j   - Navigate") + "\n"
 	s += normalStyle.Render("  Enter      - Edit project") + "\n"
-	s += normalStyle.Render("  n          - New project") + "\n"
-	s += normalStyle.Render("  d          - Archive project") + "\n"
 	s += normalStyle.Render("  r          - Refresh list") + "\n"
 	s += normalStyle.Render("  c          - Configuration") + "\n"
 	s += normalStyle.Render("  ?/h        - This help") + "\n"

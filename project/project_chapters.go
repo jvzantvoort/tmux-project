@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/jvzantvoort/tmux-project/config"
-	"gopkg.in/yaml.v2"
+	"go.yaml.in/yaml/v3"
 )
 
 // ChapterRule maps a glob pattern, relative to the project root, to a

@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/jvzantvoort/tmux-project/utils"
 )
@@ -97,6 +98,13 @@ func (t *TarArchive) CreateArchive() error {
 	return nil
 }
 
+// entryName returns the archive entry name for path: absolute paths are
+// stored relative to the filesystem root, as tar itself does, so the
+// archive extracts below the current directory without warnings.
+func entryName(path string) string {
+	return strings.TrimLeft(filepath.ToSlash(path), "/")
+}
+
 // addFileToTar adds a file to the given tar writer.
 func (t *TarArchive) addFileToTar(tarWriter *tar.Writer, filePath string) error {
 	file, err := os.Open(filePath) // #nosec G304 - controlled path from caller
@@ -123,7 +131,7 @@ func (t *TarArchive) addFileToTar(tarWriter *tar.Writer, filePath string) error 
 
 	// must provide real name
 	// (see https://golang.org/src/archive/tar/common.go?#L626)
-	header.Name = filepath.ToSlash(filePath)
+	header.Name = entryName(filePath)
 	utils.Debugf("header.Name: %s", header.Name)
 
 	// Write the tar header
@@ -145,7 +153,7 @@ func (t *TarArchive) addFileToTar(tarWriter *tar.Writer, filePath string) error 
 func (t *TarArchive) addSymlinkToTar(tarWriter *tar.Writer, linkName, target string) error {
 	// Create a tar header for the symlink
 	header := &tar.Header{
-		Name:     linkName,
+		Name:     entryName(linkName),
 		Mode:     0777, // Permissions for the symlink
 		Typeflag: tar.TypeSymlink,
 		Linkname: target,

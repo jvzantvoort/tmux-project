@@ -8,7 +8,7 @@ import (
 
 	"github.com/jvzantvoort/tmux-project/utils"
 
-	"gopkg.in/yaml.v2"
+	"go.yaml.in/yaml/v3"
 )
 
 // Read content from a project type file
@@ -94,7 +94,7 @@ func (ptc ProjectTypeConfig) Save() error {
 	configfile := ptc.ConfigFile
 	utils.Debugf("project type file: %s", configfile)
 
-	filehandle, err := os.OpenFile(configfile, os.O_CREATE|os.O_WRONLY, 0600) // #nosec G304 - controlled config path
+	filehandle, err := os.OpenFile(configfile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600) // #nosec G304 - controlled config path
 	if err != nil {
 		utils.Errorf("cannot open project type file for writing: %s", err)
 		return err

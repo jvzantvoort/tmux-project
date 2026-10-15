@@ -95,11 +95,12 @@ func TestModel_UpdateProjectFromInputs(t *testing.T) {
 
 	m.updateProjectFromInputs()
 
-	if proj.Name != "new-project" {
-		t.Errorf("Name not updated: got %s, want new-project", proj.Name)
+	// name and directory are read-only in the TUI
+	if proj.Name != "" {
+		t.Errorf("Name changed: got %s, want it unchanged", proj.Name)
 	}
-	if proj.Directory != "/tmp/new" {
-		t.Errorf("Directory not updated: got %s, want /tmp/new", proj.Directory)
+	if proj.Directory != "" {
+		t.Errorf("Directory changed: got %s, want it unchanged", proj.Directory)
 	}
 	if proj.Description != "New description" {
 		t.Errorf("Description not updated: got %s, want 'New description'", proj.Description)
@@ -133,13 +134,7 @@ func TestModel_RoundTripProjectData(t *testing.T) {
 	m.editingProject = updated
 	m.updateProjectFromInputs()
 
-	// Compare
-	if updated.Name != original.Name {
-		t.Errorf("Name mismatch: got %s, want %s", updated.Name, original.Name)
-	}
-	if updated.Directory != original.Directory {
-		t.Errorf("Directory mismatch: got %s, want %s", updated.Directory, original.Directory)
-	}
+	// Compare the editable fields; name and directory are read-only
 	if updated.Description != original.Description {
 		t.Errorf("Description mismatch: got %s, want %s", updated.Description, original.Description)
 	}
@@ -279,7 +274,7 @@ func TestModel_EnterEditMode(t *testing.T) {
 	m := NewModel()
 	m.viewMode = ViewProjectEdit
 	m.editingProject = &project.Project{Name: "test"}
-	m.editField = 0
+	m.editField = 2
 	m.isEditing = false
 
 	// Press enter to start editing
@@ -289,6 +284,26 @@ func TestModel_EnterEditMode(t *testing.T) {
 
 	if !m.isEditing {
 		t.Error("Should be in editing mode after pressing enter")
+	}
+}
+
+// TestModel_ReadOnlyFields verifies name and directory cannot be edited
+func TestModel_ReadOnlyFields(t *testing.T) {
+	for field := range readOnlyFields {
+		m := NewModel()
+		m.viewMode = ViewProjectEdit
+		m.editingProject = &project.Project{Name: "test"}
+		m.editField = field
+
+		newModel, _ := m.handleProjectEditKeys(tea.KeyMsg{Type: tea.KeyEnter})
+		m = newModel.(Model)
+
+		if m.isEditing {
+			t.Errorf("field %d should be read-only", field)
+		}
+		if m.message == "" {
+			t.Errorf("field %d should explain why it is read-only", field)
+		}
 	}
 }
 
