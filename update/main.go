@@ -3,80 +3,49 @@
 package update
 
 import (
-	"encoding/json"
 	"fmt"
-	"net/http"
-	"strings"
+	"path/filepath"
+	"runtime"
 
-	"github.com/jvzantvoort/tmux-project/utils"
 	"github.com/jvzantvoort/tmux-project/version"
 	log "github.com/sirupsen/logrus"
 )
 
-// GitHubRelease represents release information from the GitHub API
-type GitHubRelease struct {
-	TagName string `json:"tag_name"`
-	Name    string `json:"name"`
-}
-
-// getLatestVersion fetches the latest release version from GitHub
-func getLatestVersion() (string, error) {
-	utils.LogStart()
-	defer utils.LogEnd()
-
-	url := "https://api.github.com/repos/jvzantvoort/tmux-project/releases/latest"
-	resp, err := http.Get(url)
-	if err != nil {
-		log.Errorf("failed to fetch release info: %v", err)
-		return "", fmt.Errorf("failed to fetch release info: %w", err)
-	}
-	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			log.Errorf("failed to close response body: %v", err)
-		}
-	}()
-
-	if resp.StatusCode != http.StatusOK {
-		log.Errorf("GitHub API returned status: %d", resp.StatusCode)
-		return "", fmt.Errorf("GitHub API returned status: %d", resp.StatusCode)
-	}
-
-	var release GitHubRelease
-	if err := json.NewDecoder(resp.Body).Decode(&release); err != nil {
-		log.Errorf("failed to parse release info: %v", err)
-		return "", fmt.Errorf("failed to parse release info: %w", err)
-	}
-
-	return release.TagName, nil
-}
-
-// needsUpdate compares current and latest versions to determine if an update is needed
-func needsUpdate(currentVersion, latestVersion string) bool {
-	current := strings.TrimPrefix(currentVersion, "v")
-	latest := strings.TrimPrefix(latestVersion, "v")
-
-	return current != latest
-}
-
 // Execute checks for updates and installs the latest version if available.
 // If forceUpdate is true, it will update even if already on the latest version.
 func Execute(forceUpdate bool) error {
-	currentVersion := version.GetVersion()
+	currentVersion := version.GetVersion().Short()
 
-	latestVersion, err := getLatestVersion()
+	release, err := getLatestRelease()
 	if err != nil {
-		log.Errorf("failed to check for updates: %v", err)
 		return fmt.Errorf("failed to check for updates: %w", err)
 	}
 
-	if !forceUpdate && !needsUpdate(currentVersion.Short(), latestVersion) {
-		return fmt.Errorf("already running the latest version")
+	if !forceUpdate {
+		current, ok := parseVersion(currentVersion)
+		if !ok {
+			return fmt.Errorf("running development build %s, use --force to install %s", currentVersion, release.TagName)
+		}
+		latest, ok := parseVersion(release.TagName)
+		if !ok {
+			return fmt.Errorf("cannot parse version of latest release %s", release.TagName)
+		}
+		if compareVersions(current, latest) >= 0 {
+			log.Infof("already running the latest version (%s)", currentVersion)
+			return nil
+		}
 	}
 
-	url, err := getBrowserDownloadURL()
+	archive, checksum, err := findAssets(release, runtime.GOOS, runtime.GOARCH)
 	if err != nil {
-		return fmt.Errorf("failed to download update: %w", err)
+		return err
 	}
 
-	return Install(url)
+	execPath, err := ThisExecutablePath()
+	if err != nil {
+		return err
+	}
+
+	log.Infof("updating %s to %s", currentVersion, release.TagName)
+	return Install(archive.BrowserDownloadURL, checksum.BrowserDownloadURL, filepath.Dir(execPath))
 }

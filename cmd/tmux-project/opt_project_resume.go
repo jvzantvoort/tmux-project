@@ -49,7 +49,7 @@ func handleProjectResumeCmd(cmd *cobra.Command, args []string) {
 	}
 	configfile := filepath.Join(config.SessionDir(), proj.Name+".rc")
 
-	tmux.Resume(sessionname, configfile)
+	utils.ErrorExit(tmux.Resume(sessionname, configfile, proj.Directory))
 
 }
 

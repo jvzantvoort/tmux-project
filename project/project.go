@@ -38,7 +38,11 @@ func (proj Project) NameIsValid() bool {
 	utils.LogStart()
 	defer utils.LogEnd()
 
-	pattern := regexp.MustCompile(proj.Pattern)
+	pattern, err := regexp.Compile(proj.Pattern)
+	if err != nil {
+		utils.Errorf("invalid pattern %q in project type %s: %s", proj.Pattern, proj.ProjectType, err)
+		return false
+	}
 
 	if pattern.MatchString(proj.Name) {
 		utils.Debugf("project name matches pattern")
@@ -192,24 +196,29 @@ func (proj *Project) InitializeProject(projtype string, safe bool) error {
 	utils.LogArgument("projtype", projtype)
 	utils.LogArgument("safe", safe)
 
-	// SetupSessionDir setup the ~/.tmux.d directory
-	err := utils.SetupSessionDir(false)
-	if err != nil {
-		utils.Errorf("Error: %s", err)
-
+	if err := utils.CheckSessionName("project", proj.Name); err != nil {
+		return err
 	}
 
-	err = proj.RefreshStruct(projtype)
-	if err != nil {
-		utils.Errorf("Error: %s", err)
+	// SetupSessionDir setup the ~/.tmux.d directory
+	if err := utils.SetupSessionDir(false); err != nil {
+		return err
+	}
+
+	if err := proj.RefreshStruct(projtype); err != nil {
+		return err
 	}
 
 	utils.LogVariable("proj.Root", proj.Root)
 
 	if safe && !proj.Exists {
 		if !proj.NameIsValid() {
-			utils.Abort("Name %s is invalid", proj.Name)
+			return fmt.Errorf("name %s does not match pattern %s of project type %s", proj.Name, proj.Pattern, proj.ProjectType)
 		}
+	}
+
+	if len(proj.Directory) == 0 {
+		return fmt.Errorf("project type %s does not define a directory", proj.ProjectType)
 	}
 
 	if proj.Root != "directory" {
@@ -225,20 +234,22 @@ func (proj *Project) InitializeProject(projtype string, safe bool) error {
 
 		// Fail if directory already exists
 		if _, err := os.Stat(proj.Directory); !os.IsNotExist(err) {
-			utils.Abort("%s already exists", proj.Directory)
+			return fmt.Errorf("%s already exists", proj.Directory)
 		}
 
 		if err := utils.MkdirAll(proj.Directory); err != nil {
-			utils.Abort("directory cannot be created: %s", proj.Directory)
+			return fmt.Errorf("directory %s cannot be created: %w", proj.Directory, err)
 		}
 	}
 
+	// From here on the project directory exists, so the project is saved
+	// even when a later step fails; it can then be inspected or removed.
+	var errs []error
+
 	// Write the proj files
 	for _, target := range proj.Targets {
-		err = proj.ProcessTarget(&target)
-		if err != nil {
-			utils.Errorf("Error in target: %s", err)
-
+		if err := proj.ProcessTarget(&target); err != nil {
+			errs = append(errs, fmt.Errorf("target %s: %w", target.Name, err))
 		}
 	}
 
@@ -246,15 +257,19 @@ func (proj *Project) InitializeProject(projtype string, safe bool) error {
 	for _, repo := range proj.Repos {
 		gqueue.Add(repo.Url, proj.Directory, repo.Destination, repo.Branch)
 	}
-	gqueue.Run()
+	if err := gqueue.Run(); err != nil {
+		errs = append(errs, err)
+	}
 
+	// setup actions run in order and may depend on the repositories
 	queue := utils.NewQueue()
 	for _, step := range proj.SetupActions {
 		step = proj.Parse(step)
 		queue.Add(proj.Directory, step)
 	}
-
-	queue.Run()
+	if err := queue.Run(); err != nil {
+		errs = append(errs, err)
+	}
 
 	if !proj.Exists {
 		now := time.Now().Format(time.RFC3339)
@@ -262,7 +277,10 @@ func (proj *Project) InitializeProject(projtype string, safe bool) error {
 		proj.LastActivity = now
 	}
 
-	return proj.Save()
+	if err := proj.Save(); err != nil {
+		errs = append(errs, err)
+	}
+	return errors.Join(errs...)
 }
 
 // TimeSinceLastActivity calculates the duration between LastActivity and now

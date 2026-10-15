@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/jvzantvoort/tmux-project/messages"
 	log "github.com/sirupsen/logrus"
@@ -29,8 +30,9 @@ func handleShellCmd(cmd *cobra.Command, args []string) {
 		ShellName = args[0]
 	}
 	if ShellName != "bash" && ShellName != "zsh" {
-		fmt.Printf("Shell '%s' is not supported. Supported shells: bash, zsh\n", ShellName)
-		return
+		// stdout is usually eval'ed, so the error must go to stderr
+		fmt.Fprintf(os.Stderr, "Shell '%s' is not supported. Supported shells: bash, zsh\n", ShellName)
+		os.Exit(1)
 	}
 	fmt.Println(messages.GetShell(ShellName))
 }

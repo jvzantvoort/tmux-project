@@ -1,14 +1,26 @@
 # zsh shell configuration for tmux-project
-# Add any zsh-specific setup here
-echo "This is the zsh shell configuration for tmux-project."
 
 if [[ -n "$TMUX" ]]; then
   SESSIONNAME="$(tmux display-message -p '#S' 2>/dev/null)"
-  export SESSIONNAME
+  HISTFILE="${HOME}/.zsh_history_${SESSIONNAME}"
+  export SESSIONNAME HISTFILE
+
+  if [[ -r "$HOME/.tmux.d/${SESSIONNAME}.json" ]]; then
+    if command -v jq &> /dev/null; then
+      SESSIONTYPE="$(jq -r .type "$HOME/.tmux.d/${SESSIONNAME}.json")"
+    fi
+  fi
 
   # Load session-specific environment variables if they exist
   if [[ -f "$HOME/.tmux.d/${SESSIONNAME}.env" ]]; then
     source "$HOME/.tmux.d/${SESSIONNAME}.env"
+  fi
+
+  # Load settings shared by all projects of this type
+  if [[ -n "${SESSIONTYPE}" ]]; then
+    if [[ -f "$HOME/.tmux.d/${SESSIONTYPE}.shared" ]]; then
+      source "$HOME/.tmux.d/${SESSIONTYPE}.shared"
+    fi
   fi
 
   # Function to change directory within the project

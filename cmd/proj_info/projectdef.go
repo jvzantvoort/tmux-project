@@ -83,7 +83,7 @@ func (pd *ProjectDef) Init(chapters project.Chapters) {
 
 	pd.GetGitInfo()
 
-	pd.Info, _ = os.Lstat(pd.Path)
+	pd.Info, _ = os.Lstat(pd.Path) // #nosec G703 - path found below the project directory
 	if pd.ProjectDir == pd.Path {
 		pd.Name = "."
 	} else {

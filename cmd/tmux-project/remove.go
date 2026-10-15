@@ -26,7 +26,7 @@ func ProjectRemove(projectname string, withArchive, assumeYes bool) error {
 	}
 
 	active, _ := tmux.ListActive()
-	if utils.StringInSlice(proj.Name, active) {
+	if utils.StringInSlice(tmux.SessionName(proj.Name), active) {
 		return fmt.Errorf("tmux session %s is still running, close it first", proj.Name)
 	}
 

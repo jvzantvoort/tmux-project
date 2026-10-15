@@ -26,6 +26,10 @@ func New(projecttype string) (ProjectTypeConfig, error) {
 		return retv, rerr
 	}
 
+	if err := utils.CheckPathName("project type", projecttype); err != nil {
+		return retv, err
+	}
+
 	retv.ProjectType = projecttype
 
 	retv.ProjectTypeDir = filepath.Join(config.ConfigDir(), retv.ProjectType)

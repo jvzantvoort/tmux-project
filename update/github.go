@@ -1,65 +1,119 @@
 package update
 
 import (
-	"context"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"regexp"
-	"runtime"
-
-	"github.com/google/go-github/v62/github"
+	"strconv"
+	"time"
 )
 
-func extractFields(release *github.RepositoryRelease) []map[string]string {
-	retv := []map[string]string{}
-	re := regexp.MustCompile(`(?P<goos>[^.]+)\.(?P<goarch>[^.]+)\.tar\.gz$`)
+// apiTimeout limits calls to the GitHub API
+const apiTimeout = 30 * time.Second
 
-	for _, indx := range release.Assets {
-		tmpdict := map[string]string{}
-		filename := *indx.Name
-
-		matches := re.FindStringSubmatch(filename)
-		if matches != nil {
-			for i, name := range re.SubexpNames() {
-				if i != 0 && name != "" && i < len(matches) {
-					tmpdict[name] = matches[i]
-				}
-			}
-		}
-
-		tmpdict["Name"] = *indx.Name
-		tmpdict["BrowserDownloadURL"] = *indx.BrowserDownloadURL
-
-		retv = append(retv, tmpdict)
-	}
-
-	return retv
+// GitHubAsset represents a file attached to a GitHub release
+type GitHubAsset struct {
+	Name               string `json:"name"`
+	BrowserDownloadURL string `json:"browser_download_url"`
 }
 
-func getLatest(user, repo string) ([]map[string]string, error) {
-	client := github.NewClient(nil)
-
-	ctx := context.Background()
-	release, _, err := client.Repositories.GetLatestRelease(ctx, user, repo)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to get release: %w", err)
-	}
-
-	return extractFields(release), nil
-
+// GitHubRelease represents release information from the GitHub API
+type GitHubRelease struct {
+	TagName string        `json:"tag_name"`
+	Name    string        `json:"name"`
+	Assets  []GitHubAsset `json:"assets"`
 }
 
-func getBrowserDownloadURL() (string, error) {
-	repolist, err := getLatest(RepoUser, RepoName)
-	goarch := runtime.GOARCH
-	goos := runtime.GOOS
+// releaseURL is the GitHub API endpoint of the latest release
+var releaseURL = fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", RepoUser, RepoName)
+
+// getLatestRelease fetches the latest release from GitHub
+func getLatestRelease() (*GitHubRelease, error) {
+	client := &http.Client{Timeout: apiTimeout}
+
+	req, err := http.NewRequest(http.MethodGet, releaseURL, nil)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	for _, row := range repolist {
-		if row["goos"] == goos && row["goarch"] == goarch {
-			return row["BrowserDownloadURL"], nil
+	req.Header.Set("Accept", "application/vnd.github+json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch release info: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("GitHub API returned status: %d", resp.StatusCode)
+	}
+
+	release := &GitHubRelease{}
+	if err := json.NewDecoder(io.LimitReader(resp.Body, 10<<20)).Decode(release); err != nil {
+		return nil, fmt.Errorf("failed to parse release info: %w", err)
+	}
+	return release, nil
+}
+
+// findAssets returns the archive for goos/goarch and its checksum file
+func findAssets(release *GitHubRelease, goos, goarch string) (GitHubAsset, GitHubAsset, error) {
+	var archive, checksum GitHubAsset
+
+	suffix := regexp.MustCompile(`\.` + regexp.QuoteMeta(goos) + `\.` + regexp.QuoteMeta(goarch) + `\.tar\.gz$`)
+	for _, asset := range release.Assets {
+		if suffix.MatchString(asset.Name) {
+			archive = asset
+			break
 		}
 	}
-	return "", fmt.Errorf("cannot find download for %s %s", goos, goarch)
+	if len(archive.Name) == 0 {
+		return archive, checksum, fmt.Errorf("cannot find download for %s %s in release %s", goos, goarch, release.TagName)
+	}
+
+	for _, asset := range release.Assets {
+		if asset.Name == archive.Name+".sha256" {
+			checksum = asset
+			break
+		}
+	}
+	if len(checksum.Name) == 0 {
+		return archive, checksum, fmt.Errorf("release %s has no checksum for %s", release.TagName, archive.Name)
+	}
+	return archive, checksum, nil
+}
+
+// versionPattern matches the numeric part of tags like
+// "tmux-project-0.18.0" and "v0.18.0"
+var versionPattern = regexp.MustCompile(`(\d+)\.(\d+)\.(\d+)$`)
+
+// parseVersion returns the major, minor and patch numbers of version
+func parseVersion(version string) ([3]int, bool) {
+	var retv [3]int
+	matches := versionPattern.FindStringSubmatch(version)
+	if matches == nil {
+		return retv, false
+	}
+	for indx := range retv {
+		number, err := strconv.Atoi(matches[indx+1])
+		if err != nil {
+			return retv, false
+		}
+		retv[indx] = number
+	}
+	return retv, true
+}
+
+// compareVersions returns -1, 0 or 1 when a is older than, equal to or
+// newer than b
+func compareVersions(a, b [3]int) int {
+	for indx := range a {
+		if a[indx] < b[indx] {
+			return -1
+		}
+		if a[indx] > b[indx] {
+			return 1
+		}
+	}
+	return 0
 }

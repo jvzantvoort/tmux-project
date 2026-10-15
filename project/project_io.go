@@ -56,6 +56,10 @@ func (proj *Project) Open() error {
 	utils.LogStart()
 	defer utils.LogEnd()
 
+	if err := utils.CheckPathName("project", proj.Name); err != nil {
+		return err
+	}
+
 	configfile := proj.ProjectConfigFile()
 	utils.Debugf("project file: %s", configfile)
 
@@ -78,6 +82,10 @@ func (proj *Project) Open() error {
 func (proj Project) Save() error {
 	utils.LogStart()
 	defer utils.LogEnd()
+
+	if err := utils.CheckPathName("project", proj.Name); err != nil {
+		return err
+	}
 
 	err := utils.SetupSessionDir(false)
 	if err != nil {

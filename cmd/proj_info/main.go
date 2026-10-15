@@ -11,6 +11,7 @@ import (
 	"github.com/charmbracelet/x/term"
 	"github.com/fatih/color"
 	"github.com/jvzantvoort/tmux-project/project"
+	"github.com/jvzantvoort/tmux-project/tmux"
 	"github.com/jvzantvoort/tmux-project/utils"
 	"github.com/olekukonko/tablewriter"
 	log "github.com/sirupsen/logrus"
@@ -123,8 +124,9 @@ func PrintHeader(data [][]string) {
 
 // main is the entry point for the proj_info command.
 // It retrieves the project information based on the current tmux session name.
-// The session name is expected to be set in the environment variable SESSIONNAME.
-// If the session name is not set, it will print an error message and exit.
+// The session name is taken from the environment variable SESSIONNAME, or
+// from tmux when it is not set (e.g. in a popup).
+// If the session name cannot be determined, it will print an error message and exit.
 // It also allows for verbose output and depth control via command line flags.
 // The verbose flag enables detailed logging, and the depth flag controls the maximum depth for searching projects.
 // The project information is printed in a formatted table, including the session name, project directory, description, and type.
@@ -147,6 +149,12 @@ func main() {
 
 	// Header
 	sessionname := os.Getenv("SESSIONNAME")
+	if len(sessionname) == 0 {
+		sessionname = tmux.CurrentSession()
+	}
+	if len(sessionname) == 0 {
+		utils.ErrorExit("cannot determine the session: SESSIONNAME is not set and not running in tmux")
+	}
 	proj_obj := project.NewProject(sessionname)
 	err := proj_obj.RefreshStruct()
 	utils.ErrorExit(err)
