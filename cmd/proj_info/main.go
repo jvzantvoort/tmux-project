@@ -41,7 +41,7 @@ func readKey(input chan rune) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer term.Restore(fd, oldState)
+	defer func() { _ = term.Restore(fd, oldState) }()
 
 	char, _, err := reader.ReadRune()
 	if err != nil {

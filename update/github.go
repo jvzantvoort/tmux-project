@@ -3,7 +3,6 @@ package update
 import (
 	"context"
 	"fmt"
-	"log"
 	"regexp"
 	"runtime"
 
@@ -42,11 +41,8 @@ func getLatest(user, repo string) ([]map[string]string, error) {
 	ctx := context.Background()
 	release, _, err := client.Repositories.GetLatestRelease(ctx, user, repo)
 
-	// 3. Handle errors
 	if err != nil {
-		log.Fatalf("Failed to get release: %v", err)
-		retv := []map[string]string{}
-		return retv, err
+		return nil, fmt.Errorf("failed to get release: %w", err)
 	}
 
 	return extractFields(release), nil
