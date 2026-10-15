@@ -8,7 +8,32 @@ permissions:
   packages: write
 
 jobs:
+  test:
+    name: Test before release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+
+      - name: Verify dependencies
+        run: go mod verify
+
+      - name: Run go vet
+        run: go vet ./...
+
+      - name: Run tests
+        run: go test -race ./...
+
   release:
+    needs: test
     permissions:
       contents: write  # to upload release asset (actions/upload-release-asset)
 
@@ -47,6 +72,21 @@ jobs:
           GOARCH: ${{ matrix.goarch }}
         run: |
           ./build.sh buildr ${{ matrix.goos }} ${{ matrix.goarch }} $GITHUB_WORKSPACE/build
+
+      - name: Verify binary platforms
+        run: |
+          # every binary must be built for the platform its package is named after
+          fail=0
+          for binary in build/${{ matrix.goos }}.${{ matrix.goarch }}/*; do
+            goos="$(go version -m "${binary}" | awk '$1 == "build" && $2 ~ /^GOOS=/ { sub(/^GOOS=/, "", $2); print $2 }')"
+            goarch="$(go version -m "${binary}" | awk '$1 == "build" && $2 ~ /^GOARCH=/ { sub(/^GOARCH=/, "", $2); print $2 }')"
+            echo "${binary}: ${goos}/${goarch}"
+            if [[ "${goos}" != "${{ matrix.goos }}" || "${goarch}" != "${{ matrix.goarch }}" ]]; then
+              echo "::error file=${binary}::built for ${goos}/${goarch}, expected ${{ matrix.goos }}/${{ matrix.goarch }}"
+              fail=1
+            fi
+          done
+          exit "${fail}"
 
       - name: Create package
         id: package
