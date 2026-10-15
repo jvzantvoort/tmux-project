@@ -1,5 +1,13 @@
-Provides a way to integrate tmux-project into shell by executing:
+Print the shell code that integrates tmux-project into the shell. Add to
+~/.bashrc:
 
   eval "$(tmux-project shell)"
 
+or to ~/.zshrc:
+
+  eval "$(tmux-project shell zsh)"
+
 (don't forget the quotes)
+
+Inside a tmux session the code sets SESSIONNAME and a per-session HISTFILE,
+sources ~/.tmux.d/<session>.env and defines the pcd function.

@@ -1,1 +1,1 @@
-Edit the config of a project
+Open the .rc and .env files of a project in $VISUAL, $EDITOR or vim.

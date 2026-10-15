@@ -1,1 +1,3 @@
-resume a session
+Resume working on a project: attach to its tmux session, or create the
+session in the project directory. Inside tmux the client is switched to the
+session instead.

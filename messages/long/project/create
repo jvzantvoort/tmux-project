@@ -1,1 +1,2 @@
-Create a new project
+Create a project from a project type: make the project directory, write
+the target files, clone the repositories and run the setup actions.

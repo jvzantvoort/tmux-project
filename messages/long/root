@@ -1,0 +1,2 @@
+Manage tmux-based project workspaces: create, resume, archive and remove
+projects, each with its own tmux session, environment and directory.
