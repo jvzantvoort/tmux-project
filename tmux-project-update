@@ -38,13 +38,15 @@ function get_download_url() {
 
 	extension=".${goos}.${goarch}.tar.gz"
 
-	curl -s "${RELEASES_URL}" |
+	# match the archive only, not its .sha256 file
+	curl -fsS "${RELEASES_URL}" |
 		awk -F'\"' -v ext="${extension}" \
-			'$2 ~ /browser_download_url/ && $4 ~ ext { print $4 }'
+			'$2 ~ /browser_download_url/ && substr($4, length($4) - length(ext) + 1) == ext { print $4 }'
 }
 
 RELEASES_URL="https://api.github.com/repos/${APPLICATION}/releases/latest"
 URL="$(get_download_url)"
+[[ -n "${URL}" ]] || die "cannot find a release for $(get_goos)/$(get_goarch)"
 FILENAME="$(basename "${URL}")"
 STAGING_AREA="$(mktemp -d "/tmp/${USER}-updater.XXXXX")"
 
@@ -53,16 +55,19 @@ STAGING_AREA="$(mktemp -d "/tmp/${USER}-updater.XXXXX")"
 if [[ "$(id -u)" == "0" ]]; then
 	BINDIR="/usr/local/bin"
 else
-	BINDIR="$(go env GOBIN)"
+	BINDIR="$(command -v go >/dev/null 2>&1 && go env GOBIN)"
 fi
 
 [[ -z "${BINDIR}" ]] && BINDIR="${HOME}/bin"
 
 [[ -d "${BINDIR}" ]] || mkdir -p "${BINDIR}"
 
-curl -LSso "${STAGING_AREA}/${FILENAME}" "${URL}"
+curl -fLSso "${STAGING_AREA}/${FILENAME}" "${URL}" || die "download ${URL}"
+curl -fLSso "${STAGING_AREA}/${FILENAME}.sha256" "${URL}.sha256" || die "download ${URL}.sha256"
 
 pushd "${STAGING_AREA}" >/dev/null 2>&1 || die "change dir to staging area"
+sha256sum --quiet -c "${FILENAME}.sha256" || die "checksum mismatch for ${FILENAME}"
+rm "${FILENAME}.sha256"
 tar -zxf "${FILENAME}" && rm "${FILENAME}"
 find . -type f -printf "%f\n" | while read -r target; do
 	install -m 755 "${target}" "${BINDIR}/${target}"
