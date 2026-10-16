@@ -108,7 +108,9 @@ function test_result_with_log() {
     {
       printf "\n# repo: %s\n" "${extra}"
       printf "\n%s\n" "${message}"
-      cat "${logfile}"
+      if [[ -e "${logfile}" ]]; then
+        cat "${logfile}"
+      fi
       printf "\n\n"
     } >>"${STAGING_AREA}/main.log"
   fi
@@ -182,11 +184,61 @@ function main_branch() {
   done
 }
 
+is_actionable_repo() {
+  local repo="$1"
+  local logfile
+  local msg
+  local branch
+
+  logfile="$(make_temp)"
+
+  msg="is valid git repository"
+  if git -C "$repo" rev-parse --is-inside-work-tree >"${logfile}" 2>&1; then
+    test_result_with_log 0 "  ${msg}" "${repo}" "${logfile}"
+  else
+    test_result_with_log 1 "  ${msg}" "${repo}" "${logfile}"
+    return 1
+  fi
+
+  msg="remote origin is configured"
+  if git -C "$repo" remote get-url origin >"${logfile}" 2>&1; then
+    test_result_with_log 0 "  ${msg}" "${repo}" "${logfile}"
+  else
+    test_result_with_log 1 "  ${msg}" "${repo}" "${logfile}"
+    return 1
+  fi
+
+  branch="$(git -C "$repo" rev-parse --abbrev-ref HEAD 2>"${logfile}")"
+  msg="branch ${branch} is in attached state"
+  if [[ -n "${branch}" && "${branch}" != "HEAD" ]]; then
+    test_result_with_log 0 "  ${msg}" "${repo}" "${logfile}"
+  else
+    printf "HEAD is detached, check out a branch first\n" >>"${logfile}"
+    test_result_with_log 1 "  ${msg}" "${repo}" "${logfile}"
+    return 1
+  fi
+
+  git -C "$repo" fetch -p >"${logfile}" 2>&1
+  test_result_with_log $? "  update local branches" "${repo}" "${logfile}"
+
+  msg="branch ${branch} is found on remote"
+  if git -C "$repo" ls-remote --exit-code --heads origin "${branch}" >"${logfile}" 2>&1; then
+    test_result_with_log 0 "  ${msg}" "${repo}" "${logfile}"
+  else
+    test_result_with_log 1 "  ${msg}" "${repo}" "${logfile}"
+    return 1
+  fi
+
+}
+
 function update_repo() {
   local target="$1"
   local title="${target//${PROJDIR}\//}"
 
   print_title "${target//${PROJDIR}\//}"
+  if ! is_actionable_repo "${target}"; then
+    return 1
+  fi
 
   # never run the git commands below in the wrong directory
   if ! pushd "${target}" >/dev/null 2>&1; then
@@ -216,9 +268,6 @@ function update_repo() {
 
   git pull origin "${mainbranch}" --tags >"${logfile}" 2>&1
   test_result_with_log "$?" "  git pull ${mainbranch}" "${title}" "${logfile}"
-
-  git fetch -p >"${logfile}" 2>&1
-  test_result_with_log "$?" "  git fetch" "${title}" "${logfile}"
 
   if [[ "${orgbranch}" != "${mainbranch}" ]]; then
     git checkout "${orgbranch}" >"${logfile}" 2>&1
